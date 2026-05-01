@@ -1,129 +1,172 @@
-import React, { useState, useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { IoMdPerson } from "react-icons/io";
 import {
   MdKeyboardDoubleArrowRight,
   MdKeyboardDoubleArrowLeft,
 } from "react-icons/md";
+import Cookies from "js-cookie";
 import { TiArrowSortedDown } from "react-icons/ti";
-import { Ic } from "../../components/icons/Ic";
+import { RiLogoutBoxRLine } from "react-icons/ri";
 import { transportItems } from "../../helpers/SidebarData";
 
 const TransportMain = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [activeGroup, setActiveGroup] = useState(null);
+  const navigateTo = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [visibleExpandCloseBtn, setVisibleExpandCloseBtn] = useState(true);
+  const storedTheme = Cookies.get("themeMode") || "dark";
+  const [theme, setTheme] = useState("dark");
+  const [userData] = useState({ fullName: "John Doe", imageUrl: null });
+  const [openGroups, setOpenGroups] = useState(() => {
+    if (transportItems.length > 0) {
+      return {
+        [transportItems[0].group]: true,
+      };
+    }
+    return {};
+  });
 
   useEffect(() => {
-    setMobileOpen(false);
+    const interval = setInterval(() => {
+      const t = Cookies.get("themeMode") || "dark";
+      setTheme((prev) => (prev !== t ? t : prev));
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/buyer/land-listing")) {
+      setIsCollapsed(true);
+      setVisibleExpandCloseBtn(false);
+    } else {
+      setIsCollapsed(false);
+      setVisibleExpandCloseBtn(true);
+    }
   }, [location.pathname]);
 
-  const handleGroupClick = (group) => {
-    if (!expanded) {
-      setExpanded(true);
-      setActiveGroup(group);
-    } else {
-      setActiveGroup(activeGroup === group ? null : group);
-    }
+  useEffect(() => {
+    setTheme(storedTheme);
+  }, [storedTheme]);
+
+  const toggleGroup = (groupName) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [groupName]: !prev[groupName],
+    }));
   };
+
+  const isDark = theme === "dark";
+  const basePath = "/transport";
 
   return (
     <>
-      {/* MOBILE */}
-      <button className="menu-btn" onClick={() => setMobileOpen(!mobileOpen)}>
-        {mobileOpen ? <FaTimes /> : <FaBars />}
+      <button
+        className={`sidebar-hamburger ${isSidebarOpen ? "open" : ""}`}
+        onClick={() => setIsSidebarOpen((v) => !v)}
+        aria-label="Toggle menu"
+      >
+        {isSidebarOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
       </button>
+      {isSidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
-      {mobileOpen && <div className="overlay" onClick={() => setMobileOpen(false)} />}
-
-      <div className="app">
-        <aside className={`sidebar ${expanded ? "expanded" : ""} ${mobileOpen ? "open" : ""}`}>
-          
-          {/* HEADER */}
-          <div className="sidebar-head">
-            {expanded ? (
-              <>
-                <div className="brand-full">TRANZOOP</div>
-                <div className="logo-sub">TRANSPORT OS v5.0</div>
-              </>
-            ) : (
-              <div className="brand-short">TZ</div>
-            )}
+      <div className="sidebar-layout">
+        <aside
+          className={`sidebar ${isSidebarOpen ? "mobile-open" : ""} ${
+            isCollapsed ? "collapsed" : ""
+          }`}
+        >
+          {!isCollapsed && (
+              <div className="sidebar-head">
+                <div className="sidebar-brand-full">TRANZOOP</div>
+                <div className="sidebar-logo-sub">TRANSPORT OS v5.0</div>
           </div>
-
-          {/* NAV */}
-          <nav className="nav">
+          )}
+          <nav className="sidebar-nav">
             {transportItems.map((section) => {
-              const isOpen = activeGroup === section.group;
-
+              const isGroupOpen = openGroups[section.group] || false;
               return (
-                <div key={section.group}>
-                  
-                  {/* MAIN ICON */}
-                 <div
-                  className="main-item"
-                  onClick={() => handleGroupClick(section.group)}
-                >
-                  {/* LEFT SIDE */}
-                  <div className="left">
-                    <Ic n={section.items[0].icon} s={18} />
-                    {expanded && (
-                      <span className="group-label">{section.group}</span>
-                    )}
-                  </div>
-
-                  {/* RIGHT SIDE */}
-                  {expanded && (
-                    <TiArrowSortedDown
-                      className={`arrow ${isOpen ? "rotate" : ""}`}
-                    />
+                <div key={section.group} className="sidebar-section">
+                  {!isCollapsed && (
+                    <div
+                      className={`sidebar-group-label ${isGroupOpen ? "open" : ""}`}
+                      onClick={() => toggleGroup(section.group)}
+                    >
+                      <span className="label">{section.group}</span>
+                      <TiArrowSortedDown
+                        style={{
+                          transition: "transform 0.3s",
+                          transform: isGroupOpen
+                            ? "rotate(180deg)"
+                            : "rotate(0deg)",
+                        }}
+                      />
+                    </div>
                   )}
-                </div>
+                  {(isCollapsed || isGroupOpen) && (
+                    <ul className="sidebar-list">
+                      {section.items.map((item) => {
+                        const isActive =
+                          location.pathname === `${basePath}/${item.path}` ||
+                          location.pathname.startsWith(
+                            `${basePath}/${item.path}/`,
+                          );
 
-                  {/* SUB MENU */}
-                  {expanded && isOpen &&
-                    section.items.map((item) => {
-                      const active =
-                        location.pathname === `/${item.path}` ||
-                        location.pathname.startsWith(`/${item.path}`);
-
-                      return (
-                        <div
-                          key={item.path}
-                          className={`sub-item ${active ? "active" : ""}`}
-                          onClick={() => navigate(`/${item.path}`)}
-                        >
-                          <Ic n={item.icon} s={14} />
-                          <span>{item.label}</span>
-                        </div>
-                      );
-                    })}
+                        return (
+                          <li key={item.path}>
+                            <button
+                              className={`sidebar-link ${isActive ? "active" : ""}`}
+                              onClick={() =>
+                                navigateTo(`${basePath}/${item.path}`)
+                              }
+                              title={isCollapsed ? item.label : undefined}
+                            >
+                              <span className="sidebar-link-icon">
+                                {item.icon}
+                              </span>
+                              {!isCollapsed && (
+                                <span className="sidebar-link-label">
+                                  {item.label}
+                                </span>
+                              )}
+                              {isActive && !isCollapsed && (
+                                <span className="sidebar-active-dot" />
+                              )}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </div>
               );
             })}
           </nav>
-
-          {/* FOOTER */}
-          <div className="sidebar-footer">
-            {/* <div className="avatar">S</div> */}
-
-            {expanded && (
-              <div className="user-info">
-                <div className="user-name">Super Admin</div>
-                <div className="user-mail">owner@tranzoop.in</div>
-              </div>
-            )}
-
-            <button className="toggle-btn" onClick={() => setExpanded(!expanded)}>
-              {expanded ? <MdKeyboardDoubleArrowLeft /> : <MdKeyboardDoubleArrowRight />}
-            </button>
-          </div>
+          {visibleExpandCloseBtn && (
+            <div className="sidebar-footer">
+              {!isCollapsed &&<div className="sidebar-link danger"><RiLogoutBoxRLine size={18} />Sign Out</div>}
+              <button
+                className="sidebar-collapse-btn"
+                onClick={() => setIsCollapsed((v) => !v)}
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {isCollapsed ? (
+                  <MdKeyboardDoubleArrowRight size={18} />
+                ) : (
+                  <MdKeyboardDoubleArrowLeft size={18}/>
+                )}
+              </button>
+            </div>
+          )}
         </aside>
-
-        <main className="main">
+        <main className="main-bar">
           <Outlet />
         </main>
       </div>

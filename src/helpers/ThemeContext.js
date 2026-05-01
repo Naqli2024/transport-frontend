@@ -15,22 +15,19 @@ export const ThemeProvider = ({ children }) => {
     }, [])
 
     useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    Cookies.set("themeMode", theme, { expires: 365 })
-}, [theme])
+        document.documentElement.setAttribute("data-theme", theme);
+        Cookies.set("themeMode", theme, { expires: 365 })
+    }, [theme])
 
-const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"))
+    const toggleTheme = () => {
+        setTheme((prev) => (prev === "dark" ? "light" : "dark"))
+    }
+
+
+    return (
+        <ThemeContext.Provider
+            value={{ theme, setTheme, toggleTheme }}>
+            {children}
+        </ThemeContext.Provider>
+    )
 }
-
-
-return (
-    <ThemeContext.Provider
-        value={{ theme, setTheme, toggleTheme }}>
-        {children}
-    </ThemeContext.Provider>
-)
-}
-
-
-

@@ -1,14 +1,14 @@
 import React from 'react'
 import "../src/assets/styles/transport.css";
 import { BrowserRouter } from 'react-router-dom';
-import Approutes from './routes/Approutes';
+import AppRoutes from './routes/AppRoutes';
 
 
 function App() {
   return (
     <div>
      <BrowserRouter>
-     <Approutes/>
+     <AppRoutes/>
      </BrowserRouter> 
     </div>
   )
