@@ -1,0 +1,5 @@
+export const WORK_ORDERS = [
+  { id:"WO-001", vehicle:"TN45 CD5678", workshop:"Ganesh Auto Works", type:"Corrective", category:"Engine", issue:"Engine overheating during long haul", odometer:124000, status:"In Progress", created:"2025-04-10", partsUsed:[{name:"Radiator Hose",cost:2800},{name:"Coolant 5L",cost:1200}], labourCost:4500, totalCost:8500, invoiceStatus:"Pending" },
+  { id:"WO-002", vehicle:"TN59 AB1234", workshop:"Power Electricals", type:"Corrective", category:"Electrical", issue:"Battery not charging — alternator fault", odometer:92340, status:"Open", created:"2025-04-14", partsUsed:[{name:"Alternator",cost:8500}], labourCost:2500, totalCost:11000, invoiceStatus:"Pending" },
+  { id:"WO-003", vehicle:"TN69 GH4789", workshop:"Sri Ram Tyre Centre", type:"Preventive", category:"Tyre System", issue:"Scheduled tyre rotation & alignment", odometer:74875, status:"Completed", created:"2025-04-08", partsUsed:[{name:"Alignment",cost:800}], labourCost:1200, totalCost:2000, invoiceStatus:"Paid" },
+];
