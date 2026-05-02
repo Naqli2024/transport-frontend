@@ -19,7 +19,6 @@ const TransportMain = () => {
   const [visibleExpandCloseBtn, setVisibleExpandCloseBtn] = useState(true);
   const storedTheme = Cookies.get("themeMode") || "dark";
   const [theme, setTheme] = useState("dark");
-  const [userData] = useState({ fullName: "John Doe", imageUrl: null });
   const [openGroups, setOpenGroups] = useState(() => {
     if (transportItems.length > 0) {
       return {
@@ -36,16 +35,6 @@ const TransportMain = () => {
     }, 300);
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    if (location.pathname.startsWith("/buyer/land-listing")) {
-      setIsCollapsed(true);
-      setVisibleExpandCloseBtn(false);
-    } else {
-      setIsCollapsed(false);
-      setVisibleExpandCloseBtn(true);
-    }
-  }, [location.pathname]);
 
   useEffect(() => {
     setTheme(storedTheme);

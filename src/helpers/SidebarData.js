@@ -8,6 +8,7 @@ import {
   RiUserStarLine,
   RiTruckLine,
   RiCarLine,
+  RiBusLine,
   RiSteering2Line,
   RiUser3Line,
   RiGasStationLine,
@@ -16,6 +17,11 @@ import {
   RiBrainLine,
   RiLineChartLine,
   RiMoneyDollarCircleLine,
+  RiFileList3Line,
+  RiFilePaper2Line,
+  RiExchangeDollarLine,
+  RiGroupLine,
+  RiLock2Line,
 } from "react-icons/ri";
 
 export const transportItems = [
@@ -41,6 +47,21 @@ export const transportItems = [
         path: "all-trips",
         icon: <RiRouteLine size={15} />,
         label: "All Trips",
+      },
+      {
+        path: "fleet-contracts",
+        icon: <RiFileList3Line size={15} />,
+        label: "Fleet Contracts",
+      },
+      {
+        path: "proof-delivery",
+        icon: <RiFilePaper2Line size={15} />,
+        label: "Proof of Delivery",
+      },
+      {
+        path: "return-loads",
+        icon: <RiExchangeDollarLine size={15} />,
+        label: "Return Loads",
       },
       {
         path: "pre-trip-inspection",
@@ -83,6 +104,16 @@ export const transportItems = [
         label: "Vehicle Master",
       },
       {
+        path: "heavy-equipment",
+        icon: <RiTruckLine size={15} />,
+        label: "Heavy Equipment",
+      },
+      {
+        path: "bus-operations",
+        icon: <RiBusLine size={15} />,
+        label: "Bus Operations",
+      },
+      {
         path: "tyre-intelligence",
         icon: <RiSteering2Line size={15} />,
         label: "Tyre Intelligence",
@@ -108,9 +139,44 @@ export const transportItems = [
         label: "Workshop & WOs",
       },
       {
-        path: "spare-parts",
+        path: "pm-settings",
         icon: <RiSettings3Line size={15} />,
+        label: "PM Settings",
+      },
+      {
+        path: "spare-parts",
+        icon: <RiToolsLine size={15} />,
         label: "Spare Parts",
+      },
+    ],
+  },
+  {
+    group: "Billing",
+    items: [
+      {
+        path: "equipment-billing",
+        icon: <RiMoneyDollarCircleLine size={15} />,
+        label: "Equipment Billing",
+      },
+      {
+        path: "payment-collections",
+        icon: <RiExchangeDollarLine size={15} />,
+        label: "Payment & Collections",
+      },
+    ],
+  },
+  {
+    group: "Compliance",
+    items: [
+      {
+        path: "compliance-legal",
+        icon: <RiShieldCheckLine size={15} />,
+        label: "Compliance & Legal",
+      },
+      {
+        path: "customer-portal",
+        icon: <RiGroupLine size={15} />,
+        label: "Customer Portal",
       },
     ],
   },
@@ -136,6 +202,16 @@ export const transportItems = [
         path: "finance",
         icon: <RiMoneyDollarCircleLine size={15} />,
         label: "Finance",
+      },
+    ],
+  },
+  {
+    group: "Settings",
+    items: [
+      {
+        path: "team-access",
+        icon: <RiLock2Line size={15} />,
+        label: "Team Access",
       },
     ],
   },
