@@ -64,12 +64,12 @@ export const transportItems = [
         label: "Return Loads",
       },
       {
-        path: "pre-trip-inspection",
+        path: "pre-trip",
         icon: <RiShieldCheckLine size={15} />,
         label: "Pre-Trip Inspection",
       },
       {
-        path: "post-trip-inspection",
+        path: "post-trip",
         icon: <RiShieldCheckLine size={15} />,
         label: "Post-Trip Inspection",
       },

@@ -4,11 +4,9 @@ import { MdOutlineCancel } from "react-icons/md";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
 
 const SignOutModal = ({ open, onClose }) => {
   const navigateTo = useNavigate();
-  const dispatch = useDispatch();
   const [userData, setUserData] = useState([]);
 
   const handleLogout = () => {

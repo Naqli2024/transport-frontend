@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import FleetContractWizard from './FleetContractWizard';
 
 const FLEET_CONTRACTS_DATA_INIT = [
-  // ── TRUCK CONTRACTS ──
   {
     id: "FC-001", assetType: "truck", contractTypeId: "DEDICATED_FLEET",
     client: "Ramco Cement Ltd", clientPhone: "044-28510000",
@@ -152,7 +151,6 @@ const FleetContracts = () => {
 
   return (
     <div>
-      {showWizard && <FleetContractWizard initialAssetType={wizardAsset} onClose={() => setShowWizard(false)} onSave={c => setContracts(cs => [...cs, c])} />}
       <div className="fleet-contracts-header">
         <div>
           <h1 className="heading">Fleet Contracts</h1>
@@ -380,6 +378,7 @@ const FleetContracts = () => {
           );
         })}
       </div>
+      {showWizard && <FleetContractWizard initialAssetType={wizardAsset} onClose={() => setShowWizard(false)} onSave={c => setContracts(cs => [...cs, c])} />}
     </div>
   );
 };

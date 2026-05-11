@@ -75,7 +75,7 @@ const TransportMain = () => {
           {!isCollapsed && (
               <div className="sidebar-head">
                 <div className="sidebar-brand-full">TRANZOOP</div>
-                <div className="sidebar-logo-sub">TRANSPORT OS v5.0</div>
+                <div className="sidebar-logo-sub">TRANSPORT OS</div>
           </div>
           )}
           <nav className="sidebar-nav">
