@@ -16,6 +16,19 @@ import Breakdown from '../pages/operations/Breakdown&Recovery/Breakdown'
 import DriverSettlement from '../pages/operations/DriverSettlement/DriverSettlement'
 import AgentsCommission from '../pages/operations/Agents&Commission/AgentsCommission'
 import VendorFleet from '../pages/operations/VendorFleet/VendorFleet'
+import EquipmentBillingPage from '../pages/billing/EquipmentBilling/EquipmentBillingPage'
+import PaymentsPage from '../pages/billing/PaymentCollection/PaymentsPage'
+import VehicleMaster from '../pages/Fleet/VehicleMaster/VehicleMaster'
+import HeavyEquipment from '../pages/Fleet/HeavyEquipment/HeavyEquipment'
+import BusOperation from '../pages/Fleet/BusOperations/BusOperations'
+import TyreIntel from '../pages/Fleet/TyreIntelligence/TyreIntelligence'
+import TyreIntelligence from '../pages/Fleet/TyreIntelligence/TyreIntelligence'
+import BusOperations from '../pages/Fleet/BusOperations/BusOperations'
+import Drivers from '../pages/Fleet/Drivers/Drivers'
+import FuelControl from '../pages/Fleet/FuelControl/FuelControl'
+import PreventiveMaintenance from '../pages/Maintenance/PreventMaintenance/PreventiveMaintenance'
+import Workshop from '../pages/Maintenance/WorkShop/Workshop'
+import SpareParts from '../pages/Maintenance/SpareParts/SpareParts'
 
 const AppRoutes = () => {
 
@@ -39,6 +52,17 @@ const AppRoutes = () => {
           <Route path="driver-settlement" element={<DriverSettlement />} />
           <Route path="agents-commission" element={<AgentsCommission />} />
           <Route path="vendor-fleet" element={<VendorFleet />} />
+          <Route path='equipment-billing' element={<EquipmentBillingPage/>}/>
+          <Route path='payment-collections' element={<PaymentsPage/>}/>
+          <Route path="vehicle-master" element={<VehicleMaster />} />
+          <Route path="heavy-equipment" element={<HeavyEquipment />} />
+          <Route path="bus-operations" element={<BusOperations />} />
+          <Route path="tyre-intelligence" element={<TyreIntelligence />} />
+          <Route path="drivers" element={<Drivers />} />
+          <Route path="fuel-control" element={<FuelControl />} /> 
+          <Route path="pm-settings" element={<PreventiveMaintenance/>}/>
+          <Route path="workshop" element={<Workshop/>}/>
+          <Route path="spare-parts" element={<SpareParts/>}/>
         </Route>
       </Routes>
     </>

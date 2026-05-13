@@ -1,0 +1,8 @@
+export const SITE_LOG_DATA = [
+  { id:"SL-001", eqId:"EQ-001", site:"Madurai Bypass NH7",    client:"NHAI Road Works",   date:"2025-04-15", hoursWorked:9.5, shift:"Day",   operator:"Kannan S",  fuel:48,  work:"Trench excavation — 320m pipeline route", status:"Billed",   billAmount:8550,  approved:true  },
+  { id:"SL-002", eqId:"EQ-001", site:"Madurai Bypass NH7",    client:"NHAI Road Works",   date:"2025-04-14", hoursWorked:8.0, shift:"Day",   operator:"Kannan S",  fuel:40,  work:"Foundation trench continuation",         status:"Billed",   billAmount:7200,  approved:true  },
+  { id:"SL-003", eqId:"EQ-003", site:"Chennai Port Road",     client:"L&T Construction",  date:"2025-04-15", hoursWorked:10,  shift:"Day",   operator:"Murugan V", fuel:80,  work:"Road compaction — 1.5km WBM layer",      status:"Pending",  billAmount:7000,  approved:false },
+  { id:"SL-004", eqId:"EQ-004", site:"Trichy Industrial Park",client:"TIDCO Projects",    date:"2025-04-15", hoursWorked:6.5, shift:"Night", operator:"Raj Kumar", fuel:143, work:"Structural steel lifting — floor 3",     status:"Pending",  billAmount:22750, approved:false },
+  { id:"SL-005", eqId:"EQ-001", site:"Madurai Bypass NH7",    client:"NHAI Road Works",   date:"2025-04-13", hoursWorked:7.5, shift:"Day",   operator:"Kannan S",  fuel:38,  work:"Box culvert excavation",                 status:"Billed",   billAmount:6750,  approved:true  },
+  { id:"SL-006", eqId:"EQ-003", site:"Chennai Port Road",     client:"L&T Construction",  date:"2025-04-14", hoursWorked:8,   shift:"Day",   operator:"Murugan V", fuel:64,  work:"Sub-grade preparation km 4–6",           status:"Billed",   billAmount:5600,  approved:true  },
+];
