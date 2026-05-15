@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-
-/* ═══════════ DATA ═══════════ */
 const PARTS = [
   {
     id: "SP-001", name: "Engine Oil 20W-50 (5L)",
@@ -39,8 +37,6 @@ const LOW_STOCK = [
   { name: "Alternator", meta: "Only 1 Pcs left · Reorder at 1" },
   { name: "Air Filter",  meta: "Only 2 Pcs left · Reorder at 3" },
 ];
-
-/* ═══════════ TABLE ROW ═══════════ */
 function PartRow({ p }) {
   return (
     <tr className={p.qtyLow ? "row-low" : ""}>
@@ -54,8 +50,6 @@ function PartRow({ p }) {
     </tr>
   );
 }
-
-/* ═══════════ MOBILE CARD ═══════════ */
 function PartCard({ p }) {
   return (
     <div className={`sp-part-card ${p.stripeCls} ${p.qtyLow ? "row-low" : ""}`}>
@@ -86,28 +80,21 @@ function PartCard({ p }) {
     </div>
   );
 }
-
-/* ═══════════ MAIN ═══════════ */
 export default function SpareParts() {
   const [theme, setTheme] = useState("dark");
 
   return (
     <div data-theme={theme}>
-
-      {/* TOPBAR */}
       <div className="sp-topbar">
         <div className="sp-topbar-left">
-          <h1>Spare Parts</h1>
-          <div className="sp-topbar-sub">Stock, reorder alerts, issue against work orders</div>
+          <h1 className="heading">Spare Parts</h1>
+          <div className="sub-heading">Stock, reorder alerts, issue against work orders</div>
         </div>
         <div className="sp-topbar-right">
           <button className="sp-btn-add">+ Add Parts</button>
         </div>
       </div>
-
       <div className="sp-main">
-
-        {/* ALERT BANNER */}
         <div className="sp-alert">
           <div className="sp-alert-header">
             <div className="sp-alert-dot" />
@@ -125,10 +112,7 @@ export default function SpareParts() {
             ))}
           </div>
         </div>
-
-        {/* DESKTOP TABLE */}
         <div className="sp-table-section">
-          <div className="sp-table-scroll">
             <table className="sp-table">
               <thead>
                 <tr>
@@ -145,14 +129,10 @@ export default function SpareParts() {
                 {PARTS.map(p => <PartRow key={p.id} p={p} />)}
               </tbody>
             </table>
-          </div>
         </div>
-
-        {/* MOBILE CARDS */}
         <div className="sp-card-list">
           {PARTS.map(p => <PartCard key={p.id} p={p} />)}
         </div>
-
       </div>
     </div>
   );

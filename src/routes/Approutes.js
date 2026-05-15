@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { matchPath, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import TransportMain from '../pages/Dashboard/TransportMain'
 import ControlTower from '../pages/command/ControlTower'
 import LiveTracking from '../pages/command/LiveTracking'
@@ -29,16 +29,33 @@ import FuelControl from '../pages/Fleet/FuelControl/FuelControl'
 import PreventiveMaintenance from '../pages/Maintenance/PreventMaintenance/PreventiveMaintenance'
 import Workshop from '../pages/Maintenance/WorkShop/Workshop'
 import SpareParts from '../pages/Maintenance/SpareParts/SpareParts'
+import SignIn from '../pages/Auth/SignIn'
+import AI from '../pages/Dashboard/AI.js'
 
 const AppRoutes = () => {
+  const location = useLocation();
+  const publicPaths = [
+    "/",
+  ];
+
+  const hideHeaderRoutes = ["/"];
+  const hideHeader = hideHeaderRoutes.some((route) =>
+    matchPath({ path: route, end: true }, location.pathname)
+  );
 
   return (
     <>
-      <Header />
+    {!hideHeader && <Header />}
       <Routes>
-        <Route path="/" element={<Navigate to="/transport/control-tower" />} />
+        <Route
+          path="/"
+          element={
+              <SignIn />
+          }
+        />
         <Route path="demo" element={<Demo />} />
         <Route path="demo1" element={<Demo1 />} />
+        <Route path="ai" element={<AI />} />
         <Route path='/transport' element={<TransportMain />}>
           <Route path="control-tower" element={<ControlTower />} />
           <Route path="live-gps-tracking" element={<LiveTracking />} />

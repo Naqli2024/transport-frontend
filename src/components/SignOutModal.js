@@ -11,7 +11,7 @@ const SignOutModal = ({ open, onClose }) => {
 
   const handleLogout = () => {
     // Cookies.remove("token");
-    // navigateTo(`/sign-in/${userData?.erp?.key}`);
+    navigateTo(`/`);
   };
 
   if (!open) return null;

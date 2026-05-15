@@ -241,7 +241,6 @@ export default function VehicleEditModal({
             outline: "none",
           }}
         >
-          {/* HEADER */}
 
           <Box
             sx={{
@@ -291,11 +290,9 @@ export default function VehicleEditModal({
                 sx={{
                   color: "var(--muted)",
                   fontSize: 13,
-                  fontFamily:
-                    '"JetBrains Mono", monospace',
-                }}
+                  }}
               >
-                · {VEHICLE.title}
+                {VEHICLE.title}
               </Typography>
             </Box>
 
@@ -528,16 +525,12 @@ export default function VehicleEditModal({
               onClick={handleClose}
               sx={{
                 borderColor: "var(--border)",
-
                 color: "var(--muted)",
-
                 "&:hover": {
                   borderColor:
                     "var(--accent)",
-
                   background:
                     "var(--bgPanel)",
-
                   color: "var(--text)",
                 },
               }}

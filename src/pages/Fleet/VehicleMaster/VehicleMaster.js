@@ -1,6 +1,9 @@
 import { useState } from "react";
 import AddVehicleModal from "./AddVehicleModal";
 import VehicleEditModal from "./EditModal";
+import { MdOutlineRemoveRedEye } from "react-icons/md";
+import { MdOutlineEdit } from "react-icons/md";
+import { MdDeleteOutline } from "react-icons/md";
 
 const STATS = [
   { val: "6", label: "Total Fleet", cls: "sc-blue" },
@@ -132,7 +135,7 @@ const VEHICLES = [
     tax: { text: "Paid", cls: "pill-paid" },
     status: { text: "Active", cls: "st-active" },
     tab: "Active",
-  },
+  }
 ];
 
 function HealthBar({ pct, fillCls, pctCls }) {
@@ -149,8 +152,8 @@ function HealthBar({ pct, fillCls, pctCls }) {
   );
 }
 
-function VehicleRow({  v, onView }) {
-    const [openEditVehicleModal, setOpenEditVehicleModal] = useState(false);
+function VehicleRow({ v, onView }) {
+  const [openEditVehicleModal, setOpenEditVehicleModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   return (
     <tr>
@@ -184,13 +187,26 @@ function VehicleRow({  v, onView }) {
       <td>
         <span className={`vm-status ${v.status.cls}`}>{v.status.text}</span>
       </td>
-      <td>
-      <button
-  className="vm-btn-view"
-  onClick={() => onView(v)}
->
-  View →
-</button>
+      <td className="vm-td-actions">
+        <button
+          className="vm-action-btn vm-action-view"
+          title="View detail"
+          onClick={() => onView(v)}
+        >
+          <MdOutlineRemoveRedEye />
+        </button>
+        <button
+          className="vm-action-btn vm-action-edit"
+          title="Edit customer"
+        >
+          <MdOutlineEdit />
+        </button>
+        <button
+          className="vm-action-btn vm-action-delete"
+          title="Delete customer"
+        >
+          <MdDeleteOutline />
+        </button>
       </td>
     </tr>
   );
@@ -232,12 +248,12 @@ function VehicleCard({ v }) {
   );
 }
 
-export default function VehicleMaster( ) {
-  const [theme, setTheme] = useState("dark");
+const VehicleMaster = () => {
   const [activeTab, setTab] = useState("All");
   const [openAddVehicleModal, setOpenAddVehiclemodal] = useState(false);
   const [openEditVehicleModal, setOpenEditVehicleModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [search,     setSearch]     = useState('');
 
   const filtered =
     activeTab === "All"
@@ -246,120 +262,133 @@ export default function VehicleMaster( ) {
 
   return (
     <div>
-      <div data-theme={theme}>
-      <div className="vm-topbar">
-        <div className="vm-topbar-left">
-          <h1>Vehicle Master &amp; Compliance</h1>
-          <div className="vm-topbar-sub">
-            Every lorry as a profit asset — smart onboarding · lifecycle ·
-            compliance · P&amp;L
-          </div>
-        </div>
-        <div className="vm-topbar-right">
-          <button className="vm-btn-add" 
-         onClick={() => setOpenAddVehiclemodal(true)}>+ Add Vehicle</button>
-        </div>
-      </div>
-      <div className="vm-main">
-        <div className="vm-stat-row">
-          {STATS.map((s) => (
-            <div key={s.label} className={`vm-stat-card ${s.cls}`}>
-              <div className="vm-stat-val">{s.val}</div>
-              <div className="vm-stat-label">{s.label}</div>
+      <div>
+        <div className="vm-topbar">
+          <div className="vm-topbar-left">
+            <h1 className="heading">Vehicle Master &amp; Compliance</h1>
+            <div className="sub-heading">
+              Every lorry as a profit asset — smart onboarding · lifecycle ·
+              compliance · P&amp;L
             </div>
-          ))}
-        </div>
-        <div className="vm-alert-banner">
-          <div className="vm-alert-header">
-            <span className="vm-alert-icon">⚠️</span>
-            <span className="vm-alert-title">
-              Compliance Alerts — 4 Vehicles Need Attention
-            </span>
           </div>
-          <div className="vm-alert-cards">
-            {ALERTS.map((a) => (
-              <div key={a.reg} className={`vm-alert-card ${a.cardCls}`}>
-                <div className="vm-alert-reg">{a.reg}</div>
-                <div className="vm-alert-doc">{a.doc}</div>
-                <div className={`vm-alert-status ${a.statusCls}`}>
-                  {a.statusText}
-                </div>
+          <div className="vm-topbar-right">
+            <button
+              className="vm-btn-add"
+              onClick={() => setOpenAddVehiclemodal(true)}
+            >
+              + Add Vehicle
+            </button>
+          </div>
+        </div>
+        <div className="vm-main">
+          <div className="vm-stat-row">
+            {STATS.map((s) => (
+              <div key={s.label} className={`vm-stat-card ${s.cls}`}>
+                <div className="vm-stat-val">{s.val}</div>
+                <div className="vm-stat-label">{s.label}</div>
               </div>
             ))}
           </div>
-        </div>
-        <div className="vm-tabs">
-          {TABS.map((t) => (
-            <button
-              key={t}
-              className={`vm-tab-btn ${activeTab === t ? "active" : ""}`}
-              onClick={() => setTab(t)}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-        <div className="vm-table-wrap">
-          <table className="vm-table">
-            <thead>
-              <tr>
-                <th>Vehicle No</th>
-                <th>Type</th>
-                <th>Config</th>
-                <th>Make / Year</th>
-                <th>KM</th>
-                <th>Health</th>
-                <th>Insurance</th>
-                <th>FC</th>
-                <th>Tax</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-           <tbody>
-  {filtered.map((v) => (
-    <VehicleRow
-      key={v.reg}
-      v={v}
-      onView={(vehicle) => {
-        setSelectedVehicle(vehicle);
-        setOpenEditVehicleModal(true);
-      }}
-    />
-  ))}
-</tbody>
-          </table>
-        </div>
-        <div className="vm-card-list">
-         {filtered.map((v) => (
-  <VehicleRow
-    key={v.reg}
-    v={v}
-    onView={(vehicle) => {
-      setSelectedVehicle(vehicle);
-      setOpenEditVehicleModal(true);
-    }}
-  />
-))}
+          <div className="vm-alert-banner">
+            <div className="vm-alert-header">
+              <span className="vm-alert-icon">⚠️</span>
+              <span className="vm-alert-title">
+                Compliance Alerts — 4 Vehicles Need Attention
+              </span>
+            </div>
+            <div className="vm-alert-cards">
+              {ALERTS.map((a) => (
+                <div key={a.reg} className={`vm-alert-card ${a.cardCls}`}>
+                  <div className="vm-alert-reg">{a.reg}</div>
+                  <div className="vm-alert-doc">{a.doc}</div>
+                  <div className={`vm-alert-status ${a.statusCls}`}>
+                    {a.statusText}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="vm-tabs mb-4">
+            {TABS.map((t) => (
+              <button
+                key={t}
+                className={`vm-tab-btn ${activeTab === t ? "active" : ""}`}
+                onClick={() => setTab(t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>     
+            <div className="he-search-wrap mb-3">
+              <span className="he-search-icon">⌕</span>
+              <input
+                className="he-search-input"
+                placeholder="Search vehicle no, year…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+          <div className="vm-table-wrap">
+            <table className="vm-table">
+              <thead>
+                <tr>
+                  <th>Vehicle No</th>
+                  <th>Type</th>
+                  <th>Config</th>
+                  <th>Make / Year</th>
+                  <th>KM</th>
+                  <th>Health</th>
+                  <th>Insurance</th>
+                  <th>FC</th>
+                  <th>Tax</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((v) => (
+                  <VehicleRow
+                    key={v.reg}
+                    v={v}
+                    onView={(vehicle) => {
+                      setSelectedVehicle(vehicle);
+                      setOpenEditVehicleModal(true);
+                    }}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="vm-card-list">
+            {filtered.map((v) => (
+              <VehicleRow
+                key={v.reg}
+                v={v}
+                onView={(vehicle) => {
+                  setSelectedVehicle(vehicle);
+                  setOpenEditVehicleModal(true);
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-   {/* ADD MODAL */}
-{openAddVehicleModal && (
-  <AddVehicleModal
-    open={openAddVehicleModal}
-    handleClose={() => setOpenAddVehiclemodal(false)}
-  />
-)}
 
-{/* EDIT MODAL */}
-{openEditVehicleModal && (
- <VehicleEditModal
-  open={openEditVehicleModal}
-  vehicle={selectedVehicle}
-  onClose={() => setOpenEditVehicleModal(false)}
-/>
-)}
+      {openAddVehicleModal && (
+        <AddVehicleModal
+          open={openAddVehicleModal}
+          onClose={() => setOpenAddVehiclemodal(false)}
+        />
+      )}
+      {openEditVehicleModal && (
+        <VehicleEditModal
+          open={openEditVehicleModal}
+          vehicle={selectedVehicle}
+          onClose={() => setOpenEditVehicleModal(false)}
+        />
+      )}
     </div>
-    
   );
 }
+
+export default VehicleMaster

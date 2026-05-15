@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react";
-import AddVehicleModal from "./AddDriver";
-import DriverDetailsModal from "./DriverDetailsModal";
+import AddDriverModal from "./AddDriverModal";
+import DriverDetailModal from "./DriverDetailModal";
 
-/* ═══════════ DATA ═══════════ */
 const STATS = [
   { val: "6", label: "TOTAL", cls: "sc-blue", id: "total" },
   { val: "0", label: "ACTIVE", cls: "sc-green", id: "active" },
@@ -199,6 +198,7 @@ export default function Drivers() {
   const [search, setSearch] = useState("");
   const [openAddDriver, setOpenAddDriver] = useState(false);
   const [openDriverModal, setOpenDriverModal] = useState(false);
+  const [driverData, setDriverData] = useState();
 
   const filtered = useMemo(
     () =>
@@ -211,27 +211,23 @@ export default function Drivers() {
   );
 
   return (
-    <div data-theme={theme}>
-      <div className="dm-topbar ">
-        <div className="dm-topbar-left d-flex justify-content-between align-items-center w-100">
+    <div>
+        <div className="dm-topbar">
           <div>
-            <h1>Driver Management</h1>
-
-            <div className="dm-topbar-sub">
+            <h1 className="heading">Driver Management</h1>
+            <div className="sub-heading">
               {DRIVERS.length} drivers · Compliance tracking · Performance
               scores
             </div>
           </div>
-
           <div
-            className="add-driver-btn"
+            className="dm-btn-add"
             onClick={() => setOpenAddDriver(true)}
             style={{ cursor: "pointer" }}
           >
             <span>+ Add Driver</span>
           </div>
         </div>
-      </div>
       <div className="dm-main">
         <div className="dm-stat-row">
           {STATS.map((s) => (
@@ -260,7 +256,10 @@ export default function Drivers() {
               <DriverCard
                 key={d.id}
                 d={d}
-                onClick={() => setOpenDriverModal(true)}
+                onClick={() => {
+                  setOpenDriverModal(true)
+                  setDriverData(d)
+                }}
               />
             ))
           ) : (
@@ -268,14 +267,15 @@ export default function Drivers() {
           )}
         </div>
       </div>
-      <AddVehicleModal
+      <AddDriverModal
         open={openAddDriver}
-        handleClose={() => setOpenAddDriver(false)}
+        onClose={() => setOpenAddDriver(false)}
       />
 
-      <DriverDetailsModal
+      <DriverDetailModal
         open={openDriverModal}
         onClose={() => setOpenDriverModal(false)}
+        driver={driverData}
       />
     </div>
   );

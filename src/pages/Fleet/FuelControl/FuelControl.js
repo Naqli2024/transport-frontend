@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-
-/* ═══════════ DATA ═══════════ */
 const STATS = [
   { val: "473L",     label: "TOTAL LITRES", cls: "sc-blue"   },
   { val: "₹47,300",  label: "TOTAL COST",   cls: "sc-accent" },
@@ -23,7 +21,6 @@ const LOGS = [
   { id: "FL-004", vehicle: "TN32 XY7821", driver: "External",    date: "2025-04-13", litres: "110L",  amount: "₹11,000", pump: "IOCL Trichy",    status: "OK"         },
 ];
 
-/* ═══════════ STATUS PILL ═══════════ */
 function Pill({ status }) {
   const ok = status === "OK";
   return (
@@ -34,7 +31,6 @@ function Pill({ status }) {
   );
 }
 
-/* ═══════════ TABLE ROW ═══════════ */
 function TableRow({ log }) {
   const susp = log.status === "Suspicious";
   return (
@@ -51,7 +47,6 @@ function TableRow({ log }) {
   );
 }
 
-/* ═══════════ MOBILE CARD ═══════════ */
 function LogCard({ log }) {
   const susp = log.status === "Suspicious";
   return (
@@ -74,25 +69,22 @@ function LogCard({ log }) {
   );
 }
 
-/* ═══════════ MAIN ═══════════ */
 export default function FuelControl() {
   const [theme, setTheme] = useState("dark");
 
   return (
-    <div data-theme={theme}>
-
-      {/* TOPBAR */}
+    <div>
       <div className="fc-topbar">
         <div className="fc-topbar-left">
-          <h1>Fuel Control</h1>
-          <div className="fc-topbar-sub">Consumption tracking · Theft detection · Cost analysis</div>
+          <h1 className="heading">Fuel Control</h1>
+          <div className="sub-heading">Consumption tracking · Theft detection · Cost analysis</div>
         </div>
-       
+         <button className="vm-btn-add">
+            + Log Fuel Fill
+          </button>
       </div>
 
       <div className="fc-main">
-
-        {/* STATS */}
         <div className="fc-stat-row">
           {STATS.map(s => (
             <div key={s.label} className={`fc-stat-card ${s.cls}`}>
@@ -101,8 +93,6 @@ export default function FuelControl() {
             </div>
           ))}
         </div>
-
-        {/* SUSPICIOUS BANNER */}
         {SUSPICIOUS.length > 0 && (
           <div className="fc-suspicious">
             <div className="fc-susp-header">
@@ -123,9 +113,7 @@ export default function FuelControl() {
           </div>
         )}
 
-        {/* DESKTOP TABLE */}
         <div className="fc-table-section">
-          <div className="fc-table-scroll">
             <table className="fc-table">
               <thead>
                 <tr>
@@ -143,10 +131,8 @@ export default function FuelControl() {
                 {LOGS.map(log => <TableRow key={log.id} log={log} />)}
               </tbody>
             </table>
-          </div>
         </div>
 
-        {/* MOBILE CARDS */}
         <div className="fc-card-list">
           {LOGS.map(log => <LogCard key={log.id} log={log} />)}
         </div>

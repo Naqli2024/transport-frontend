@@ -1,14 +1,12 @@
-
 import { useState } from "react";
+import CreateWorkOrderModal from "./AddNewWorkOrder";
 
-/* ═══════════ DATA ═══════════ */
 const STATS = [
-  { val: "2",        label: "OPEN",       cls: "sc-red"    },
-  { val: "1",        label: "COMPLETED",  cls: "sc-green"  },
-  { val: "₹21,500",  label: "TOTAL COST", cls: "sc-accent" },
-  { val: "3",        label: "VEHICLES",   cls: "sc-blue"   },
+  { val: "2", label: "OPEN", cls: "sc-red" },
+  { val: "1", label: "COMPLETED", cls: "sc-green" },
+  { val: "₹21,500", label: "TOTAL COST", cls: "sc-accent" },
+  { val: "3", label: "VEHICLES", cls: "sc-blue" },
 ];
-
 const WORK_ORDERS = [
   {
     id: "WO-001",
@@ -45,22 +43,7 @@ const WORK_ORDERS = [
   },
 ];
 
-/* ═══════════ TABLE ROW ═══════════ */
-function TableRow({ wo }) {
-  return (
-    <tr>
-      <td><span className="td-woid">{wo.id}</span></td>
-      <td><span className="td-vehicle">{wo.vehicle}</span></td>
-      <td><span className={`wo-cat ${wo.catCls}`}>{wo.category}</span></td>
-      <td><span className="td-issue">{wo.issue}</span></td>
-      <td><span className="td-cost">{wo.cost}</span></td>
-      <td><span className={`wo-status ${wo.stCls}`}>{wo.status}</span></td>
-      <td><button className="wo-btn-view">View</button></td>
-    </tr>
-  );
-}
 
-/* ═══════════ MOBILE CARD ═══════════ */
 function WorkOrderCard({ wo }) {
   return (
     <div className={`wo-card ${wo.stripeCls}`}>
@@ -78,7 +61,12 @@ function WorkOrderCard({ wo }) {
         </div>
         <div className="wo-card-row">
           <span className="wo-card-label">Issue</span>
-          <span className="wo-card-val" style={{ textAlign: "right", maxWidth: "60%" }}>{wo.issue}</span>
+          <span
+            className="wo-card-val"
+            style={{ textAlign: "right", maxWidth: "60%" }}
+          >
+            {wo.issue}
+          </span>
         </div>
         <div className="wo-card-row">
           <span className="wo-card-label">Cost</span>
@@ -86,7 +74,13 @@ function WorkOrderCard({ wo }) {
         </div>
       </div>
       <div className="wo-card-footer">
-        <span style={{ fontSize: "10px", color: "var(--textMuted)", fontFamily: "var(--font-mono)" }}>
+        <span
+          style={{
+            fontSize: "10px",
+            color: "var(--textMuted)",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
           {wo.id}
         </span>
         <button className="wo-btn-view">View</button>
@@ -95,40 +89,35 @@ function WorkOrderCard({ wo }) {
   );
 }
 
-/* ═══════════ MAIN ═══════════ */
 export default function Workshop() {
   const [theme, setTheme] = useState("dark");
+  const [openModal, setOpenModal] = useState(false);
 
   return (
     <div data-theme={theme}>
-
-      {/* TOPBAR */}
       <div className="wo-topbar">
         <div className="wo-topbar-left">
-          <h1>Workshop &amp; Work Orders</h1>
-          <div className="wo-topbar-sub">Active repairs · Scheduled PM · Cost tracking</div>
+          <h1 className="heading">Workshop &amp; Work Orders</h1>
+          <div className="sub-heading">
+            Active repairs · Scheduled PM · Cost tracking
+          </div>
         </div>
         <div className="wo-topbar-right">
-
-          <button className="wo-btn-new">+ New WO</button>
+          <button className="wo-btn-new" onClick={() => setOpenModal(true)}>
+            + New WO
+          </button>
         </div>
       </div>
-
       <div className="wo-main">
-
-        {/* STAT CARDS */}
         <div className="wo-stat-row">
-          {STATS.map(s => (
+          {STATS.map((s) => (
             <div key={s.label} className={`wo-stat-card ${s.cls}`}>
               <div className="wo-stat-val">{s.val}</div>
               <div className="wo-stat-label">{s.label}</div>
             </div>
           ))}
         </div>
-
-        {/* DESKTOP TABLE */}
         <div className="wo-table-section">
-          <div className="wo-table-scroll">
             <table className="wo-table">
               <thead>
                 <tr>
@@ -138,22 +127,48 @@ export default function Workshop() {
                   <th>Issue</th>
                   <th>Cost</th>
                   <th>Status</th>
-                  <th></th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {WORK_ORDERS.map(wo => <TableRow key={wo.id} wo={wo} />)}
+                {WORK_ORDERS.map((wo) => (
+                   <tr>
+      <td>
+        <span className="td-woid">{wo.id}</span>
+      </td>
+      <td>
+        <span className="td-vehicle">{wo.vehicle}</span>
+      </td>
+      <td>
+        <span className={`wo-cat ${wo.catCls}`}>{wo.category}</span>
+      </td>
+      <td>
+        <span className="td-issue">{wo.issue}</span>
+      </td>
+      <td>
+        <span className="td-cost">{wo.cost}</span>
+      </td>
+      <td>
+        <span className={`wo-status ${wo.stCls}`}>{wo.status}</span>
+      </td>
+      <td>
+        <button className="wo-btn-view" onClick={() => setOpenModal(true)}>View</button>
+      </td>
+    </tr>
+                ))}
               </tbody>
             </table>
-          </div>
         </div>
-
-        {/* MOBILE CARDS */}
         <div className="wo-card-list">
-          {WORK_ORDERS.map(wo => <WorkOrderCard key={wo.id} wo={wo} />)}
+          {WORK_ORDERS.map((wo) => (
+            <WorkOrderCard key={wo.id} wo={wo} />
+          ))}
         </div>
-
       </div>
+      <CreateWorkOrderModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+      />
     </div>
   );
 }
