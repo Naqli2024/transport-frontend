@@ -5,11 +5,16 @@ export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState("dark");
+  const [brandTheme, setBrandTheme] = useState("tyre");
 
   useEffect(() => {
     const savedTheme = Cookies.get("themeMode");
+    const savedBrand = Cookies.get("brandTheme");
     if (savedTheme) {
       setTheme(savedTheme);
+    }
+    if (savedBrand) {
+      setBrandTheme(savedBrand)
     }
   }, []);
 
@@ -18,12 +23,17 @@ export const ThemeProvider = ({ children }) => {
     Cookies.set("themeMode", theme, { expires: 365 });
   }, [theme]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute("data-industry", brandTheme);
+    Cookies.set("brandTheme", brandTheme, { expires: 365 });
+  }, [brandTheme]);
+
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, brandTheme, setBrandTheme }}>
       {children}
     </ThemeContext.Provider>
   );

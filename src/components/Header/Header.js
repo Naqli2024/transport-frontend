@@ -9,6 +9,7 @@ import { HiOutlineMenu } from "react-icons/hi";
 import SignOutModal from "../SignOutModal";
 import { useDispatch } from "react-redux";
 import { getUserById} from "../../redux/Auth/AuthSlice"
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -18,6 +19,11 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [customerData, setCustomerData] = useState([])
   const dispatch = useDispatch();
+  const navigateTo = useNavigate();
+  const location = useLocation();
+
+  const isSettingsActive = location.pathname.startsWith("/transport/settings");
+
   const formattedDate = today.toLocaleDateString("en-GB", {
     weekday: "short",
     day: "2-digit",
@@ -45,11 +51,11 @@ const Header = () => {
     </div>
 
     <div className="header-title">
-     {customerData?.user?.username}
+     {customerData?.business?.transportName}
     </div>
 
     <div className="header-badge">
-      {customerData?.business?.transportName}
+      {customerData?.user?.role.toUpperCase()}
     </div>
     <div className="header-date">{formattedDate}</div>
   </div>
@@ -77,19 +83,18 @@ const Header = () => {
         <MdOutlineLightMode />
       </div>
     </div>
-
-    <div
-      className="header-profile-avatar-container"
-      onClick={() => setOpenSignOutModal(true)}
-    >
-      <div className="header-profile-avatar">AD</div>
-      <div className="header-profile-name">
-        <p>Admin</p>
-        <p className="name">
-          Transport Management
-        </p>
-      </div>
-    </div>
+<div
+             className={`header-profile-avatar-container ${
+    isSettingsActive ? "header-profile-active" : ""
+  }`}
+            onClick={() => navigateTo("/transport/settings")}
+          >
+            <div className="header-profile-avatar">AD</div>
+            <div className="header-profile-name">
+              <p> {customerData?.user?.role}</p>
+              <p className="name">{customerData?.business?.transportName}</p>
+            </div>
+          </div>
   </div>
       {openSignOutModal && (
         <SignOutModal

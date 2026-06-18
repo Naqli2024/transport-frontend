@@ -36,6 +36,7 @@ import Finance from '../pages/Finance/Finance.js'
 import TeamAccess from '../pages/Settings/TeamAccess.js'
 import AiPrediction from '../pages/Intelligence/AiPrediction/AiPrediction.js'
 import Profitability from '../pages/Intelligence/Profitability/Profitability.js'
+import Settings from '../pages/Settings/Settings.js'
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -89,8 +90,8 @@ const AppRoutes = () => {
           <Route path="team-access" element={<TeamAccess/>}/>      
           <Route path="ai-predictions" element={<AiPrediction/>}/> 
           <Route path="profitability" element={<Profitability/>}/>
+          <Route path="settings" element={<Settings/>}/>
            </Route>
-        {/* <Route path="/" element={<Color/>}/> */}
       </Routes>
     </>
   )

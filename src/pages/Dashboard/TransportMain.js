@@ -10,6 +10,9 @@ import Cookies from "js-cookie";
 import { TiArrowSortedDown } from "react-icons/ti";
 import { RiLogoutBoxRLine } from "react-icons/ri";
 import { transportItems } from "../../helpers/SidebarData";
+import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { RxCross2 } from "react-icons/rx";
+import SignOutModal from "../../components/SignOutModal";
 
 const TransportMain = () => {
   const location = useLocation();
@@ -17,6 +20,7 @@ const TransportMain = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [visibleExpandCloseBtn, setVisibleExpandCloseBtn] = useState(true);
+  const [openSignOutModal, setOpenSignOutModal] = useState(false);
   const storedTheme = Cookies.get("themeMode") || "dark";
   const [theme, setTheme] = useState("dark");
   const [openGroups, setOpenGroups] = useState(() => {
@@ -57,7 +61,7 @@ const TransportMain = () => {
         onClick={() => setIsSidebarOpen((v) => !v)}
         aria-label="Toggle menu"
       >
-        {isSidebarOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
+        {isSidebarOpen ? <RxCross2 size={18} /> : <MdOutlineKeyboardDoubleArrowRight size={18} />}
       </button>
       {isSidebarOpen && (
         <div
@@ -140,8 +144,12 @@ const TransportMain = () => {
           </nav>
           {visibleExpandCloseBtn && (
             <div className="sidebar-footer">
-              {!isCollapsed &&<div className="sidebar-link danger"><RiLogoutBoxRLine size={18} />Sign Out</div>}
-              <button
+              {!isCollapsed && (
+                <div className="sidebar-link danger" onClick={() => setOpenSignOutModal(true)}>
+                  <RiLogoutBoxRLine size={18} />
+                  Sign Out
+                </div>
+              )}              <button
                 className="sidebar-collapse-btn"
                 onClick={() => setIsCollapsed((v) => !v)}
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -159,6 +167,12 @@ const TransportMain = () => {
           <Outlet />
         </main>
       </div>
+      {openSignOutModal && (
+        <SignOutModal
+          open={() => setOpenSignOutModal(true)}
+          onClose={() => setOpenSignOutModal(false)}
+        />
+      )}
     </>
   );
 };

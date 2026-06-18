@@ -40,34 +40,31 @@ const TOLLTAG = ["Yes", "No"];
 export default function AddVehicleModal({ onClose, vehicle }) {
   const dispatch = useDispatch();
 
-  const [step, setStep] = useState(1);
-
   const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
-    regNo: vehicle?.regNo || "",
-    fleet: vehicle?.fleet || "vehicle",
-    type: vehicle?.type || "Truck",
-    make: vehicle?.make || "Tata",
-    model: vehicle?.model || "",
+    regNo: vehicle?.regNo,
+    fleet: "vehicle",
+    type: vehicle?.type,
+    make: vehicle?.make,
+    model: vehicle?.model,
     year: vehicle?.year || new Date().getFullYear(),
-    engineNo: vehicle?.engineNo || "",
-    chassisNo: vehicle?.chassisNo || "",
-    axle: vehicle?.axle || "6x4",
-    gvw: vehicle?.gvw || "",
-    currentKm: vehicle?.currentKm || "",
-    healthStatus: vehicle?.healthStatus || "Good",
-    ownerShip: vehicle?.ownerShip || "Owned",
-    insuranceExpiryDate: vehicle?.insuranceExpiryDate || "",
-    rcBookExpiryDate: vehicle?.rcBookExpiryDate || "",
-    fcExpiryDate: vehicle?.fcExpiryDate || "",
-    taxExpiryDate: vehicle?.taxExpiryDate || "",
-    permitExpiryDate: vehicle?.permitExpiryDate || "",
-    pollutionExpiryDate: vehicle?.pollutionExpiryDate || "",
-    permitType: vehicle?.permitType || "National Permit",
-    purchaseCost: vehicle?.purchaseCost || "",
-    tollTagAvailable: vehicle?.tollTagAvailable ?? true,
-    status: vehicle?.status || "Active",
+    engineNo: vehicle?.engineNo,
+    chassisNo: vehicle?.chassisNo,
+    axle: vehicle?.axle,
+    gvw: vehicle?.gvw,
+    currentKm: vehicle?.currentKm,
+    healthStatus: vehicle?.healthStatus,
+    ownerShip: vehicle?.ownerShip,
+    insuranceExpiryDate: vehicle?.insuranceExpiryDate,
+    rcBookExpiryDate: vehicle?.rcBookExpiryDate,
+    fcExpiryDate: vehicle?.fcExpiryDate,
+    taxExpiryDate: vehicle?.taxExpiryDate,
+    permitExpiryDate: vehicle?.permitExpiryDate,
+    pollutionExpiryDate: vehicle?.pollutionExpiryDate,
+    permitType: vehicle?.permitType,
+    purchaseCost: vehicle?.purchaseCost,
+    tollTagAvailable: vehicle?.tollTagAvailable,
   });
 
   const handleChange = (e) => {
@@ -98,7 +95,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
             payload: formData,
           }),
         ).unwrap();
-        toast.success("Vehicle updated successfully");
+        toast.success(response.message);
       } else {
         response = await dispatch(addVehicle(formData)).unwrap();
 
@@ -115,36 +112,18 @@ export default function AddVehicleModal({ onClose, vehicle }) {
     <div className="vm-modal-overlay" onClick={onClose}>
       <div className="vm-modal-box" onClick={(e) => e.stopPropagation()}>
         <div className="vm-modal-header">
-          <div className="vm-modal-title">
-            <span className="vm-modal-emoji">🚛</span>
-            {vehicle ? "Edit Vehicle" : "Add Vehicle"} — Step {step}/3
-          </div>
-
+<div className="vm-modal-title">
+  <span className="vm-modal-emoji">🚛</span>
+  {vehicle ? "Edit Vehicle" : "Add Vehicle"}
+</div>
           <button className="vm-modal-close" onClick={onClose}>
             ✕
           </button>
         </div>
-
-        <div className="vm-modal-stepper">
-          <div className={`vm-stepper-dot ${step >= 1 ? "vm-dot-active" : ""}`}>
-            1
-          </div>
-
-          <div className={`vm-stepper-dot ${step >= 2 ? "vm-dot-active" : ""}`}>
-            2
-          </div>
-
-          <div className={`vm-stepper-dot ${step >= 3 ? "vm-dot-active" : ""}`}>
-            3
-          </div>
-        </div>
-
         <div>
-          {/* STEP 1 */}
-
-          {step === 1 && (
+          
             <div className="vm-modal-body">
-              <div className="vm-form-row vm-cols-313">
+              <div className="vm-form-row vm-cols-4">
                 <div className="vm-form-group">
                   <label className="vm-form-label">REG NO</label>
 
@@ -193,9 +172,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     ))}
                   </select>
                 </div>
-              </div>
 
-              <div className="vm-form-row vm-cols-313">
                 <div className="vm-form-group">
                   <label className="vm-form-label">MODEL</label>
 
@@ -207,7 +184,9 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     onChange={handleChange}
                   />
                 </div>
+              </div>
 
+              <div className="vm-form-row vm-cols-4">
                 <div className="vm-form-group">
                   <label className="vm-form-label">YEAR</label>
 
@@ -236,15 +215,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     onChange={handleChange}
                   />
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* STEP 2 */}
-
-          {step === 2 && (
-            <div className="vm-modal-body">
-              <div className="vm-form-row vm-cols-313">
                 <div className="vm-form-group">
                   <label className="vm-form-label">CHASSIS NO</label>
 
@@ -273,10 +244,11 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     ))}
                   </select>
                 </div>
+              </div>
 
+              <div className="vm-form-row vm-cols-4">
                 <div className="vm-form-group">
                   <label className="vm-form-label">GVW (T)</label>
-
                   <input
                     className="vm-form-input"
                     type="number"
@@ -287,9 +259,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     onChange={handleChange}
                   />
                 </div>
-              </div>
 
-              <div className="vm-form-row vm-cols-313">
                 <div className="vm-form-group">
                   <label className="vm-form-label">CURRENT KM</label>
 
@@ -338,17 +308,10 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   </select>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* STEP 3 */}
-
-          {step === 3 && (
-            <div className="vm-modal-body">
-              <div className="vm-form-row vm-cols-313">
+              <div className="vm-form-row vm-cols-4">
                 <div className="vm-form-group">
                   <label className="vm-form-label">INSURANCE EXPIRY</label>
-
                   <input
                     className="vm-form-input vm-input-date"
                     type="date"
@@ -384,9 +347,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     onChange={handleChange}
                   />
                 </div>
-              </div>
 
-              <div className="vm-form-row vm-cols-313">
                 <div className="vm-form-group">
                   <label className="vm-form-label">TAX EXPIRY</label>
 
@@ -399,7 +360,9 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     onChange={handleChange}
                   />
                 </div>
+              </div>
 
+              <div className="vm-form-row vm-cols-4">
                 <div className="vm-form-group">
                   <label className="vm-form-label">PERMIT EXPIRY</label>
 
@@ -425,9 +388,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     onChange={handleChange}
                   />
                 </div>
-              </div>
 
-              <div className="vm-form-row vm-cols-313">
                 <div className="vm-form-group">
                   <label className="vm-form-label">PERMIT TYPE</label>
 
@@ -458,7 +419,9 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                     onChange={handleChange}
                   />
                 </div>
+              </div>
 
+              <div className="vm-form-row vm-cols-4">
                 <div className="vm-form-group">
                   <label className="vm-form-label">TOLL TAG</label>
 
@@ -481,37 +444,24 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                 </div>
               </div>
             </div>
-          )}
 
           <div className="vm-modal-footer">
-            {step > 1 && (
-              <button
-                type="button"
-                className="vm-btn-ghost"
-                onClick={() => setStep(step - 1)}
-              >
-                ← Back
-              </button>
-            )}
+  <button
+    className="vm-btn-ghost"
+    onClick={onClose}
+  >
+    Cancel
+  </button>
 
-            {step < 3 ? (
-              <button
-                type="button"
-                className="vm-btn-accent"
-                onClick={() => setStep(step + 1)}
-              >
-                Next →
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="vm-btn-accent"
-                onClick={handleSubmit}
-              >
-                {vehicle ? "✓ Update Vehicle" : "✓ Add Vehicle"}
-              </button>
-            )}
-          </div>
+  <button
+    className="vm-btn-accent"
+    onClick={handleSubmit}
+  >
+    {vehicle
+      ? "✓ Update Vehicle"
+      : "✓ Add Vehicle"}
+  </button>
+</div>
         </div>
       </div>
     </div>
