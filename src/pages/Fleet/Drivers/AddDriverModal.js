@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import { addDriver, editDriver } from "../../../redux/Driver/DriverSlice";
 
-const DL_CLASSES = ["PSV/HMV", "LMV", "HMV", "MCWG", "Transport", "Non-Transport"];
+const DL_CLASSES = [
+  "PSV/HMV",
+  "LMV",
+  "HMV",
+  "MCWG",
+  "Transport",
+  "Non-Transport",
+];
 
-const INITIAL = {
-  fullName: "",
-  mobile: "",
-  aadhaarNo: "",
-  experience: "",
-  dlNumber: "",
-  dlClass: "PSV/HMV",
-  licenseExpiry: "",
-};
 
-/* ── Person SVG Icon ── */
+
 const PersonIcon = () => (
   <svg
     className="dm-modal-title-icon"
@@ -41,68 +42,135 @@ const Field = ({ label, required, children, full }) => (
   </div>
 );
 
-const AddDriverModal = ({ open, onClose, onAdd }) => {
+const AddDriverModal = ({
+  open,
+  onClose,
+  mode = "add",
+  driver = null,
+}) => {
+  const dispatch = useDispatch();
+
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState(INITIAL);
-  const [errors, setErrors] = useState({});
 
-  if (!open) return null;
+  const [formData, setFormData] = useState({
+  name: "",
+  mobile: "",
+  aadhaarNo: "",
+  experience: "",
+  dlNo: "",
+  dlClass: "PSV/HMV",
+  licenseExpiryDate: "",
+ 
+});
 
-  const set = (k) => (e) => {
-    setForm((p) => ({ ...p, [k]: e.target.value }));
-    if (errors[k]) setErrors((p) => ({ ...p, [k]: "" }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  function validateStep1() {
-    const err = {};
-    if (!form.fullName.trim()) err.fullName = "Required";
-    if (!form.mobile.trim()) err.mobile = "Required";
-    return err;
-  }
 
-  function validateStep2() {
-    const err = {};
-    if (!form.dlNumber.trim()) err.dlNumber = "Required";
-    if (!form.licenseExpiry) err.licenseExpiry = "Required";
-    return err;
-  }
 
-  function handleNext() {
-    const err = validateStep1();
-    if (Object.keys(err).length) { setErrors(err); return; }
+  const handleNext = () => {
     setStep(2);
-  }
+  };
 
-  function handleBack() {
+  const handleBack = () => {
     setStep(1);
-    setErrors({});
-  }
+  };
 
-  function handleSubmit() {
-    const err = validateStep2();
-    if (Object.keys(err).length) { setErrors(err); return; }
-    onAdd?.(form);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    if (mode === "edit") {
+      const response = await dispatch(
+        editDriver({
+          id: driver._id,
+          data: formData,
+        })
+      ).unwrap();
+      toast.success(
+        response?.message || "Driver updated successfully"
+      );
+    } else {
+      const response = await dispatch(
+        addDriver(formData)
+      ).unwrap();
+      toast.success(
+        response?.message || "Driver added successfully"
+      );
+    }
+
     handleClose();
+  } catch (error) {
+    console.log(error);
+    toast.error(
+      error?.message ||
+      error ||
+      `Failed to ${mode === "edit" ? "update" : "add"} driver`
+    );
   }
-
-  function handleClose() {
+};
+  const handleClose = () => {
     onClose?.();
     setStep(1);
-    setForm(INITIAL);
-    setErrors({});
-  }
+  };
+
+   useEffect(() => {
+    if (mode === "edit" && driver) {
+      setFormData({
+        name: driver.name || "",
+        mobile: driver.mobile || "",
+        aadhaarNo: driver.aadhaarNo || "",
+        experience: driver.experience || "",
+        dlNo: driver.dlNo || "",
+        dlClass: driver.dlClass || "PSV/HMV",
+        licenseExpiryDate: driver.licenseExpiryDate
+          ? driver.licenseExpiryDate.split("T")[0]
+          : "", 
+      });
+    } else {
+      setFormData({
+        name: "",
+        mobile: "",
+        aadhaarNo: "",
+        experience: "",
+        dlNo: "",
+        dlClass: "PSV/HMV",
+        licenseExpiryDate: "",
+      });
+    }
+    
+  }, [mode, driver]);
+
+    if (!open) return null;
 
   return (
-    <div className="dm-modal-overlay" role="dialog" aria-modal="true" onClick={handleClose}>
-      <div className="dm-modal-container" onClick={(e) => e.stopPropagation()}>
-
-        {/* ── Header ── */}
+    <div
+      className="dm-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      onClick={handleClose}
+    >
+      <div
+        className="dm-modal-container"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
         <div className="dm-modal-header">
           <div className="dm-modal-title">
             <PersonIcon />
-            Add Driver &mdash; Step {step}/2
+           {mode === "edit" ? "Edit Driver" : "Add Driver"} — Step {step}/2
           </div>
-          <button className="dm-modal-close" onClick={handleClose} aria-label="Close">
+
+          <button
+            className="dm-modal-close"
+            onClick={handleClose}
+            aria-label="Close"
+          >
             &#x2715;
           </button>
         </div>
@@ -112,34 +180,33 @@ const AddDriverModal = ({ open, onClose, onAdd }) => {
             <div className="dm-modal-grid">
               <Field label="Full Name" required>
                 <input
-                  className={`dm-modal-input${errors.fullName ? " dm-modal-input--error" : ""}`}
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={set("fullName")}
+                  className="dm-modal-input"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   placeholder="Driver full name"
                   autoFocus
                 />
-                {errors.fullName && <span className="dm-modal-error-msg">{errors.fullName}</span>}
               </Field>
 
               <Field label="Mobile" required>
                 <input
-                  className={`dm-modal-input${errors.mobile ? " dm-modal-input--error" : ""}`}
+                type="number"
+                  className="dm-modal-input"
                   name="mobile"
-                  value={form.mobile}
-                  onChange={set("mobile")}
+                  value={formData.mobile}
+                  onChange={handleChange}
                   placeholder="+91 98765 43210"
-                  type="tel"
                 />
-                {errors.mobile && <span className="dm-modal-error-msg">{errors.mobile}</span>}
               </Field>
 
               <Field label="Aadhaar No">
                 <input
                   className="dm-modal-input"
                   name="aadhaarNo"
-                  value={form.aadhaarNo}
-                  onChange={set("aadhaarNo")}
+                  type="number"
+                  value={formData.aadhaarNo}
+                  onChange={handleChange}
                   placeholder="XXXX XXXX 1234"
                   maxLength={14}
                 />
@@ -149,8 +216,8 @@ const AddDriverModal = ({ open, onClose, onAdd }) => {
                 <input
                   className="dm-modal-input"
                   name="experience"
-                  value={form.experience}
-                  onChange={set("experience")}
+                  value={formData.experience}
+                  onChange={handleChange}
                   placeholder="5"
                   type="number"
                   min="0"
@@ -160,70 +227,97 @@ const AddDriverModal = ({ open, onClose, onAdd }) => {
             </div>
           ) : (
             <div className="dm-modal-grid">
-              <Field label="DL Number" required>
+              <Field label="DL Number">
                 <input
-                  className={`dm-modal-input${errors.dlNumber ? " dm-modal-input--error" : ""}`}
-                  name="dlNumber"
-                  value={form.dlNumber}
-                  onChange={set("dlNumber")}
+                  className="dm-modal-input"
+                  name="dlNo"
+                  value={formData.dlNo}
+                  onChange={handleChange}
                   placeholder="MH01 2024 0012345"
-                  autoFocus
+                 
                 />
-                {errors.dlNumber && <span className="dm-modal-error-msg">{errors.dlNumber}</span>}
               </Field>
 
               <Field label="DL Class">
                 <select
                   className="dm-modal-select"
                   name="dlClass"
-                  value={form.dlClass}
-                  onChange={set("dlClass")}
+                  value={formData.dlClass}
+                  onChange={handleChange}
                 >
                   {DL_CLASSES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
               </Field>
 
-              <Field label="License Expiry" required full>
+              <Field label="License Expiry" full>
                 <input
-                  className={`dm-modal-input${errors.licenseExpiry ? " dm-modal-input--error" : ""}`}
-                  name="licenseExpiry"
+                  className="dm-modal-input"
+                  name="licenseExpiryDate"
                   type="date"
-                  value={form.licenseExpiry}
-                  onChange={set("licenseExpiry")}
+                  value={formData.licenseExpiryDate}
+                  onChange={handleChange}
                 />
-                {errors.licenseExpiry && <span className="dm-modal-error-msg">{errors.licenseExpiry}</span>}
               </Field>
+              
+              
+
             </div>
           )}
         </div>
-        
+
         <div className="dm-modal-footer">
           {step === 1 ? (
             <>
-              <button className="dm-modal-btn dm-modal-btn--ghost" onClick={handleClose}>
+              <button
+                className="dm-modal-btn dm-modal-btn--ghost"
+                onClick={handleClose}
+              >
                 Cancel
               </button>
-              <button className="dm-modal-btn dm-modal-btn--primary" onClick={handleNext}>
+
+              <button
+                className="dm-modal-btn dm-modal-btn--primary"
+                onClick={handleNext}
+              >
                 Next &rarr;
               </button>
             </>
           ) : (
             <>
-              <button className="dm-modal-btn dm-modal-btn--ghost" onClick={handleBack}>
+              <button
+                className="dm-modal-btn dm-modal-btn--ghost"
+                onClick={handleBack}
+              >
                 &larr; Back
               </button>
-              <button className="dm-modal-btn dm-modal-btn--primary" onClick={handleSubmit}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+
+              <button
+                className="dm-modal-btn dm-modal-btn--primary"
+                onClick={handleSubmit}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                Add Driver
+
+               {mode === "edit" ? "Update Driver" : "Add Driver"}
               </button>
             </>
           )}
         </div>
-
       </div>
     </div>
   );

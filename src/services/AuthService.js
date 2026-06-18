@@ -1,9 +1,9 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import { ApiUrl } from "./ApiUrl";
+import { ApiUrl, AuthApiUrl } from "./ApiUrl";
 
 const AuthService = axios.create({
-  baseURL: `${ApiUrl}`,
+  baseURL: `${AuthApiUrl}`,
   headers: {
     "Content-Type": "application/json",
   },

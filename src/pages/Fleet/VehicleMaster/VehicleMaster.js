@@ -1,394 +1,306 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddVehicleModal from "./AddVehicleModal";
-import VehicleEditModal from "./EditModal";
-import { MdOutlineRemoveRedEye } from "react-icons/md";
-import { MdOutlineEdit } from "react-icons/md";
-import { MdDeleteOutline } from "react-icons/md";
-
-const STATS = [
-  { val: "6", label: "Total Fleet", cls: "sc-blue" },
-  { val: "4", label: "Active", cls: "sc-green" },
-  { val: "1", label: "On Trip", cls: "sc-amber" },
-  { val: "1", label: "Maintenance", cls: "sc-orange" },
-  { val: "4", label: "Compliance Issues", cls: "sc-red" },
-];
-
-const ALERTS = [
-  {
-    reg: "TN59 AB1234",
-    doc: "Insurance",
-    statusText: "Expiring in 7d",
-    statusCls: "status-expiring",
-    cardCls: "alert-amber",
-  },
-  {
-    reg: "TN45 CD5678",
-    doc: "FC Certificate",
-    statusText: "EXPIRED",
-    statusCls: "status-expired",
-    cardCls: "alert-red",
-  },
-  {
-    reg: "TN69 GH4789",
-    doc: "Road Tax",
-    statusText: "Due in 12d",
-    statusCls: "status-due",
-    cardCls: "alert-orange",
-  },
-];
+import { MdOutlineRemoveRedEye, MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
+import { deleteVehicle, getAllVehicles } from "../../../redux/Vehicle/VehicleSlice";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import VehicleViewModal from "./VehicleViewModal";
 
 const TABS = ["All", "Active", "On Trip", "Maintenance"];
+const getStatusStr = (status) =>
+  typeof status === "object" ? status?.status || "-" : status || "-";
 
-const VEHICLES = [
-  {
-    reg: "TN69 GH4789",
-    icon: "🚛",
-    type: "Tripper",
-    config: "Tripper · 16 Wheelers",
-    make: "Tata 2017",
-    km: "74,875",
-    health: 87,
-    healthCls: "fill-green",
-    pctCls: "pct-green",
-    insurance: { text: "Valid", cls: "pill-valid" },
-    fc: { text: "Valid", cls: "pill-valid" },
-    tax: { text: "Due in 12d", cls: "pill-due" },
-    status: { text: "Active", cls: "st-active" },
-    tab: "Active",
-  },
-  {
-    reg: "TN59 AB1234",
-    icon: "🚚",
-    type: "Open Body",
-    config: "Open Body · 14 Wheelers",
-    make: "Ashok Leyland 2019",
-    km: "92,348",
-    health: 73,
-    healthCls: "fill-amber",
-    pctCls: "pct-amber",
-    insurance: { text: "Expiring 7d", cls: "pill-expiring" },
-    fc: { text: "Valid", cls: "pill-valid" },
-    tax: { text: "Paid", cls: "pill-paid" },
-    status: { text: "Active", cls: "st-active" },
-    tab: "Active",
-  },
-  {
-    reg: "TN45 CD5678",
-    icon: "🚜",
-    type: "Trailer",
-    config: "Trailer · 3 Axle",
-    make: "Tata Prima 2016",
-    km: "1,24,080",
-    health: 45,
-    healthCls: "fill-red",
-    pctCls: "pct-red",
-    insurance: { text: "Valid", cls: "pill-valid" },
-    fc: { text: "Expired", cls: "pill-expired" },
-    tax: { text: "Paid", cls: "pill-paid" },
-    status: { text: "Maintenance", cls: "st-maintenance" },
-    tab: "Maintenance",
-  },
-  {
-    reg: "TN38 EF9812",
-    icon: "🛻",
-    type: "Flatbed",
-    config: "Flatbed · 12 Wheelers",
-    make: "BharatBenz 2020",
-    km: "54,228",
-    health: 91,
-    healthCls: "fill-green",
-    pctCls: "pct-green",
-    insurance: { text: "Valid", cls: "pill-valid" },
-    fc: { text: "Valid", cls: "pill-valid" },
-    tax: { text: "Paid", cls: "pill-paid" },
-    status: { text: "Active", cls: "st-active" },
-    tab: "Active",
-  },
-  {
-    reg: "TN71 GH3456",
-    icon: "📦",
-    type: "Container",
-    config: "Container · 14 Wheeler",
-    make: "VECV 2018",
-    km: "88,918",
-    health: 68,
-    healthCls: "fill-amber",
-    pctCls: "pct-amber",
-    insurance: { text: "Valid", cls: "pill-valid" },
-    fc: { text: "Valid", cls: "pill-valid" },
-    tax: { text: "Due in 45d", cls: "pill-due" },
-    status: { text: "On Trip", cls: "st-ontrip" },
-    tab: "On Trip",
-  },
-  {
-    reg: "TN22 IJ7890",
-    icon: "🚐",
-    type: "LCV",
-    config: "LCV / SCV · 4 Wheeler",
-    make: "Tata 2021",
-    km: "31,448",
-    health: 82,
-    healthCls: "fill-green",
-    pctCls: "pct-green",
-    insurance: { text: "Valid", cls: "pill-valid" },
-    fc: { text: "Valid", cls: "pill-valid" },
-    tax: { text: "Paid", cls: "pill-paid" },
-    status: { text: "Active", cls: "st-active" },
-    tab: "Active",
-  }
-];
+function getComplianceAlerts(vehicles, thresholdDays = 30) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const alerts = [];
+
+  const check = (vehicle, dateStr, docLabel) => {
+    if (!dateStr) return;
+    const expiry = new Date(dateStr);
+    expiry.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((expiry - today) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      alerts.push({ reg: vehicle.regNo, doc: docLabel, statusText: "EXPIRED", statusCls: "status-expired", cardCls: "alert-red" });
+    } else if (diffDays <= thresholdDays) {
+      alerts.push({
+        reg: vehicle.regNo,
+        doc: docLabel,
+        statusText: diffDays === 0 ? "Expires Today" : `${diffDays <= 7 ? "Expiring" : "Due"} in ${diffDays}d`,
+        statusCls: diffDays <= 7 ? "status-expiring" : "status-due",
+        cardCls: diffDays <= 7 ? "alert-amber" : "alert-orange",
+      });
+    }
+  };
+
+  vehicles.forEach((v) => {
+    check(v, v.insuranceExpiryDate, "Insurance");
+    check(v, v.fcExpiryDate, "FC Certificate");
+    check(v, v.taxExpiryDate, "Road Tax");
+  });
+
+  return alerts;
+}
+
+function getDocStatus(dateStr, type = "default") {
+  if (!dateStr) return { text: "-", cls: "pill-expired" };
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiry = new Date(dateStr);
+  expiry.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return { text: "Expired", cls: "pill-expired" };
+  if (diffDays <= 7) return { text: `Expiring ${diffDays}d`, cls: "pill-expiring" };
+  if (diffDays <= 30) return { text: `Due in ${diffDays}d`, cls: "pill-due" };
+  if (type === "tax") return { text: "Paid", cls: "pill-valid" };
+  return { text: "Valid", cls: "pill-valid" };
+}
 
 function HealthBar({ pct, fillCls, pctCls }) {
   return (
     <div className="vm-health-cell">
       <div className="vm-health-bar">
-        <div
-          className={`vm-health-fill ${fillCls}`}
-          style={{ width: `${pct}%` }}
-        />
+        <div className={`vm-health-fill ${fillCls}`} style={{ width: `${pct}%` }} />
       </div>
       <span className={`vm-health-pct ${pctCls}`}>{pct}%</span>
     </div>
   );
 }
 
-function VehicleRow({ v, onView }) {
-  const [openEditVehicleModal, setOpenEditVehicleModal] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+function VehicleRow({ v, onView, onEdit, onDelete }) {
+  const insurance = getDocStatus(v.insuranceExpiryDate);
+  const fc = getDocStatus(v.fcExpiryDate);
+  const tax = getDocStatus(v.taxExpiryDate, "tax");
+  const healthConfig = {
+    Excellent: { pct: 90, fillCls: "fill-green", pctCls: "pct-green" },
+    Good: { pct: 70, fillCls: "fill-amber", pctCls: "pct-amber" },
+    average: { pct: 50, fillCls: "fill-orange", pctCls: "pct-orange" },
+    critical: { pct: 30, fillCls: "fill-red", pctCls: "pct-red" },
+  };
+  const { pct, fillCls, pctCls } = healthConfig[v.healthStatus] || { pct: 0, fillCls: "fill-red", pctCls: "pct-red" };
+  const statusStr = getStatusStr(v.status);
+
   return (
     <tr>
+      <td><span className="vm-reg">{v.regNo}</span></td>
+      <td><span className="vm-config">{v.type}</span></td>
+      <td><span className="vm-config">{v.axle}</span></td>
+      <td><span className="vm-make">{v.make} {v.year}</span></td>
+      <td><span className="vm-km">{v.currentKm}</span></td>
+      <td><HealthBar pct={pct} fillCls={fillCls} pctCls={pctCls} /></td>
+      <td><span className={`vm-pill ${insurance.cls}`}>{insurance.text}</span></td>
+      <td><span className={`vm-pill ${fc.cls}`}>{fc.text}</span></td>
+      <td><span className={`vm-pill ${tax.cls}`}>{tax.text}</span></td>
       <td>
-        <span className="vm-reg">{v.reg}</span>
-      </td>
-      <td>
-        <span className="vm-type-icon">{v.icon}</span>
-      </td>
-      <td>
-        <span className="vm-config">{v.config}</span>
-      </td>
-      <td>
-        <span className="vm-make">{v.make}</span>
-      </td>
-      <td>
-        <span className="vm-km">{v.km}</span>
-      </td>
-      <td>
-        <HealthBar pct={v.health} fillCls={v.healthCls} pctCls={v.pctCls} />
-      </td>
-      <td>
-        <span className={`vm-pill ${v.insurance.cls}`}>{v.insurance.text}</span>
-      </td>
-      <td>
-        <span className={`vm-pill ${v.fc.cls}`}>{v.fc.text}</span>
-      </td>
-      <td>
-        <span className={`vm-pill ${v.tax.cls}`}>{v.tax.text}</span>
-      </td>
-      <td>
-        <span className={`vm-status ${v.status.cls}`}>{v.status.text}</span>
+        <span className="vm-status st-active">{statusStr}</span>
       </td>
       <td className="vm-td-actions">
-        <button
-          className="vm-action-btn vm-action-view"
-          title="View detail"
-          onClick={() => onView(v)}
-        >
-          <MdOutlineRemoveRedEye />
-        </button>
-        <button
-          className="vm-action-btn vm-action-edit"
-          title="Edit customer"
-        >
-          <MdOutlineEdit />
-        </button>
-        <button
-          className="vm-action-btn vm-action-delete"
-          title="Delete customer"
-        >
-          <MdDeleteOutline />
-        </button>
+        <button className="vm-action-btn vm-action-view" onClick={() => onView(v)}><MdOutlineRemoveRedEye /></button>
+        <button className="vm-action-btn vm-action-edit" onClick={() => onEdit(v)}><MdOutlineEdit /></button>
+        <button className="vm-action-btn vm-action-delete" onClick={() => onDelete(v)}><MdDeleteOutline /></button>
       </td>
     </tr>
   );
 }
 
 function VehicleCard({ v }) {
+  const statusStr = getStatusStr(v.status);
+
   return (
     <div className="vm-vehicle-card">
       <div className="vm-vc-head">
         <div className="vm-vc-left">
-          <span className="vm-vc-icon">{v.icon}</span>
+          <span className="vm-vc-icon">🚛</span>
           <div>
-            <div className="vm-vc-reg">{v.reg}</div>
-            <div className="vm-vc-sub">
-              {v.config} · {v.make}
-            </div>
+            <div className="vm-vc-reg">{v.regNo}</div>
+            <div className="vm-vc-sub">{v.type} · {v.make} {v.year}</div>
           </div>
         </div>
-        <span className={`vm-status ${v.status.cls}`}>{v.status.text}</span>
-      </div>
-      <HealthBar pct={v.health} fillCls={v.healthCls} pctCls={v.pctCls} />
-      <div className="vm-vc-pills">
-        {[
-          { label: "Insurance", ...v.insurance },
-          { label: "FC", ...v.fc },
-          { label: "Tax", ...v.tax },
-        ].map((p) => (
-          <div key={p.label} className="vm-vc-pill-group">
-            <div className="vm-vc-pill-label">{p.label}</div>
-            <span className={`vm-pill ${p.cls}`}>{p.text}</span>
-          </div>
-        ))}
+        <span className="vm-status st-active">{statusStr}</span>
       </div>
       <div className="vm-vc-footer">
-        <span className="vm-vc-km">🛣 {v.km} km</span>
-        <button className="vm-btn-view">View →</button>
+        <span className="vm-vc-km">🛣 {v.currentKm} km</span>
       </div>
     </div>
   );
 }
 
 const VehicleMaster = () => {
+  const dispatch = useDispatch();
   const [activeTab, setTab] = useState("All");
   const [openAddVehicleModal, setOpenAddVehiclemodal] = useState(false);
-  const [openEditVehicleModal, setOpenEditVehicleModal] = useState(false);
+  const [openVehicleViewModal, setOpenVehicleViewModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [search,     setSearch]     = useState('');
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const [vehicleData, setVehicleData] = useState([]);
+  const vehicleOnlyData = vehicleData.filter((v) => v.fleet === "vehicle");
 
+  useEffect(() => {
+    dispatch(getAllVehicles())
+      .unwrap()
+      .then((response) => setVehicleData(response.data || []))
+      .catch(() => toast.error("Failed to fetch vehicles"));
+  }, [dispatch]);
+
+  const searchFiltered = vehicleOnlyData.filter((v) =>
+    v.regNo?.toLowerCase().includes(search.toLowerCase())
+  );
   const filtered =
     activeTab === "All"
-      ? VEHICLES
-      : VEHICLES.filter((v) => v.tab === activeTab);
+      ? searchFiltered
+      : searchFiltered.filter((v) => getStatusStr(v.status) === activeTab);
+  const dynamicAlerts = getComplianceAlerts(filtered);
+  const complianceCount = dynamicAlerts.length;
+  const activeCount = vehicleOnlyData.filter((v) => getStatusStr(v.status) === "Active").length;
+  const onTripCount = vehicleOnlyData.filter((v) => getStatusStr(v.status) === "On Trip").length;
+  const maintenanceCount = vehicleOnlyData.filter((v) => getStatusStr(v.status) === "Maintenance").length;
+  const STATS = [
+    { val: vehicleOnlyData.length, label: "Total Fleet", cls: "sc-blue" },
+    { val: activeCount, label: "Active", cls: "sc-green" },
+    { val: onTripCount, label: "On Trip", cls: "sc-amber" },
+    { val: maintenanceCount, label: "Maintenance", cls: "sc-orange" },
+    { val: complianceCount, label: "Compliance Issues", cls: "sc-red" },
+  ];
+
+  const handleDelete = () => {
+    dispatch(deleteVehicle(selectedVehicle._id))
+      .unwrap()
+      .then(() => {
+        toast.success("Vehicle deleted successfully");
+        setVehicleData(vehicleData.filter((v) => v._id !== selectedVehicle._id));
+        setOpenDeleteModal(false);
+        setSelectedVehicle(null);
+      })
+      .catch(() => toast.error("Failed to delete vehicle"));
+  };
 
   return (
     <div>
-      <div>
-        <div className="vm-topbar">
-          <div className="vm-topbar-left">
-            <h1 className="heading">Vehicle Master &amp; Compliance</h1>
-            <div className="sub-heading">
-              Every lorry as a profit asset — smart onboarding · lifecycle ·
-              compliance · P&amp;L
-            </div>
-          </div>
-          <div className="vm-topbar-right">
-            <button
-              className="vm-btn-add"
-              onClick={() => setOpenAddVehiclemodal(true)}
-            >
-              + Add Vehicle
-            </button>
-          </div>
+      <div className="vm-topbar">
+        <div className="vm-topbar-left">
+          <h1 className="heading">Vehicle Master & Compliance</h1>
+          <div className="sub-heading">Every lorry as a profit asset</div>
         </div>
-        <div className="vm-main">
-          <div className="vm-stat-row">
-            {STATS.map((s) => (
-              <div key={s.label} className={`vm-stat-card ${s.cls}`}>
-                <div className="vm-stat-val">{s.val}</div>
-                <div className="vm-stat-label">{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <div className="vm-alert-banner">
-            <div className="vm-alert-header">
-              <span className="vm-alert-icon">⚠️</span>
-              <span className="vm-alert-title">
-                Compliance Alerts — 4 Vehicles Need Attention
-              </span>
+        <div className="vm-topbar-right">
+          <button className="vm-btn-add" onClick={() => setOpenAddVehiclemodal(true)}>
+            + Add Vehicle
+          </button>
+        </div>
+      </div>
+
+      <div className="vm-main">
+        <div className="vm-stat-row">
+          {STATS.map((s) => (
+            <div key={s.label} className={`vm-stat-card ${s.cls}`}>
+              <div className="vm-stat-val">{s.val}</div>
+              <div className="vm-stat-label">{s.label}</div>
             </div>
+          ))}
+        </div>
+
+        <div className="vm-alert-banner">
+          <div className="vm-alert-header">
+            <span className="vm-alert-icon">⚠️</span>
+            <span className="vm-alert-title">
+              Compliance Alerts — {dynamicAlerts.length} Vehicle{dynamicAlerts.length !== 1 ? "s" : ""} Need Attention
+            </span>
+          </div>
+          {dynamicAlerts.length === 0 ? (
+            <div className="vm-alert-clear">✅ All documents are up to date</div>
+          ) : (
             <div className="vm-alert-cards">
-              {ALERTS.map((a) => (
-                <div key={a.reg} className={`vm-alert-card ${a.cardCls}`}>
+              {dynamicAlerts.map((a, i) => (
+                <div key={i} className={`vm-alert-card ${a.cardCls}`}>
                   <div className="vm-alert-reg">{a.reg}</div>
                   <div className="vm-alert-doc">{a.doc}</div>
-                  <div className={`vm-alert-status ${a.statusCls}`}>
-                    {a.statusText}
-                  </div>
+                  <div className={`vm-alert-status ${a.statusCls}`}>{a.statusText}</div>
                 </div>
               ))}
             </div>
-          </div>
-          <div className="vm-tabs mb-4">
-            {TABS.map((t) => (
-              <button
-                key={t}
-                className={`vm-tab-btn ${activeTab === t ? "active" : ""}`}
-                onClick={() => setTab(t)}
-              >
-                {t}
-              </button>
-            ))}
-          </div>     
-            <div className="he-search-wrap mb-3">
-              <span className="he-search-icon">⌕</span>
-              <input
-                className="he-search-input"
-                placeholder="Search vehicle no, year…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-          <div className="vm-table-wrap">
-            <table className="vm-table">
-              <thead>
-                <tr>
-                  <th>Vehicle No</th>
-                  <th>Type</th>
-                  <th>Config</th>
-                  <th>Make / Year</th>
-                  <th>KM</th>
-                  <th>Health</th>
-                  <th>Insurance</th>
-                  <th>FC</th>
-                  <th>Tax</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((v) => (
+          )}
+        </div>
+
+        <div className="vm-tabs mb-4">
+          {TABS.map((t) => (
+            <button key={t} className={`vm-tab-btn ${activeTab === t ? "active" : ""}`} onClick={() => setTab(t)}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        <div className="he-search-wrap mb-3">
+          <span className="he-search-icon">⌕</span>
+          <input
+            className="he-search-input"
+            placeholder="Search vehicle no..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="vm-table-wrap">
+          <table className="vm-table">
+            <thead>
+              <tr>
+                <th>Vehicle No</th><th>Type</th><th>Config</th><th>Make / Year</th>
+                <th>KM</th><th>Health</th><th>Insurance</th><th>FC</th>
+                <th>Tax</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length > 0 ? (
+                filtered.map((v) => (
                   <VehicleRow
-                    key={v.reg}
+                    key={v._id}
                     v={v}
-                    onView={(vehicle) => {
-                      setSelectedVehicle(vehicle);
-                      setOpenEditVehicleModal(true);
-                    }}
+                    onView={(vehicle) => { setSelectedVehicle(vehicle); setOpenVehicleViewModal(true); }}
+                    onEdit={(vehicle) => { setSelectedVehicle(vehicle); setOpenAddVehiclemodal(true); }}
+                    onDelete={(vehicle) => { setSelectedVehicle(vehicle); setOpenDeleteModal(true); }}
                   />
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="vm-card-list">
-            {filtered.map((v) => (
-              <VehicleRow
-                key={v.reg}
-                v={v}
-                onView={(vehicle) => {
-                  setSelectedVehicle(vehicle);
-                  setOpenEditVehicleModal(true);
-                }}
-              />
-            ))}
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="11" style={{ textAlign: "center", padding: "30px", color: "#888", fontWeight: "500" }}>
+                    No Data Found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="vm-card-list">
+          {filtered.length > 0 ? (
+            filtered.map((v) => <VehicleCard key={v._id} v={v} />)
+          ) : (
+            <div className="vm-no-data">No Data Found</div>
+          )}
         </div>
       </div>
 
       {openAddVehicleModal && (
-        <AddVehicleModal
-          open={openAddVehicleModal}
-          onClose={() => setOpenAddVehiclemodal(false)}
-        />
+        <AddVehicleModal vehicle={selectedVehicle} onClose={() => { setOpenAddVehiclemodal(false); setSelectedVehicle(null); }} />
       )}
-      {openEditVehicleModal && (
-        <VehicleEditModal
-          open={openEditVehicleModal}
-          vehicle={selectedVehicle}
-          onClose={() => setOpenEditVehicleModal(false)}
-        />
+      {openVehicleViewModal && (
+        <VehicleViewModal open={openVehicleViewModal} vehicle={selectedVehicle} onClose={() => setOpenVehicleViewModal(false)} />
+      )}
+      {openDeleteModal && (
+        <div className="vm-delete-backdrop">
+          <div className="vm-delete-modal">
+            <div className="vm-delete-icon-wrap"><MdDelete className="vm-delete-icon" /></div>
+            <h3 className="vm-delete-title">Delete Vehicle?</h3>
+            <p className="vm-delete-text">Are you sure you want to delete this vehicle?</p>
+            <div className="vm-delete-actions">
+              <button className="vm-delete-btn cancel" onClick={() => setOpenDeleteModal(false)}>Cancel</button>
+              <button className="vm-delete-btn confirm" onClick={handleDelete}><MdDelete /> Delete</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
-}
+};
 
-export default VehicleMaster
+export default VehicleMaster;

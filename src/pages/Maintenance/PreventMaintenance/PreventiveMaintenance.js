@@ -169,7 +169,7 @@ const TASKS = [
   },
 ];
 
-/* helper: stripe class from stCls */
+
 function stripeClass(stCls) {
   if (stCls === "pst-due") return "stripe-due";
   if (stCls === "pst-over") return "stripe-over";

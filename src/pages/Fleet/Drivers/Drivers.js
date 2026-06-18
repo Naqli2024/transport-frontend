@@ -1,112 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import AddDriverModal from "./AddDriverModal";
 import DriverDetailModal from "./DriverDetailModal";
-
-const STATS = [
-  { val: "6", label: "TOTAL", cls: "sc-blue", id: "total" },
-  { val: "0", label: "ACTIVE", cls: "sc-green", id: "active" },
-  { val: "2", label: "ON TRIP", cls: "sc-orange", id: "ontrip" },
-  { val: "79%", label: "AVG SCORE", cls: "sc-accent", id: "score" },
-];
-
-const DRIVERS = [
-  {
-    id: "DRV-001",
-    name: "Mani Kumar",
-    initials: "M",
-    av: "av-blue",
-    status: "Available",
-    sb: "sb-available",
-    sc: "status-available",
-    dot: "dot-green",
-    license: "—",
-    phone: "+91 98765 43210",
-    vehicle: "Unassigned",
-    exp: "—",
-    score: 88,
-    tab: "Available",
-  },
-  {
-    id: "DRV-002",
-    name: "Selvam R",
-    initials: "S",
-    av: "av-green",
-    status: "On Settlement",
-    sb: "sb-settlement",
-    sc: "status-settlement",
-    dot: "dot-blue",
-    license: "—",
-    phone: "+91 87654 32100",
-    vehicle: "Unassigned",
-    exp: "—",
-    score: 76,
-    tab: "Settlement",
-  },
-  {
-    id: "DRV-003",
-    name: "Ramesh P",
-    initials: "R",
-    av: "av-orange",
-    status: "On Trip",
-    sb: "sb-ontrip",
-    sc: "status-ontrip",
-    dot: "dot-orange",
-    license: "—",
-    phone: "+91 72345 21033",
-    vehicle: "Unassigned",
-    exp: "—",
-    score: 82,
-    tab: "On Trip",
-  },
-  {
-    id: "DRV-004",
-    name: "Arjun D",
-    initials: "A",
-    av: "av-purple",
-    status: "Available",
-    sb: "sb-available",
-    sc: "status-available",
-    dot: "dot-green",
-    license: "—",
-    phone: "+91 65432 10987",
-    vehicle: "Unassigned",
-    exp: "—",
-    score: 94,
-    tab: "Available",
-  },
-  {
-    id: "DRV-005",
-    name: "Vinoth S",
-    initials: "V",
-    av: "av-cyan",
-    status: "On Trip",
-    sb: "sb-ontrip",
-    sc: "status-ontrip",
-    dot: "dot-orange",
-    license: "—",
-    phone: "+91 54321 09876",
-    vehicle: "Unassigned",
-    exp: "—",
-    score: 71,
-    tab: "On Trip",
-  },
-  {
-    id: "DRV-006",
-    name: "Karthik M",
-    initials: "K",
-    av: "av-accent",
-    status: "Available",
-    sb: "sb-available",
-    sc: "status-available",
-    dot: "dot-green",
-    license: "—",
-    phone: "+91 43210 98765",
-    vehicle: "Unassigned",
-    exp: "—",
-    score: 85,
-    tab: "Available",
-  },
-];
+import { useDispatch } from "react-redux";
+import { deleteDriver, getAllDrivers } from "../../../redux/Driver/DriverSlice";
+import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
+import { toast } from "react-toastify";
 
 function ScoreBar({ score }) {
   const fillCls =
@@ -153,7 +51,7 @@ function ScoreBar({ score }) {
   );
 }
 
-function DriverCard({ d, onClick }) {
+function DriverCard({ d, onClick, onEdit, onDelete }) {
   return (
     <div
       className={`dm-card ${d.sc}`}
@@ -189,6 +87,30 @@ function DriverCard({ d, onClick }) {
       </div>
 
       <ScoreBar score={d.score} />
+      <div className="d-flex justify-content-between">
+        <span></span>
+
+        <div className="d-flex gap-2">
+          <span
+            className="dm-edit-btn d-flex align-items-center justify-content-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
+            <MdOutlineEdit />
+          </span>
+          <span
+            className="dm-delete-btn d-flex align-items-center justify-content-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
+            <MdDeleteOutline />
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -199,38 +121,123 @@ export default function Drivers() {
   const [openAddDriver, setOpenAddDriver] = useState(false);
   const [openDriverModal, setOpenDriverModal] = useState(false);
   const [driverData, setDriverData] = useState();
+  const [driverDetails, setDriverDetails] = useState([]);
+  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllDrivers())
+      .unwrap()
+      .then((response) => {
+        console.log(response);
+        setDriverDetails(response.data || []);
+      })
+      .catch((error) => {
+        toast.error(error);
+      });
+  }, [dispatch]);
+
+  const handleDelete = () => {
+    if (!selectedDriver?._id) return;
+
+    dispatch(deleteDriver(selectedDriver._id))
+      .unwrap()
+      .then(() => {
+        toast.success("Driver deleted successfully");
+        setDriverDetails((prev) =>
+          prev.filter((d) => d._id !== selectedDriver._id),
+        );
+        setOpenDeleteModal(false);
+        setSelectedDriver(null);
+      })
+      .catch(() => {
+        toast.error("Failed to delete driver");
+      });
+  };
 
   const filtered = useMemo(
     () =>
-      DRIVERS.filter(
+      (driverDetails || []).filter(
         (d) =>
-          d.name.toLowerCase().includes(search.toLowerCase()) ||
-          d.id.toLowerCase().includes(search.toLowerCase()),
+          d.name?.toLowerCase().includes(search.toLowerCase()) ||
+          d.dlNo?.toLowerCase().includes(search.toLowerCase()),
       ),
-    [search],
+    [search, driverDetails],
   );
+  const stats = useMemo(() => {
+    const total = driverDetails?.length || 0;
+    const active =
+      driverDetails?.filter(
+        (d) => d.availableStatus?.toLowerCase() === "available",
+      ).length || 0;
 
+    const onTrip =
+      driverDetails?.filter(
+        (d) => d.availableStatus?.toLowerCase() === "on trip",
+      ).length || 0;
+
+    const avgScore =
+      total > 0
+        ? Math.round(
+            driverDetails.reduce((sum, d) => sum + (Number(d.score) || 0), 0) /
+              total,
+          )
+        : 0;
+
+    return [
+      {
+        val: total,
+        label: "TOTAL",
+        cls: "sc-blue",
+        id: "total",
+      },
+      {
+        val: active,
+        label: "ACTIVE",
+        cls: "sc-green",
+        id: "active",
+      },
+      {
+        val: onTrip,
+        label: "ON TRIP",
+        cls: "sc-orange",
+        id: "ontrip",
+      },
+      {
+        val: `${avgScore}%`,
+        label: "AVG SCORE",
+        cls: "sc-accent",
+        id: "score",
+      },
+    ];
+  }, [driverDetails]);
   return (
     <div>
-        <div className="dm-topbar">
-          <div>
-            <h1 className="heading">Driver Management</h1>
-            <div className="sub-heading">
-              {DRIVERS.length} drivers · Compliance tracking · Performance
-              scores
-            </div>
-          </div>
-          <div
-            className="dm-btn-add"
-            onClick={() => setOpenAddDriver(true)}
-            style={{ cursor: "pointer" }}
-          >
-            <span>+ Add Driver</span>
+      <div className="dm-topbar">
+        <div>
+          <h1 className="heading">Driver Management</h1>
+          <div className="sub-heading">
+            {driverDetails?.length || 0} drivers drivers · Compliance tracking ·
+            Performance scores
           </div>
         </div>
+        <div
+          className="dm-btn-add"
+          onClick={() => {
+            setModalMode("add");
+            setSelectedDriver(null);
+            setOpenAddDriver(true);
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          <span>+ Add Driver</span>
+        </div>
+      </div>
       <div className="dm-main">
         <div className="dm-stat-row">
-          {STATS.map((s) => (
+          {stats.map((s) => (
             <div key={s.id} className={`dm-stat-card ${s.cls}`}>
               <div className="dm-stat-val">{s.val}</div>
               <div className="dm-stat-label">{s.label}</div>
@@ -254,11 +261,43 @@ export default function Drivers() {
           {filtered.length > 0 ? (
             filtered.map((d) => (
               <DriverCard
-                key={d.id}
-                d={d}
+                key={d._id}
+                d={{
+                  id: d.id,
+                  name: d.name,
+                  initials: d.name?.charAt(0)?.toUpperCase(),
+                  av: "av-blue",
+                  status: d.availableStatus || "Available",
+                  sb:
+                    d.availableStatus === "On Trip"
+                      ? "sb-ontrip"
+                      : "sb-available",
+                  sc:
+                    d.availableStatus === "On Trip"
+                      ? "status-ontrip"
+                      : "status-available",
+                  dot:
+                    d.availableStatus === "On Trip"
+                      ? "dot-orange"
+                      : "dot-green",
+                  license: d.dlNo || "—",
+                  phone: d.mobile || "—",
+                  vehicle: d.vehicleNumber || "",
+                  exp: d.experience ? `${d.experience} Years` : "—",
+                  score: d.score || 0,
+                }}
                 onClick={() => {
-                  setOpenDriverModal(true)
-                  setDriverData(d)
+                  setOpenDriverModal(true);
+                  setDriverData(d);
+                }}
+                onEdit={() => {
+                  setModalMode("edit");
+                  setSelectedDriver(d);
+                  setOpenAddDriver(true);
+                }}
+                onDelete={() => {
+                  setSelectedDriver(d);
+                  setOpenDeleteModal(true);
                 }}
               />
             ))
@@ -270,6 +309,8 @@ export default function Drivers() {
       <AddDriverModal
         open={openAddDriver}
         onClose={() => setOpenAddDriver(false)}
+        mode={modalMode}
+        driver={selectedDriver}
       />
 
       <DriverDetailModal
@@ -277,6 +318,30 @@ export default function Drivers() {
         onClose={() => setOpenDriverModal(false)}
         driver={driverData}
       />
+      {openDeleteModal && (
+        <div className="vm-delete-backdrop">
+          <div className="vm-delete-modal">
+            <div className="vm-delete-icon-wrap">
+              <MdDelete className="vm-delete-icon" />
+            </div>
+            <h3 className="vm-delete-title">Delete Vehicle?</h3>
+            <p className="vm-delete-text">
+              Are you sure you want to delete this vehicle?
+            </p>
+            <div className="vm-delete-actions">
+              <button
+                className="vm-delete-btn cancel"
+                onClick={() => setOpenDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button className="vm-delete-btn confirm" onClick={handleDelete}>
+                <MdDelete /> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

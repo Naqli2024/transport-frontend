@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import Logo from "../../assets/images/truck.webp";
 import { HiOutlineMenu } from "react-icons/hi";
 import SignOutModal from "../SignOutModal";
+import { useDispatch } from "react-redux";
+import { getUserById} from "../../redux/Auth/AuthSlice"
 
 const Header = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -14,13 +16,26 @@ const Header = () => {
   const [userData, setUserData] = useState([]);
   const [openSignOutModal, setOpenSignOutModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [customerData, setCustomerData] = useState([])
+  const dispatch = useDispatch();
   const formattedDate = today.toLocaleDateString("en-GB", {
     weekday: "short",
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
+
+  useEffect(() => {
+  dispatch(getUserById())
+    .unwrap()
+    .then((response) => {
+      setCustomerData(response || {});
+    })
+    .catch((error) => {
+      toast.error(error);
+    });
+}, [dispatch]);
+
 
   return (
 <div className="header-container">
@@ -30,11 +45,11 @@ const Header = () => {
     </div>
 
     <div className="header-title">
-      {"Transport Management"}
+     {customerData?.user?.username}
     </div>
 
     <div className="header-badge">
-      Transport ERP
+      {customerData?.business?.transportName}
     </div>
     <div className="header-date">{formattedDate}</div>
   </div>

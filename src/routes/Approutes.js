@@ -1,36 +1,41 @@
 import React, { useState } from 'react'
 import { matchPath, Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import TransportMain from '../pages/Dashboard/TransportMain'
-import ControlTower from '../pages/command/ControlTower'
-import LiveTracking from '../pages/command/LiveTracking'
-import Header from '../components/Header/Header'
-import Demo from '../pages/Dashboard/Demo'
-import Demo1 from '../pages/Dashboard/Demo1'
-import FleetContracts from '../pages/operations/FleetContracts/FleetContracts'
-import AllTrips from '../pages/operations/AllTrips/AllTrips'
-import ProofOfDelivery from '../pages/operations/ProofOfDelivery/ProofOfDelivery'
-import ReturnLoads from '../pages/operations/ReturnLoads/ReturnLoads'
-import PreTrip from '../pages/operations/PreTrip/PreTrip'
-import PostTrip from '../pages/operations/PostTrip/PostTrip'
-import Breakdown from '../pages/operations/Breakdown&Recovery/Breakdown'
-import DriverSettlement from '../pages/operations/DriverSettlement/DriverSettlement'
-import AgentsCommission from '../pages/operations/Agents&Commission/AgentsCommission'
-import VendorFleet from '../pages/operations/VendorFleet/VendorFleet'
-import EquipmentBillingPage from '../pages/billing/EquipmentBilling/EquipmentBillingPage'
-import PaymentsPage from '../pages/billing/PaymentCollection/PaymentsPage'
-import VehicleMaster from '../pages/Fleet/VehicleMaster/VehicleMaster'
-import HeavyEquipment from '../pages/Fleet/HeavyEquipment/HeavyEquipment'
-import BusOperation from '../pages/Fleet/BusOperations/BusOperations'
-import TyreIntel from '../pages/Fleet/TyreIntelligence/TyreIntelligence'
-import TyreIntelligence from '../pages/Fleet/TyreIntelligence/TyreIntelligence'
-import BusOperations from '../pages/Fleet/BusOperations/BusOperations'
-import Drivers from '../pages/Fleet/Drivers/Drivers'
-import FuelControl from '../pages/Fleet/FuelControl/FuelControl'
-import PreventiveMaintenance from '../pages/Maintenance/PreventMaintenance/PreventiveMaintenance'
-import Workshop from '../pages/Maintenance/WorkShop/Workshop'
-import SpareParts from '../pages/Maintenance/SpareParts/SpareParts'
-import SignIn from '../pages/Auth/SignIn'
+import TransportMain from '../pages/Dashboard/TransportMain.js'
+import ControlTower from '../pages/command/ControlTower.js'
+import LiveTracking from '../pages/command/LiveTracking.js'
+import Header from '../components/Header/Header.js'
+import Demo from '../pages/Dashboard/Demo.js'
+import Demo1 from '../pages/Dashboard/Demo1.js'
+import FleetContracts from '../pages/operations/FleetContracts/FleetContracts.js'
+import AllTrips from '../pages/operations/AllTrips/AllTrips.js'
+import ProofOfDelivery from '../pages/operations/ProofOfDelivery/ProofOfDelivery.js'
+import ReturnLoads from '../pages/operations/ReturnLoads/ReturnLoads.js'
+import PreTrip from '../pages/operations/PreTrip/PreTrip.js'
+import PostTrip from '../pages/operations/PostTrip/PostTrip.js'
+import Breakdown from '../pages/operations/Breakdown&Recovery/Breakdown.js'
+import DriverSettlement from '../pages/operations/DriverSettlement/DriverSettlement.js'
+import AgentsCommission from '../pages/operations/Agents&Commission/AgentsCommission.js'
+import VendorFleet from '../pages/operations/VendorFleet/VendorFleet.js'
+import EquipmentBillingPage from '../pages/billing/EquipmentBilling/EquipmentBillingPage.js'
+import PaymentsPage from '../pages/billing/PaymentCollection/PaymentsPage.js'
+import VehicleMaster from '../pages/Fleet/VehicleMaster/VehicleMaster.js'
+import HeavyEquipment from '../pages/Fleet/HeavyEquipment/HeavyEquipment.js'
+import BusOperation from '../pages/Fleet/BusOperations/BusOperations.js'
+import TyreIntel from '../pages/Fleet/TyreIntelligence/TyreIntelligence.js'
+import TyreIntelligence from '../pages/Fleet/TyreIntelligence/TyreIntelligence.js'
+import BusOperations from '../pages/Fleet/BusOperations/BusOperations.js'
+import Drivers from '../pages/Fleet/Drivers/Drivers.js'
+import FuelControl from '../pages/Fleet/FuelControl/FuelControl.js'
+import PreventiveMaintenance from '../pages/Maintenance/PreventMaintenance/PreventiveMaintenance.js'
+import Workshop from '../pages/Maintenance/WorkShop/Workshop.js'
+import SpareParts from '../pages/Maintenance/SpareParts/SpareParts.js'
+import SignIn from '../pages/Auth/SignIn.js'
 import AI from '../pages/Dashboard/AI.js'
+import Color from '../services/Color.js'
+import Finance from '../pages/Finance/Finance.js'
+import TeamAccess from '../pages/Settings/TeamAccess.js'
+import AiPrediction from '../pages/Intelligence/AiPrediction/AiPrediction.js'
+import Profitability from '../pages/Intelligence/Profitability/Profitability.js'
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -63,7 +68,7 @@ const AppRoutes = () => {
           <Route path="fleet-contracts" element={<FleetContracts />} />
           <Route path="proof-delivery" element={<ProofOfDelivery />} />
           <Route path="return-loads" element={<ReturnLoads />} />
-          <Route path="pre-trip" element={<PreTrip />} />
+          <Route path="pre-trip" element={<PreTrip />} />      ``
           <Route path="post-trip" element={<PostTrip />} />
           <Route path="breakdown-recovery" element={<Breakdown />} />
           <Route path="driver-settlement" element={<DriverSettlement />} />
@@ -80,7 +85,12 @@ const AppRoutes = () => {
           <Route path="pm-settings" element={<PreventiveMaintenance/>}/>
           <Route path="workshop" element={<Workshop/>}/>
           <Route path="spare-parts" element={<SpareParts/>}/>
-        </Route>
+          <Route path="finance" element={<Finance/>}/>
+          <Route path="team-access" element={<TeamAccess/>}/>      
+          <Route path="ai-predictions" element={<AiPrediction/>}/> 
+          <Route path="profitability" element={<Profitability/>}/>
+           </Route>
+        {/* <Route path="/" element={<Color/>}/> */}
       </Routes>
     </>
   )

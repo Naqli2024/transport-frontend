@@ -6,53 +6,13 @@ import {
   IconButton,
   Button,
 } from "@mui/material";
-
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
-/* ─────────────────────────────────────────────
-   VEHICLE DATA
-───────────────────────────────────────────── */
-
-const VEHICLE = {
-  title: "Tata Tata LPT 2518 · 2017",
-
-  info: [
-    { label: "Reg No", value: "TN69GH1234" },
-    { label: "Type", value: "Truck" },
-    { label: "Make/Model", value: "Tata LPT 2518", bold: true },
-    { label: "Year", value: "2017", bold: true },
-    { label: "Capacity", value: "25T" },
-    { label: "Status", value: "Active", highlight: "green" },
-    { label: "Assigned Driver", value: "Unassigned", bold: true },
-    { label: "Engine No", value: "—" },
-    { label: "Chassis No", value: "—" },
-  ],
-
-  docs: [
-    { label: "RC Book", date: "2026-03-15", ok: true },
-    { label: "Insurance", date: "2025-12-01", ok: true },
-    { label: "Fitness", date: "2026-06-30", ok: true },
-    { label: "Permit", date: "2025-11-20", ok: false },
-    { label: "PUC", date: "2025-07-10", ok: true },
-    { label: "Toll Tag", date: "N/A", ok: false },
-  ],
-
-  financial: [
-    { label: "Purchase Cost", value: "₹2,800,000" },
-    { label: "Current Value", value: "₹1,960,000" },
-    { label: "Monthly EMI", value: "—" },
-  ],
-};
-
-/* ─────────────────────────────────────────────
-   INFO ROW
-───────────────────────────────────────────── */
 
 function InfoRow({ label, value, bold, highlight }) {
   return (
@@ -95,9 +55,6 @@ function InfoRow({ label, value, bold, highlight }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   DOC ROW
-───────────────────────────────────────────── */
 
 function DocRow({ label, date, ok }) {
   return (
@@ -151,23 +108,14 @@ function DocRow({ label, date, ok }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────── */
-
-export default function VehicleEditModal({
+export default function VehicleViewModal({
   open = true,
   onClose,
+  vehicle,
 }) {
-  const [isOpen, setIsOpen] = useState(open);
-
-  /* THEME MODE */
-
   const isLight =
     document.documentElement.getAttribute("data-theme") ===
     "light";
-
-  /* MUI THEME */
 
   const theme = useMemo(
     () =>
@@ -210,14 +158,103 @@ export default function VehicleEditModal({
     [isLight]
   );
 
-  const handleClose = () => {
-    setIsOpen(false);
-    onClose?.();
-  };
+const handleClose = () => {
+  onClose?.();
+};
+
+  const VEHICLE = {
+  title: `${vehicle?.make || ""} ${vehicle?.type || ""} · ${vehicle?.year || ""}`,
+
+  info: [
+    {
+      label: "Reg No",
+      value: vehicle?.regNo || "-",
+    },
+
+    {
+      label: "Type",
+      value: vehicle?.type || "-",
+    },
+
+    {
+      label: "Make/Model",
+      value: vehicle?.make || "-",
+      bold: true,
+    },
+
+    {
+      label: "Year",
+      value: vehicle?.year || "-",
+      bold: true,
+    },
+
+
+    {
+  label: "Status",
+  value: vehicle?.status?.status || "-",
+  highlight: "green",
+},
+
+    {
+      label: "Assigned Driver",
+      value:
+        vehicle?.assignedDriver ||
+        "Unassigned",
+
+      bold: true,
+    },
+
+    {
+      label: "Engine No",
+      value: vehicle?.engineNo || "—",
+    },
+
+    {
+      label: "Chassis No",
+      value:
+        vehicle?.chassisNo || "—",
+    },
+  ],
+
+  docs: [
+    {
+      label: "Insurance",
+      date:
+        vehicle?.insuranceExpiryDate ||
+        "N/A",
+
+      ok: !!vehicle?.insuranceExpiryDate,
+    },
+
+    {
+      label: "Fitness",
+      date:
+        vehicle?.fcExpiryDate || "N/A",
+
+      ok: !!vehicle?.fcExpiryDate,
+    },
+
+    {
+      label: "Road Tax",
+      date:
+        vehicle?.taxExpiryDate || "N/A",
+
+      ok: !!vehicle?.taxExpiryDate,
+    },
+  ],
+
+  financial: [
+    {
+      label: "Purchase Cost",
+      value:
+        vehicle?.purchaseCost || "—",
+    },
+  ],
+};
 
   return (
     <ThemeProvider theme={theme}>
-      <Modal open={isOpen} onClose={handleClose}>
+      <Modal open={open} onClose={handleClose}>
         <Box
           sx={{
             position: "absolute",
@@ -241,7 +278,6 @@ export default function VehicleEditModal({
             outline: "none",
           }}
         >
-
           <Box
             sx={{
               px: 3,
@@ -285,7 +321,6 @@ export default function VehicleEditModal({
               >
                 🚛
               </Box>
-
               <Typography
                 sx={{
                   color: "var(--muted)",
@@ -312,50 +347,9 @@ export default function VehicleEditModal({
             </IconButton>
           </Box>
 
-          {/* ALERT */}
-
           <Box sx={{ px: 3, pt: 2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-
-                px: 2,
-                py: 1.2,
-
-                borderRadius: "12px",
-
-                background: "var(--accentDim)",
-
-                border:
-                  "1px solid var(--accent)",
-              }}
-            >
-              <WarningAmberRoundedIcon
-                sx={{
-                  fontSize: 16,
-                  color: "var(--accent)",
-                }}
-              />
-
-              <Typography
-                sx={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "var(--accent)",
-                  fontFamily:
-                    '"Outfit", sans-serif',
-                }}
-              >
-                RC Book, Insurance, Permit &
-                PUC expiring soon
-              </Typography>
-            </Box>
+            
           </Box>
-
-          {/* BODY */}
-
           <Box
             sx={{
               display: "grid",
@@ -369,8 +363,6 @@ export default function VehicleEditModal({
               py: 2,
             }}
           >
-            {/* LEFT */}
-
             <Box
               sx={{
                 pr: { sm: 2 },
@@ -408,8 +400,6 @@ export default function VehicleEditModal({
               ))}
             </Box>
 
-            {/* RIGHT */}
-
             <Box sx={{ pl: { sm: 2 } }}>
               <Typography
                 sx={{
@@ -437,9 +427,6 @@ export default function VehicleEditModal({
                   {...row}
                 />
               ))}
-
-              {/* FINANCIAL */}
-
               <Typography
                 sx={{
                   mt: 2,
@@ -505,9 +492,6 @@ export default function VehicleEditModal({
               ))}
             </Box>
           </Box>
-
-          {/* FOOTER */}
-
           <Box
             sx={{
               px: 3,
@@ -536,27 +520,6 @@ export default function VehicleEditModal({
               }}
             >
               Close
-            </Button>
-
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              sx={{
-                background: "var(--accent)",
-
-                color: "#000",
-
-                fontWeight: 700,
-
-                boxShadow:
-                  "0 4px 14px rgba(245,158,11,0.35)",
-
-                "&:hover": {
-                  background: "#fbbf24",
-                },
-              }}
-            >
-              Edit Vehicle
             </Button>
           </Box>
         </Box>

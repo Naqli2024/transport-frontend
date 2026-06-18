@@ -16,6 +16,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.15.2",
     "bootstrap": "^5.3.8",
+    "fast-average-color": "^9.5.2",
     "js-cookie": "^3.0.5",
     "react": "^19.2.5",
     "react-bootstrap": "^2.10.10",

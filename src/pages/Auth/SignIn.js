@@ -5,6 +5,7 @@ import { IoEyeOutline } from "react-icons/io5";
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import Loader from '../../components/Loader';
+import { login } from '../../redux/Auth/AuthSlice';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,18 +26,18 @@ const SignIn = () => {
     }));
   };
 
-//   const handleSubmit = async (e) => {
-//     try {
-//       setLoading(true);
-//       const response = await dispatch(adminLogin(formData)).unwrap();
-//       toast.success(response.message);
-//       setLoading(false);
-//       navigateTo('/pos/pos')
-//     } catch (error) {
-//       toast.error(error);
-//       setLoading(false);
-//     }
-//   };
+  const handleSubmit = async (e) => {
+    try {
+      setLoading(true);
+      const response = await dispatch(login(formData)).unwrap();
+      toast.success(response.message);
+      setLoading(false);
+      navigateTo('/transport/control-tower')
+    } catch (error) {
+      toast.error(error);
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -76,7 +77,7 @@ const SignIn = () => {
         </span>
       </div>
         </div>
-      <button className="sign-in-btn" onClick={()=>navigateTo('/transport/control-tower')}>Login →</button>
+      <button className="sign-in-btn" onClick={handleSubmit}>Login →</button>
       <div className="sign-in-back-link" onClick={()=>navigateTo('/platform')}>← Choose different industry</div>
       </div>
     </div>

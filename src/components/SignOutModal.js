@@ -10,7 +10,7 @@ const SignOutModal = ({ open, onClose }) => {
   const [userData, setUserData] = useState([]);
 
   const handleLogout = () => {
-    // Cookies.remove("token");
+    Cookies.remove("token");
     navigateTo(`/`);
   };
 

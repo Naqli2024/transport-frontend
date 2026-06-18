@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AddPartsModal from "./AddPartsModal";
 
 const PARTS = [
   {
@@ -82,16 +83,18 @@ function PartCard({ p }) {
 }
 export default function SpareParts() {
   const [theme, setTheme] = useState("dark");
+  const [openAddParts, setOpenAddParts] = useState(false);
 
   return (
-    <div data-theme={theme}>
+    <div>
+        {openAddParts ? (<AddPartsModal/>) : (<div data-theme={theme}>
       <div className="sp-topbar">
         <div className="sp-topbar-left">
           <h1 className="heading">Spare Parts</h1>
           <div className="sub-heading">Stock, reorder alerts, issue against work orders</div>
         </div>
         <div className="sp-topbar-right">
-          <button className="sp-btn-add">+ Add Parts</button>
+          <button className="sp-btn-add" onClick={() => setOpenAddParts(true)}>+ Add Parts</button>
         </div>
       </div>
       <div className="sp-main">
@@ -134,6 +137,12 @@ export default function SpareParts() {
           {PARTS.map(p => <PartCard key={p.id} p={p} />)}
         </div>
       </div>
+    </div>)}
+
+
+    
     </div>
+  
+    
   );
 }

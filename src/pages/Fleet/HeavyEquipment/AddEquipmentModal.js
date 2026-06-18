@@ -1,180 +1,576 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { addVehicle, editVehicle } from "../../../redux/Vehicle/VehicleSlice";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 
-const EQ_TYPES = [
-  { id: 'backhoe', label: 'Backhoe', shortLabel: 'Backhoe', icon: '🟡', avgRate: 900 },
-  { id: 'excavator', label: 'Hydraulic Excavator', shortLabel: 'Excavator', icon: '🦾', avgRate: 1400 },
-  { id: 'miniexcav', label: 'Mini Excavator', shortLabel: 'Mini', icon: '🔶', avgRate: 600 },
-  { id: 'roller', label: 'Vibratory Roller', shortLabel: 'Vibratory', icon: '🔵', avgRate: 700 },
-  { id: 'crane', label: 'Hydraulic Crane', shortLabel: 'Crane', icon: '🏗️', avgRate: 3500 },
-  { id: 'telehandler', label: 'Telehandler', shortLabel: 'Telehandler', icon: '🔧', avgRate: 1100 },
-  { id: 'grader', label: 'Motor Grader', shortLabel: 'Grader', icon: '⚙️', avgRate: 1600 },
-  { id: 'concrete', label: 'Concrete Mixer', shortLabel: 'Concrete', icon: '🔘', avgRate: 450 },
-  { id: 'transit', label: 'Transit Mixer', shortLabel: 'Transit', icon: '🚌', avgRate: 2800 },
+const EQ_TYPES = [ { id: 'backhoe', label: 'Backhoe', shortLabel: 'Backhoe', icon: '🟡', avgRate: 900 }, 
+  { id: 'excavator', label: 'Hydraulic Excavator', shortLabel: 'Excavator', icon: '🦾', avgRate: 1400 }, 
+  { id: 'miniexcav', label: 'Mini Excavator', shortLabel: 'Mini', icon: '🔶', avgRate: 600 }, 
+  { id: 'roller', label: 'Vibratory Roller', shortLabel: 'Vibratory', icon: '🔵', avgRate: 700 }, 
+  { id: 'crane', label: 'Hydraulic Crane', shortLabel: 'Crane', icon: '🏗️', avgRate: 3500 }, 
+  { id: 'telehandler', label: 'Telehandler', shortLabel: 'Telehandler', icon: '🔧', avgRate: 1100 }, 
+  { id: 'grader', label: 'Motor Grader', shortLabel: 'Grader', icon: '⚙️', avgRate: 1600 }, 
+  { id: 'concrete', label: 'Concrete Mixer', shortLabel: 'Concrete', icon: '🔘', avgRate: 450 }, 
+  { id: 'transit', label: 'Transit Mixer', shortLabel: 'Transit', icon: '🚌', avgRate: 2800 }, ];
+
+const MAKES = [
+  "JCB",
+  "CAT",
+  "SANY",
+  "Komatsu",
+  "Hitachi",
+  "Volvo CE",
+  "Ashok Leyland",
+  "BharatBenz",
 ];
 
-const MAKES = ['JCB', 'CAT', 'SANY', 'Komatsu', 'Hitachi', 'Volvo CE', 'BharatBenz', 'Liebherr', 'Doosan', 'Escorts'];
-const YEARS = Array.from({ length: 12 }, (_, i) => String(2025 - i));
-const OWNERSHIPS = ['Owned', 'Financed', 'Leased', 'Rented'];
+const YEARS = Array.from(
+  { length: 15 },
+  (_, i) => new Date().getFullYear() - i
+);
 
-const INIT = {
-  type: 'backhoe', make: 'JCB', model: '', year: '2023', ownership: 'Owned',
-  regNo: '', serialNo: '', purchaseCost: '', engineHours: '0',
-  hourlyRate: '900', dailyMin: '8', site: '', client: '',
-};
+const OWNERSHIPS = [
+  "Company",
+  "Owned",
+  "Leased",
+  "Financed",
+  "Rented",
+];
 
-const AddEquipmentModal = ({ onClose, onAdd }) => {
+export default function AddEquipmentModal({
+  onClose,
+  vehicle,
+  onAdd,
+}) {
+  const dispatch = useDispatch();
+
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState(INIT);
-  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  const selType = EQ_TYPES.find(t => t.id === form.type) || EQ_TYPES[0];
+  const [formData, setFormData] = useState({
+    regNo: vehicle?.regNo || "",
 
-  function selectType(id) {
-    const t = EQ_TYPES.find(x => x.id === id);
-    set('type', id);
-    if (t) set('hourlyRate', String(t.avgRate));
+    fleet: vehicle?.fleet || "equipment",
+
+    type: vehicle?.type || "Excavator",
+
+    status: vehicle?.status || "Available",
+
+    make: vehicle?.make || "",
+
+    model: vehicle?.model || "",
+
+    year:
+      vehicle?.year || new Date().getFullYear(),
+
+    ownerShip:
+      vehicle?.ownerShip || "Company",
+
+    purchaseCost:
+      vehicle?.purchaseCost || "",
+
+    serialNo:
+      vehicle?.serialNo || "",
+
+    hourlyRate:
+      vehicle?.hourlyRate || "",
+
+    minShiftHrs:
+      vehicle?.minShiftHrs || "",
+
+    siteName:
+      vehicle?.siteName || "",
+
+    clientName:
+      vehicle?.clientName || "",
+
+    currentEngineHours:
+      vehicle?.currentEngineHours || "",
+
+    lastPmHours:
+      vehicle?.lastPmHours || "",
+
+    pmIntervalHours:
+      vehicle?.pmIntervalHours || "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleTypeChange = (id) => {
+    const selected =
+      EQ_TYPES.find((t) => t.id === id);
+
+    setFormData((prev) => ({
+      ...prev,
+      type: selected?.label || "",
+      hourlyRate:
+        selected?.avgRate || prev.hourlyRate,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      regNo: formData.regNo,
+
+      fleet: "equipment",
+
+      type: formData.type,
+
+     status: formData.siteName
+  ? "Active"
+  : "Available",
+
+      make: formData.make,
+
+      model: formData.model,
+
+      year: Number(formData.year),
+
+      ownerShip: formData.ownerShip,
+
+      purchaseCost:
+        Number(formData.purchaseCost) || 0,
+
+      serialNo: formData.serialNo,
+
+      hourlyRate:
+        Number(formData.hourlyRate) || 0,
+
+      minShiftHrs:
+        Number(formData.minShiftHrs) || 0,
+
+      siteName: formData.siteName,
+
+      clientName: formData.clientName,
+
+      currentEngineHours:
+        Number(
+          formData.currentEngineHours
+        ) || 0,
+
+      lastPmHours:
+        Number(formData.lastPmHours) || 0,
+
+      pmIntervalHours:
+        Number(formData.pmIntervalHours) ||
+        250,
+    };
+
+    try {
+
+  if (vehicle) {
+
+    await dispatch(
+      editVehicle({
+        userId: vehicle._id,
+        payload,
+      })
+    ).unwrap();
+
+    toast.success(
+      "Equipment updated successfully"
+    );
+
+  } else {
+
+    await dispatch(
+      addVehicle(payload)
+    ).unwrap();
+
+    onAdd(payload);
+
+    toast.success(
+      "Equipment added successfully"
+    );
   }
 
-  function handleAdd() {
-    onAdd?.({
-      id: `EQ-${String(Date.now()).slice(-3)}`,
-      ...form,
-      engineHours: parseInt(form.engineHours) || 0,
-      purchaseCost: parseInt(form.purchaseCost) || 0,
-      hourlyRate: parseInt(form.hourlyRate) || 900,
-      dailyMin: parseInt(form.dailyMin) || 8,
-      status: form.site ? 'On Site' : 'Available',
-      deployed: !!form.site,
-      lastServiceHours: parseInt(form.engineHours) || 0,
-      nextServiceHours: (parseInt(form.engineHours) || 0) + 250,
-      fuelPerHour: selType.avgFuel || 8,
-    });
-    onClose();
-  }
+  onClose();
+
+} catch (error) {
+
+  console.log(error);
+
+  toast.error(
+    error || "Failed to save equipment"
+  );
+}
+  };
 
   return (
-    <div className="he-add-overlay" onClick={onClose}>
-      <div className="he-add-modal" onClick={e => e.stopPropagation()}>
+    <div
+      className="he-add-overlay"
+      onClick={onClose}
+    >
+      <div
+        className="he-add-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="he-add-hdr">
           <div className="he-add-title">
-            <span className="he-add-title-icon">🏗️</span>
-            Add Equipment — Step {step}/2
+            <span className="he-add-title-icon">
+              🏗️
+            </span>
+
+            {vehicle
+              ? "Edit Equipment"
+              : "Add Equipment"}{" "}
+            — Step {step}/2
           </div>
-          <button className="he-x-btn" onClick={onClose}>✕</button>
+
+          <button
+            className="he-x-btn"
+            onClick={onClose}
+          >
+            ✕
+          </button>
         </div>
 
         <div className="he-add-stepper">
-          <div className={`he-add-dot ${step >= 1 ? 'he-dot-on' : ''}`}>1</div>
-          <div className={`he-add-line ${step === 2 ? 'he-line-done' : ''}`} />
-          <div className={`he-add-dot ${step === 2 ? 'he-dot-on' : ''}`}>2</div>
+          <div
+            className={`he-add-dot ${
+              step >= 1 ? "he-dot-on" : ""
+            }`}
+          >
+            1
+          </div>
+
+          <div
+            className={`he-add-line ${
+              step === 2
+                ? "he-line-done"
+                : ""
+            }`}
+          />
+
+          <div
+            className={`he-add-dot ${
+              step >= 2 ? "he-dot-on" : ""
+            }`}
+          >
+            2
+          </div>
         </div>
 
         <div className="he-add-body">
+          {/* STEP 1 */}
+
           {step === 1 && (
             <>
               <div className="he-type-grid">
-                {EQ_TYPES.map(t => (
+                {EQ_TYPES.map((t) => (
                   <button
                     key={t.id}
-                    className={`he-type-card ${form.type === t.id ? 'he-type-sel' : ''}`}
-                    onClick={() => selectType(t.id)}
+                    type="button"
+                    className={`he-type-card ${
+                      formData.type === t.label
+                        ? "he-type-sel"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      handleTypeChange(t.id)
+                    }
                   >
-                    <span className="he-type-icon">{t.icon}</span>
-                    <span className="he-type-label">{t.shortLabel}</span>
+                    <span className="he-type-icon">
+                      {t.icon}
+                    </span>
+
+                    <span className="he-type-label">
+                      {t.shortLabel}
+                    </span>
                   </button>
                 ))}
               </div>
 
               <div className="he-frow he-fr3">
                 <div className="he-fgroup">
-                  <label className="he-flabel">MAKE</label>
-                  <select className="he-finput" value={form.make} onChange={e => set('make', e.target.value)}>
-                    {MAKES.map(m => <option key={m}>{m}</option>)}
-                  </select>
-                </div>
-                <div className="he-fgroup">
-                  <label className="he-flabel">MODEL</label>
-                  <input className="he-finput" placeholder={selType.label}
-                    value={form.model} onChange={e => set('model', e.target.value)} />
-                </div>
-                <div className="he-fgroup">
-                  <label className="he-flabel">YEAR</label>
-                  <select className="he-finput" value={form.year} onChange={e => set('year', e.target.value)}>
-                    {YEARS.map(y => <option key={y}>{y}</option>)}
-                  </select>
-                </div>
-              </div>
+                  <label className="he-flabel">
+                    REGISTRATION NO *
+                  </label>
 
-              <div className="he-frow he-fr2">
+                  <input
+                    className="he-finput he-mono"
+                    placeholder="TN58AB1234"
+                    name="regNo"
+                    value={formData.regNo}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        regNo:
+                          e.target.value.toUpperCase(),
+                      }))
+                    }
+                  />
+                </div>
+
                 <div className="he-fgroup">
-                  <label className="he-flabel">OWNERSHIP</label>
-                  <select className="he-finput" value={form.ownership} onChange={e => set('ownership', e.target.value)}>
-                    {OWNERSHIPS.map(o => <option key={o}>{o}</option>)}
+                  <label className="he-flabel">
+                    MAKE
+                  </label>
+
+                  <select
+                    className="he-finput"
+                    name="make"
+                    value={formData.make}
+                    onChange={handleChange}
+                  >
+                    {MAKES.map((m) => (
+                      <option
+                        key={m}
+                        value={m}
+                      >
+                        {m}
+                      </option>
+                    ))}
                   </select>
                 </div>
+
                 <div className="he-fgroup">
-                  <label className="he-flabel">PURCHASE COST (₹)</label>
-                  <input className="he-finput" type="number" placeholder="2800000"
-                    value={form.purchaseCost} onChange={e => set('purchaseCost', e.target.value)} />
-                </div>
-              </div>
-            </>
-          )}
-          {step === 2 && (
-            <>
-              <div className="he-frow he-fr2">
-                <div className="he-fgroup">
-                  <label className="he-flabel">FLEET NO / REG *</label>
-                  <input className="he-finput he-mono" placeholder="TN69 JCB001"
-                    value={form.regNo} onChange={e => set('regNo', e.target.value.toUpperCase())} />
-                </div>
-                <div className="he-fgroup">
-                  <label className="he-flabel">SERIAL NUMBER</label>
-                  <input className="he-finput he-mono" placeholder="JCB3DX2024TN001"
-                    value={form.serialNo} onChange={e => set('serialNo', e.target.value)} />
+                  <label className="he-flabel">
+                    MODEL
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    placeholder="AVTR 4825"
+                    name="model"
+                    value={formData.model}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
               <div className="he-frow he-fr3">
                 <div className="he-fgroup">
-                  <label className="he-flabel">CURRENT ENGINE HRS</label>
-                  <input className="he-finput" type="number"
-                    value={form.engineHours} onChange={e => set('engineHours', e.target.value)} />
+                  <label className="he-flabel">
+                    YEAR
+                  </label>
+
+                  <select
+                    className="he-finput"
+                    name="year"
+                    value={formData.year}
+                    onChange={handleChange}
+                  >
+                    {YEARS.map((y) => (
+                      <option
+                        key={y}
+                        value={y}
+                      >
+                        {y}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
                 <div className="he-fgroup">
-                  <label className="he-flabel">HOURLY RATE (₹)</label>
-                  <input className="he-finput" type="number"
-                    value={form.hourlyRate} onChange={e => set('hourlyRate', e.target.value)} />
+                  <label className="he-flabel">
+                    OWNERSHIP
+                  </label>
+
+                  <select
+                    className="he-finput"
+                    name="ownerShip"
+                    value={formData.ownerShip}
+                    onChange={handleChange}
+                  >
+                    {OWNERSHIPS.map((o) => (
+                      <option
+                        key={o}
+                        value={o}
+                      >
+                        {o}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
                 <div className="he-fgroup">
-                  <label className="he-flabel">MIN SHIFT (HRS)</label>
-                  <input className="he-finput" type="number"
-                    value={form.dailyMin} onChange={e => set('dailyMin', e.target.value)} />
+                  <label className="he-flabel">
+                    PURCHASE COST
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    type="number"
+                    placeholder="4200000"
+                    name="purchaseCost"
+                    value={formData.purchaseCost}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* STEP 2 */}
+
+          {step === 2 && (
+            <>
+              <div className="he-frow he-fr2">
+                <div className="he-fgroup">
+                  <label className="he-flabel">
+                    SERIAL NO
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    placeholder="JCB-EXC-2022-001"
+                    name="serialNo"
+                    value={formData.serialNo}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="he-fgroup">
+                  <label className="he-flabel">
+                    CURRENT ENGINE HOURS
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    type="number"
+                    placeholder="2841"
+                    name="currentEngineHours"
+                    value={
+                      formData.currentEngineHours
+                    }
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="he-frow he-fr3">
+                <div className="he-fgroup">
+                  <label className="he-flabel">
+                    HOURLY RATE (₹)
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    type="number"
+                    name="hourlyRate"
+                    value={formData.hourlyRate}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="he-fgroup">
+                  <label className="he-flabel">
+                    MIN SHIFT HRS
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    type="number"
+                    name="minShiftHrs"
+                    value={formData.minShiftHrs}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="he-fgroup">
+                  <label className="he-flabel">
+                    PM INTERVAL HOURS
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    type="number"
+                    name="pmIntervalHours"
+                    value={
+                      formData.pmIntervalHours
+                    }
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
               <div className="he-frow he-fr2">
                 <div className="he-fgroup">
-                  <label className="he-flabel">DEPLOYMENT SITE</label>
-                  <input className="he-finput" placeholder="Madurai Bypass NH7"
-                    value={form.site} onChange={e => set('site', e.target.value)} />
+                  <label className="he-flabel">
+                    LAST PM HOURS
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    type="number"
+                    name="lastPmHours"
+                    value={formData.lastPmHours}
+                    onChange={handleChange}
+                  />
                 </div>
+
                 <div className="he-fgroup">
-                  <label className="he-flabel">CLIENT</label>
-                  <input className="he-finput" placeholder="NHAI Road Works"
-                    value={form.client} onChange={e => set('client', e.target.value)} />
+                  <label className="he-flabel">
+                    SITE NAME
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    placeholder="Madurai Bypass NH7"
+                    name="siteName"
+                    value={formData.siteName}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
-              {form.regNo && (
+              <div className="he-frow he-fr1">
+                <div className="he-fgroup">
+                  <label className="he-flabel">
+                    CLIENT NAME
+                  </label>
+
+                  <input
+                    className="he-finput"
+                    placeholder="ABC Infra"
+                    name="clientName"
+                    value={formData.clientName}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              {formData.regNo && (
                 <div className="he-add-summary">
-                  <span className="he-add-sum-icon">{selType.icon}</span>
+                  <span className="he-add-sum-icon">
+                    🏗️
+                  </span>
+
                   <div>
-                    <div className="he-add-sum-name">{form.make} {form.model || selType.label}</div>
-                    <div className="he-add-sum-meta">{form.regNo} · {form.year} · ₹{parseInt(form.hourlyRate || 0).toLocaleString()}/hr</div>
+                    <div className="he-add-sum-name">
+                      {formData.make}{" "}
+                      {formData.model}
+                    </div>
+
+                    <div className="he-add-sum-meta">
+                      {formData.regNo} ·{" "}
+                      {formData.year} · ₹
+                      {Number(
+                        formData.hourlyRate || 0
+                      ).toLocaleString()}
+                      /hr
+                    </div>
                   </div>
-                  <span className={`he-status-badge ${form.site ? 'he-badge-green' : 'he-badge-blue'}`}>
-                    {form.site ? '📍 On Site' : '📦 Depot'}
+
+                  <span
+                    className={`he-status-badge ${
+                      formData.siteName
+                        ? "he-badge-green"
+                        : "he-badge-blue"
+                    }`}
+                  >
+                    {formData.siteName
+                      ? "📍 On Site"
+                      : "📦 Available"}
                   </span>
                 </div>
               )}
@@ -183,19 +579,38 @@ const AddEquipmentModal = ({ onClose, onAdd }) => {
         </div>
 
         <div className="he-add-footer">
-          <button className="he-btn he-btn-ghost" onClick={() => step > 1 ? setStep(1) : onClose()}>
-            {step === 1 ? 'Cancel' : '← Back'}
-          </button>
-          <button className="he-btn he-btn-orange"
-            onClick={() => step < 2 ? setStep(2) : handleAdd()}
-            disabled={step === 2 && !form.regNo}>
-            {step === 2 ? '🏗️ Add Equipment' : 'Next →'}
-          </button>
-        </div>
+          {step > 1 && (
+            <button
+              className="he-btn he-btn-ghost"
+              onClick={() =>
+                setStep(step - 1)
+              }
+            >
+              ← Back
+            </button>
+          )}
 
+          {step < 2 ? (
+            <button
+              className="he-btn he-btn-orange"
+              onClick={() =>
+                setStep(step + 1)
+              }
+            >
+              Next →
+            </button>
+          ) : (
+            <button
+              className="he-btn he-btn-orange"
+              onClick={handleSubmit}
+            >
+              {vehicle
+                ? "✓ Update Equipment"
+                : "✓ Add Equipment"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-
-export default AddEquipmentModal

@@ -13,28 +13,63 @@ function statusMod(status) {
 const DriverDetailModal = ({ open, onClose, driver }) => {
   if (!open || !driver) return null;
 
-  const {
-    name         = "—",
-    id           = "—",
-    licenseNo    = "",
-    phone        = "—",
-    experience   = "",
-    status       = "—",
-    currentVehicle = "Unassigned",
-    totalTrips   = "—",
-    performanceScore = "",
-  } = driver;
+const {
+  name = "—",
+  driverId = "—",
+  dlNo = "—",
+  mobile = "—",
+  experience = "",
+  availableStatus = "—",
+  vehicleNumber = "Unassigned",
+  totalTrips = 0,
+  score = 0,
+  dlClass = "—",
+  licenseExpiryDate = "—",
+  aadhaarNo = "—",
+} = driver;
 
   const rows = [
-    { label: "ID",                value: id },
-    { label: "License No",        value: licenseNo || "" },
-    { label: "Phone",             value: phone },
-    { label: "Experience",        value: experience ? `${experience} yrs` : "" },
-    { label: "Status",            value: status,          mod: statusMod(status) },
-    { label: "Current Vehicle",   value: currentVehicle },
-    { label: "Total Trips",       value: totalTrips !== "" ? String(totalTrips) : "—" },
-    { label: "Performance Score", value: performanceScore !== "" ? `${performanceScore}%` : "—" },
-  ];
+  { label: "Driver ID", value: driverId },
+
+  { label: "License No", value: dlNo },
+
+  { label: "DL Class", value: dlClass },
+
+  { label: "Phone", value: mobile },
+
+  { label: "Aadhaar No", value: aadhaarNo },
+
+  {
+    label: "Experience",
+    value: experience ? `${experience} yrs` : "—",
+  },
+
+  {
+    label: "Status",
+    value: availableStatus,
+    mod: statusMod(availableStatus),
+  },
+
+  {
+    label: "License Expiry",
+    value: licenseExpiryDate,
+  },
+
+  {
+    label: "Current Vehicle",
+    value: vehicleNumber || "Unassigned",
+  },
+
+  {
+    label: "Total Trips",
+    value: totalTrips,
+  },
+
+  {
+    label: "Performance Score",
+    value: `${score}%`,
+  },
+];
 
   return (
     <div
