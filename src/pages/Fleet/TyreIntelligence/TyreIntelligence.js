@@ -1,4 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { addTyre, deleteTyre, editTyre, getAll } from "../../../redux/TyreIntelligence/TyreIntelligenceSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { FaSearch } from "react-icons/fa";
+import {
+  MdOutlineEdit,
+  MdDelete,
+  MdDeleteOutline,
+} from "react-icons/md";
 
 const TYRES = [
   {
@@ -62,21 +71,25 @@ function posClass(p) {
 
 export default function TyreIntelligence() {
   const [theme] = useState("dark");
-
-  const [tyres, setTyres] = useState(TYRES);
-
+  const [selectedTyre, setSelectedTyre] = useState(null);
+  const [search, setSearch] = useState("");
+  const [openDeleteModal, setOpenDeleteModal] = useState(false)
   const [openModal, setOpenModal] = useState(false);
+  const dispatch = useDispatch();
+  const { tyres, loading, error } = useSelector((state) => state.tyreIntelligence);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const [formData, setFormData] = useState({
-    id: "",
+    tyreCode: "",
     tin: "",
     brand: "",
-    pos: "FL",
-    vehicle: "",
-    risk: "healthy",
-    km: "",
-    tread: "",
+    model: "",
+    size: "",
+    purchaseCost: "",
+    purchaseDate: "",
   });
+
+
 
   const handleChange = (e) => {
     setFormData({
@@ -85,31 +98,61 @@ export default function TyreIntelligence() {
     });
   };
 
-  const handleAddTyre = (e) => {
-    e.preventDefault();
-
-    const newTyre = {
-      ...formData,
-      km: Number(formData.km),
-      tread: Number(formData.tread),
+  const handleAddTyre = async (e) => {
+    e.preventDefault()
+    const payload = {
+      tyreCode: formData.tyreCode,
+      tin: formData.tin,
+      brand: formData.brand,
+      model: formData.model,
+      size: formData.size,
+      purchaseCost: Number(formData.purchaseCost),
+      purchaseDate: formData.purchaseDate,
     };
 
-    setTyres([...tyres, newTyre]);
+    if (isEditMode) {
+      const response = await dispatch(
+        editTyre({
+          userId: selectedTyre._id,
+          payload,
+        })
+      )
+
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        await dispatch(getAll());
+
+      } else {
+        toast.error(response?.error?.message);
+      }
+
+
+    } else {
+      const response = await dispatch(addTyre(payload))
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        await dispatch(getAll());
+
+      } else {
+        toast.error(response?.error?.message);
+      }
+    }
 
     setFormData({
-      id: "",
+      tyreCode: "",
       tin: "",
       brand: "",
-      pos: "FL",
-      vehicle: "",
-      risk: "healthy",
-      km: "",
-      tread: "",
+      model: "",
+      size: "",
+      purchaseCost: "",
+      purchaseDate: "",
     });
 
+    setSelectedTyre(null);
+    setIsEditMode(false);
     setOpenModal(false);
-  };
 
+  };
   const stats = useMemo(
     () => ({
       total: tyres.length,
@@ -120,8 +163,63 @@ export default function TyreIntelligence() {
     [tyres],
   );
 
+  const filteredTyres = useMemo(() => {
+    return tyres.filter((t) =>
+      t.tyreCode?.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [tyres, search]);
+
+
   const criticals = tyres.filter((t) => t.risk === "critical");
 
+  const handleDeleteTyre = async () => {
+    const response = await dispatch(deleteTyre(selectedTyre._id));
+    if (response?.payload) {
+      toast.success(response.payload.message);
+      setOpenDeleteModal(false);
+      setSelectedTyre(null);
+      await dispatch(getAll());
+    } else {
+      toast.error(response?.error?.message);
+    }
+  }
+
+
+  const handleEdit = (tyre) => {
+    setSelectedTyre(tyre);
+    setIsEditMode(true);
+    setFormData({
+      tyreCode: tyre.tyreCode || "",
+      tin: tyre.tin || "",
+      brand: tyre.brand || "",
+      model: tyre.model || "",
+      size: tyre.size || "",
+      purchaseCost: tyre.purchaseCost || "",
+      purchaseDate: tyre.purchaseDate
+        ? tyre.purchaseDate.split("T")[0]
+        : "",
+    });
+    setOpenModal(true);
+  };
+
+  useEffect(() => {
+    dispatch(getAll());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  if (loading && !tyres?.length) {
+    return (
+      <div className="broker-loading-wrap">
+        <div className="broker-loader"></div>
+        <p>Loading Tyres...</p>
+      </div>
+    );
+  }
   return (
     <div className="tyre-app" data-theme={theme}>
       {/* TOPBAR */}
@@ -136,14 +234,33 @@ export default function TyreIntelligence() {
 
         <button
           className="bo-btn bo-btn-primary"
-          onClick={() => setOpenModal(true)}
+          onClick={() => {
+            setIsEditMode(false);
+            setSelectedTyre(null);
+
+            setFormData({
+              tyreCode: "",
+              tin: "",
+              brand: "",
+              model: "",
+              size: "",
+              purchaseCost: "",
+              purchaseDate: "",
+            });
+
+            setOpenModal(true);
+          }}
         >
           + Add Tyre
         </button>
       </header>
-
+      {error && !loading && (
+        <div className="broker-error-banner">
+          {error || "Failed to load Tyre data."}
+        </div>
+      )}
       {/* STATS */}
-      <div className="tyre-intelligence-stat-grid">
+      <div className="tyre-intelligence-stat-grid py-4">
         {[
           {
             cls: "tyre-intelligence-sc-total",
@@ -200,7 +317,19 @@ export default function TyreIntelligence() {
           ))}
         </section>
       )}
+      <div className="bo-filter-bar">
+        <div className="bo-search-wrap">
+          <FaSearch className="bo-search-icon" />
 
+          <input
+            type="text"
+            className="bo-search-input"
+            placeholder="Search tyres..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
       {/* TABLE */}
       <div className="he-tbl-card">
         <table className="he-tbl">
@@ -209,55 +338,52 @@ export default function TyreIntelligence() {
               <th>ID</th>
               <th>TIN</th>
               <th>Brand</th>
-              <th>Position</th>
-              <th>Vehicle</th>
-              <th>Risk</th>
-              <th>KM Left</th>
-              <th>Tread</th>
+              <th>Model</th>
+              <th>Price</th>
+              <th>Purchase Cost</th>
+              <th>Purchase Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
           <tbody className="tyre-intelligence-table-body">
-            {tyres.map((t, i) => (
+            {filteredTyres.map((t, i) => (
               <tr key={i}>
-                <td className="tyre-intelligence-col-id">{t.id}</td>
+                <td className="tyre-intelligence-col-id">{t.tyreCode}</td>
 
                 <td className="tyre-intelligence-col-tin">{t.tin}</td>
 
                 <td className="tyre-intelligence-col-brand">{t.brand}</td>
 
-                <td>
-                  <span
-                    className={`tyre-intelligence-pos-badge ${posClass(t.pos)}`}
-                  >
-                    {t.pos}
-                  </span>
-                </td>
-
                 <td className="tyre-intelligence-col-vehicle">
-                  {t.vehicle}
+                  {t.model}
                 </td>
-
                 <td>
-                  <span
-                    className={`tyre-intelligence-risk-badge ${riskClass(
-                      t.risk,
-                    )}`}
+                  {t.size}
+                </td>
+                <td>
+                  {t.purchaseCost}
+                </td>
+                <td>
+                  {new Date(t.purchaseDate).toISOString().split("T")[0].split("-").reverse().join("-")}
+                </td>
+
+                <td className="vm-td-actions">
+                  <button
+                    className="vm-action-btn vm-action-edit"
+                    onClick={() => handleEdit(t)}
                   >
-                    {t.risk}
-                  </span>
-                </td>
-
-                <td className={`tyre-intelligence-col-km ${kmClass(t.risk)}`}>
-                  {t.km.toLocaleString()}
-                </td>
-
-                <td
-                  className={`tyre-intelligence-col-tread ${treadClass(
-                    t.risk,
-                  )}`}
-                >
-                  {t.tread}mm
+                    <MdOutlineEdit />
+                  </button>
+                  <button
+                    className="vm-action-btn vm-action-delete"
+                    onClick={() => {
+                      setSelectedTyre(t);
+                      setOpenDeleteModal(true);
+                    }}
+                  >
+                    <MdDeleteOutline />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -265,12 +391,13 @@ export default function TyreIntelligence() {
         </table>
       </div>
 
-      {/* MODAL */}
       {openModal && (
         <div className="tyre-modal-overlay">
           <div className="tyre-modal">
             <div className="tyre-modal-header">
-              <h3>Add New Tyre</h3>
+              <h3>
+                {isEditMode ? "Edit Tyre" : "Add New Tyre"}
+              </h3>
 
               <button
                 className="tyre-modal-close"
@@ -282,18 +409,6 @@ export default function TyreIntelligence() {
 
             <form onSubmit={handleAddTyre}>
               <div className="tyre-form-grid">
-                <div className="tyre-form-group">
-                  <label>Tyre ID</label>
-
-                  <input
-                    type="text"
-                    name="id"
-                    value={formData.id}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
                 <div className="tyre-form-group">
                   <label>TIN</label>
 
@@ -319,74 +434,55 @@ export default function TyreIntelligence() {
                 </div>
 
                 <div className="tyre-form-group">
-                  <label>Vehicle</label>
+                  <label>Model</label>
 
                   <input
                     type="text"
-                    name="vehicle"
-                    value={formData.vehicle}
+                    name="model"
+                    value={formData.model}
                     onChange={handleChange}
                     required
                   />
                 </div>
 
                 <div className="tyre-form-group">
-                  <label>Position</label>
-
-                  <select
-                    name="pos"
-                    value={formData.pos}
+                  <label>Size</label>
+                  <input
+                    type="text"
+                    name="size"
+                    value={formData.size}
                     onChange={handleChange}
-                  >
-                    <option>FL</option>
-                    <option>FR</option>
-                    <option>RL1</option>
-                    <option>RR1</option>
-                    <option>RL2</option>
-                    <option>RR2</option>
-                    <option>Spare</option>
-                  </select>
+                    required
+                  />
+
                 </div>
 
                 <div className="tyre-form-group">
-                  <label>Risk</label>
-
-                  <select
-                    name="risk"
-                    value={formData.risk}
-                    onChange={handleChange}
-                  >
-                    <option value="healthy">Healthy</option>
-                    <option value="warning">Warning</option>
-                    <option value="critical">Critical</option>
-                    <option value="retread">Retread</option>
-                  </select>
-                </div>
-
-                <div className="tyre-form-group">
-                  <label>KM Left</label>
+                  <label>Purchase Cost</label>
 
                   <input
                     type="number"
-                    name="km"
-                    value={formData.km}
+                    name="purchaseCost"
+                    value={formData.purchaseCost}
                     onChange={handleChange}
-                    required
                   />
+
+
                 </div>
 
                 <div className="tyre-form-group">
-                  <label>Tread (mm)</label>
+                  <label>Purchase Date</label>
 
                   <input
-                    type="number"
-                    step="0.1"
-                    name="tread"
-                    value={formData.tread}
+                    type="date"
+                    name="purchaseDate"
+                    value={formData.purchaseDate}
                     onChange={handleChange}
                     required
                   />
                 </div>
+
+
               </div>
 
               <div className="tyre-modal-footer">
@@ -399,10 +495,40 @@ export default function TyreIntelligence() {
                 </button>
 
                 <button type="submit" className="tyre-btn-save">
-                  Save Tyre
+                  {isEditMode ? "Update Tyre" : "Save Tyre"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {openDeleteModal && (
+        <div className="tyre-delete-backdrop">
+          <div className="tyre-delete-modal">
+            <div className="tyre-delete-icon-wrap">
+              <MdDelete className="tyre-delete-icon" />
+            </div>
+            <h3 className="tyre-delete-title">Delete Tyre?</h3>
+            <p className="tyre-delete-text">
+              Are you sure you want to delete this tyre?
+            </p>
+            <div className="tyre-delete-actions">
+              <button
+                className="tyre-delete-btn cancel"
+                onClick={() => {
+                  setOpenDeleteModal(false);
+                  setSelectedTyre(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="tyre-delete-btn confirm"
+                onClick={handleDeleteTyre}
+              >
+                <MdDelete /> Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

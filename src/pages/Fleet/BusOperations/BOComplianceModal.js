@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+
 
 function docStatusCls(doc) {
-  if (doc.daysLeft < 0)   return 'bo-cm-doc--expired';
+  if (doc.daysLeft < 0) return 'bo-cm-doc--expired';
   if (doc.daysLeft <= 30) return 'bo-cm-doc--critical';
   if (doc.daysLeft <= 90) return 'bo-cm-doc--warn';
   return 'bo-cm-doc--valid';
@@ -14,16 +15,20 @@ function docLabel(doc) {
 }
 
 function docIconCls(doc) {
-  if (doc.daysLeft < 0)   return 'bo-cm-doc-icon--expired';
+  if (doc.daysLeft < 0) return 'bo-cm-doc-icon--expired';
   if (doc.daysLeft <= 30) return 'bo-cm-doc-icon--critical';
   if (doc.daysLeft <= 90) return 'bo-cm-doc-icon--warn';
   return 'bo-cm-doc-icon--valid';
 }
 
 export default function BOComplianceModal({ bus, docs, onClose }) {
-  const expiredCount  = docs.filter(d => d.daysLeft < 0).length;
-  const criticalCount = docs.filter(d => d.daysLeft >= 0 && d.daysLeft <= 30).length;
-
+  
+   const summary = {
+    valid: docs.filter((d) => d.status === "Valid").length,
+    dueSoon: docs.filter((d) => d.status === "Due Soon").length,
+    critical: docs.filter((d) => d.status === "Critical").length,
+    expired: docs.filter((d) => d.status === "Expired").length,
+  };
   return (
     <div className="bo-cm-overlay" onClick={onClose}>
       <div className="bo-cm-modal" onClick={e => e.stopPropagation()}>
@@ -43,13 +48,21 @@ export default function BOComplianceModal({ bus, docs, onClose }) {
         <div className="bo-cm-body">
 
           {/* Alert banner */}
-          {(expiredCount > 0 || criticalCount > 0) && (
-            <div className={`bo-cm-alert ${expiredCount > 0 ? 'bo-cm-alert--expired' : 'bo-cm-alert--critical'}`}>
-              <span className="bo-cm-alert-icon">{expiredCount > 0 ? '🚨' : '⚠'}</span>
+          {(summary.expired > 0 || summary.critical > 0) && (
+            <div
+              className={`bo-cm-alert ${summary.expired > 0
+                  ? "bo-cm-alert--expired"
+                  : "bo-cm-alert--critical"
+                }`}
+            >
+              <span className="bo-cm-alert-icon">
+                {summary.expired > 0 ? "🚨" : "⚠"}
+              </span>
+
               <span>
-                {expiredCount > 0
-                  ? `${expiredCount} document(s) have EXPIRED — vehicle may not be road-legal`
-                  : `${criticalCount} document(s) expiring within 30 days — renew immediately`}
+                {summary.expired > 0
+                  ? `${summary.expired} document(s) have EXPIRED — vehicle may not be road-legal`
+                  : `${summary.critical} document(s) expiring within 30 days — renew immediately`}
               </span>
             </div>
           )}
@@ -98,19 +111,19 @@ export default function BOComplianceModal({ bus, docs, onClose }) {
           {/* Footer summary */}
           <div className="bo-cm-summary">
             <div className="bo-cm-sum-item bo-cm-sum--valid">
-              <span className="bo-cm-sum-val">{docs.filter(d => d.daysLeft > 90).length}</span>
+              <span className="bo-cm-sum-val">{summary.valid}</span>
               <span className="bo-cm-sum-label">Valid</span>
             </div>
             <div className="bo-cm-sum-item bo-cm-sum--warn">
-              <span className="bo-cm-sum-val">{docs.filter(d => d.daysLeft > 30 && d.daysLeft <= 90).length}</span>
+              <span className="bo-cm-sum-val">{summary.dueSoon}</span>
               <span className="bo-cm-sum-label">Due Soon</span>
             </div>
             <div className="bo-cm-sum-item bo-cm-sum--critical">
-              <span className="bo-cm-sum-val">{criticalCount}</span>
+              <span className="bo-cm-sum-val">{summary.critical}</span>
               <span className="bo-cm-sum-label">Critical</span>
             </div>
             <div className="bo-cm-sum-item bo-cm-sum--expired">
-              <span className="bo-cm-sum-val">{expiredCount}</span>
+              <span className="bo-cm-sum-val">{summary.expired}</span>
               <span className="bo-cm-sum-label">Expired</span>
             </div>
           </div>

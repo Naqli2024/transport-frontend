@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { addVehicle, editVehicle } from "../../../redux/Vehicle/VehicleSlice";
+import React, { useEffect, useState } from "react";
+import { addVehicle, editVehicle, getAllVehicles, getEquipmentDashboard } from "../../../redux/Vehicle/VehicleSlice";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 
-const EQ_TYPES = [ { id: 'backhoe', label: 'Backhoe', shortLabel: 'Backhoe', icon: '🟡', avgRate: 900 }, 
-  { id: 'excavator', label: 'Hydraulic Excavator', shortLabel: 'Excavator', icon: '🦾', avgRate: 1400 }, 
-  { id: 'miniexcav', label: 'Mini Excavator', shortLabel: 'Mini', icon: '🔶', avgRate: 600 }, 
-  { id: 'roller', label: 'Vibratory Roller', shortLabel: 'Vibratory', icon: '🔵', avgRate: 700 }, 
-  { id: 'crane', label: 'Hydraulic Crane', shortLabel: 'Crane', icon: '🏗️', avgRate: 3500 }, 
-  { id: 'telehandler', label: 'Telehandler', shortLabel: 'Telehandler', icon: '🔧', avgRate: 1100 }, 
-  { id: 'grader', label: 'Motor Grader', shortLabel: 'Grader', icon: '⚙️', avgRate: 1600 }, 
-  { id: 'concrete', label: 'Concrete Mixer', shortLabel: 'Concrete', icon: '🔘', avgRate: 450 }, 
-  { id: 'transit', label: 'Transit Mixer', shortLabel: 'Transit', icon: '🚌', avgRate: 2800 }, ];
+const EQ_TYPES = [{ id: 'backhoe', label: 'Backhoe', shortLabel: 'Backhoe', icon: '🟡', avgRate: 900 },
+{ id: 'excavator', label: 'Excavator', shortLabel: 'Excavator', icon: '🦾', avgRate: 1400 },
+{ id: 'mini', label: 'Mini', shortLabel: 'Mini', icon: '🔶', avgRate: 600 },
+{ id: 'roller', label: 'Vibratory', shortLabel: 'Vibratory', icon: '🔵', avgRate: 700 },
+{ id: 'crane', label: 'Crane', shortLabel: 'Crane', icon: '🏗️', avgRate: 3500 },
+{ id: 'telehandler', label: 'Telehandler', shortLabel: 'Telehandler', icon: '🔧', avgRate: 1100 },
+{ id: 'grader', label: 'Grader', shortLabel: 'Grader', icon: '⚙️', avgRate: 1600 },
+{ id: 'concrete', label: 'Concrete', shortLabel: 'Concrete', icon: '🔘', avgRate: 450 },
+{ id: 'transit', label: 'Transit', shortLabel: 'Transit', icon: '🚌', avgRate: 2800 },];
 
 const MAKES = [
   "JCB",
@@ -40,7 +40,8 @@ const OWNERSHIPS = [
 export default function AddEquipmentModal({
   onClose,
   vehicle,
-  onAdd,
+  isEdit
+
 }) {
   const dispatch = useDispatch();
 
@@ -119,91 +120,91 @@ export default function AddEquipmentModal({
 
     const payload = {
       regNo: formData.regNo,
-
       fleet: "equipment",
-
       type: formData.type,
-
-     status: formData.siteName
-  ? "Active"
-  : "Available",
-
+      status: formData.siteName ? "Active" : "Available",
       make: formData.make,
-
       model: formData.model,
-
       year: Number(formData.year),
-
       ownerShip: formData.ownerShip,
-
-      purchaseCost:
-        Number(formData.purchaseCost) || 0,
-
+      purchaseCost: Number(formData.purchaseCost) || 0,
       serialNo: formData.serialNo,
-
-      hourlyRate:
-        Number(formData.hourlyRate) || 0,
-
-      minShiftHrs:
-        Number(formData.minShiftHrs) || 0,
-
+      hourlyRate: Number(formData.hourlyRate) || 0,
+      minShiftHrs: Number(formData.minShiftHrs) || 0,
       siteName: formData.siteName,
-
       clientName: formData.clientName,
-
-      currentEngineHours:
-        Number(
-          formData.currentEngineHours
-        ) || 0,
-
-      lastPmHours:
-        Number(formData.lastPmHours) || 0,
-
-      pmIntervalHours:
-        Number(formData.pmIntervalHours) ||
-        250,
+      currentEngineHours: Number(formData.currentEngineHours) || 0,
+      lastPmHours: Number(formData.lastPmHours) || 0,
+      pmIntervalHours: Number(formData.pmIntervalHours) || 250,
     };
 
-    try {
+    if (isEdit && vehicle) {
+      const response = await dispatch(
+        editVehicle({
+          userId: vehicle._id,
+          payload,
+        })
+      );
 
-  if (vehicle) {
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        await dispatch(getAllVehicles());
+        onClose();
+      } else {
+        toast.error(response?.error?.message);
+      }
+    } else {
+      const response = await dispatch(addVehicle(payload));
 
-    await dispatch(
-      editVehicle({
-        userId: vehicle._id,
-        payload,
-      })
-    ).unwrap();
-
-    toast.success(
-      "Equipment updated successfully"
-    );
-
-  } else {
-
-    await dispatch(
-      addVehicle(payload)
-    ).unwrap();
-
-    onAdd(payload);
-
-    toast.success(
-      "Equipment added successfully"
-    );
-  }
-
-  onClose();
-
-} catch (error) {
-
-  console.log(error);
-
-  toast.error(
-    error || "Failed to save equipment"
-  );
-}
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        await dispatch(getAllVehicles());
+        await dispatch(getEquipmentDashboard());
+        onClose();
+      } else {
+        toast.error(response?.error?.message);
+      }
+    }
   };
 
+  useEffect(() => {
+  if (isEdit && vehicle) {
+    setFormData({
+      regNo: vehicle.regNo || "",
+      type: vehicle.type || "",
+      make: vehicle.make || "",
+      model: vehicle.model || "",
+      year: vehicle.year || "",
+      purchaseCost: vehicle.purchaseCost || "",
+      serialNo: vehicle.serialNo || "",
+      hourlyRate: vehicle.hourlyRate || "",
+      minShiftHrs: vehicle.minShiftHrs || "",
+      siteName: vehicle.siteName || "",
+      clientName: vehicle.clientName || "",
+      currentEngineHours: vehicle.currentEngineHours || "",
+      lastPmHours: vehicle.lastPmHours || "",
+      pmIntervalHours: vehicle.pmIntervalHours || "",
+      ownerShip: vehicle.ownerShip||"",
+    });
+  } else {
+    setFormData({
+      regNo: "",
+      type: "",
+      make: "",
+      model: "",
+      year: "",
+      purchaseCost: "",
+      serialNo: "",
+      hourlyRate: "",
+      minShiftHrs: "",
+      siteName: "",
+      clientName: "",
+      currentEngineHours: "",
+      lastPmHours: "",
+      pmIntervalHours: "",
+      });
+  }
+}, [isEdit, vehicle]);
   return (
     <div
       className="he-add-overlay"
@@ -235,25 +236,22 @@ export default function AddEquipmentModal({
 
         <div className="he-add-stepper">
           <div
-            className={`he-add-dot ${
-              step >= 1 ? "he-dot-on" : ""
-            }`}
+            className={`he-add-dot ${step >= 1 ? "he-dot-on" : ""
+              }`}
           >
             1
           </div>
 
           <div
-            className={`he-add-line ${
-              step === 2
-                ? "he-line-done"
-                : ""
-            }`}
+            className={`he-add-line ${step === 2
+              ? "he-line-done"
+              : ""
+              }`}
           />
 
           <div
-            className={`he-add-dot ${
-              step >= 2 ? "he-dot-on" : ""
-            }`}
+            className={`he-add-dot ${step >= 2 ? "he-dot-on" : ""
+              }`}
           >
             2
           </div>
@@ -269,11 +267,10 @@ export default function AddEquipmentModal({
                   <button
                     key={t.id}
                     type="button"
-                    className={`he-type-card ${
-                      formData.type === t.label
-                        ? "he-type-sel"
-                        : ""
-                    }`}
+                    className={`he-type-card ${formData.type === t.label
+                      ? "he-type-sel"
+                      : ""
+                      }`}
                     onClick={() =>
                       handleTypeChange(t.id)
                     }
@@ -562,11 +559,10 @@ export default function AddEquipmentModal({
                   </div>
 
                   <span
-                    className={`he-status-badge ${
-                      formData.siteName
-                        ? "he-badge-green"
-                        : "he-badge-blue"
-                    }`}
+                    className={`he-status-badge ${formData.siteName
+                      ? "he-badge-green"
+                      : "he-badge-blue"
+                      }`}
                   >
                     {formData.siteName
                       ? "📍 On Site"

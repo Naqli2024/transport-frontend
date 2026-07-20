@@ -3,11 +3,11 @@ import DriverService from "../../services/DriverService";
 import handleApiError from "../../helpers/helperApiError";
 import Cookies from "js-cookie";
 
-export const addDriver= createAsyncThunk(
+export const addDriver = createAsyncThunk(
   "addDriver",
   async (payload, { rejectWithValue }) => {
     try {
-      const { data } = await DriverService.post(`/add-driver`,payload);
+      const { data } = await DriverService.post(`/add-driver`, payload);
       return data;
     } catch (error) {
       return rejectWithValue(handleApiError(error));
@@ -17,13 +17,13 @@ export const addDriver= createAsyncThunk(
 
 export const getAllDrivers = createAsyncThunk(
   "getAllDrivers",
-  async(_, {rejectWithValue}) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const {data} = await DriverService.get();
+      const { data } = await DriverService.get();
       return data;
-    }catch (error) {
-    return rejectWithValue(handleApiError(error));
-  } 
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
   }
 )
 
@@ -44,7 +44,7 @@ export const editDriver = createAsyncThunk(
 
 export const deleteDriver = createAsyncThunk(
   "deleteDriver",
-  async (id , {rejectWithValue}) => {
+  async (id, { rejectWithValue }) => {
     try {
       const response = await DriverService.delete(`${id}`)
       return response.data
@@ -54,10 +54,37 @@ export const deleteDriver = createAsyncThunk(
   }
 )
 
+export const getDriverById = createAsyncThunk(
+  "getDriverByID",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await DriverService.get(`${id}`)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+)
+
+export const getDriversDashboard = createAsyncThunk(
+  "getDriversDashboard",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await DriverService.get('dashboard')
+      return response.data
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+)
+
+
 const DriverSlice = createSlice({
   name: "driver",
   initialState: {
-    admin: null,
+    drivers: [],
+    summary: {},
+    driverDetails: null,
     loading: false,
     error: null,
   },
@@ -68,15 +95,30 @@ const DriverSlice = createSlice({
     };
     const handleFullFilled = (state, action) => {
       state.loading = false;
-      state.admin = action.payload;
       state.error = null;
+      switch (action.type) {
+        case getAllDrivers.fulfilled.type:
+          state.drivers = action.payload?.data || [];
+          break;
+        case getDriversDashboard.fulfilled.type:
+          state.summary = action.payload?.data?.summary || {};
+          break;
+        case getDriverById.fulfilled.type:
+          state.driverDetails = action.payload?.data;
+          break;
+        case addDriver.fulfilled.type:
+        case editDriver.fulfilled.type:
+        case deleteDriver.fulfilled.type:
+          break;
+        default:
+          break;
+      }
     };
     const handleRejected = (state, action) => {
       state.loading = false;
-      state.admin = null;
       state.error = action.payload;
     };
-    [addDriver, getAllDrivers,editDriver,deleteDriver].forEach((action) => {
+    [addDriver, getAllDrivers, editDriver, deleteDriver,getDriversDashboard,getDriverById].forEach((action) => {
       builder
         .addCase(action.pending, handlePending)
         .addCase(action.fulfilled, handleFullFilled)

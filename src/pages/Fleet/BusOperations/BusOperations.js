@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import BOSeatCheckModal from "./BOSeatCheckModal";
 import BOPreTripModal from "./BOPreTripModal";
 import BOComplianceModal from "./BOComplianceModal";
 
-import { getAllVehicles } from "../../../redux/Vehicle/VehicleSlice";
+import { getAllVehicles, getBusCompliance, getBusFleetDashboard, getBusRoutes } from "../../../redux/Vehicle/VehicleSlice";
+import AddBusModal from "./AddBusModal";
 
 export const BUS_FLEET_TYPES = {
   CORPORATE_SHUTTLE: {
@@ -198,267 +199,112 @@ function dlExpiryCls(dateStr) {
 
 const BusOperations = () => {
   const dispatch = useDispatch();
-
   const [tab, setTab] = useState("fleet");
-
   const [showSeat, setShowSeat] = useState(null);
-
   const [showPreTrip, setShowPreTrip] = useState(null);
-
   const [showCompliance, setShowCompliance] = useState(null);
-
-  const [buses, setBuses] = useState([]);
-
-  const [complianceDocs, setComplianceDocs] = useState([]);
-
-  const [routeSchedules, setRouteSchedules] = useState([]);
-
-  const [ticketLogs, setTicketLogs] = useState([]);
-
-  const [driverData, setDriverData] = useState([]);
-
   const [search, setSearch] = useState("");
-
-  const [loading, setLoading] = useState(true);
-
-  const [error, setError] = useState(null);
+  const [showAddBusModal, setShowAddBusModal] = useState(false);
+  const { vehicles, loading, error, busFleet, busRoutes, busCompliance } = useSelector((state) => state.vehicle);
 
   useEffect(() => {
-    fetchVehicles();
-  }, []);
-  const fetchVehicles = async () => {
-    try {
-      setLoading(true);
-
-      setError(null);
-
-      const response = await dispatch(getAllVehicles()).unwrap();
-
-      console.log("API RESPONSE:", response);
-
-      const vehiclesRaw = Array.isArray(response)
-        ? response
-        : response?.data || [];
-
-      const mappedBuses = vehiclesRaw.map((v) => ({
-        id: v._id || v.id,
-
-        regNo: v.regNo,
-
-        type: mapTripType(v.tripType),
-
-        make: v.make,
-
-        model: v.model,
-
-        seatingCapacity: v.seatingCapacity ?? 0,
-
-        standingCapacity: v.standingCapacity ?? 0,
-
-        year: v.year,
-
-        acType: v.acType,
-
-        fuelType: v.fuelType,
-
-        insuranceExpiry: v.insuranceExpiryDate,
-
-        fcExpiry: v.fcExpiryDate,
-
-        permitExpiry: v.permitExpiryDate,
-
-        mvTaxDue: v.mvTaxDueDate,
-
-        pucExpiry: v.pollutionExpiryDate,
-
-        fitnessScore: v.fitnessScore ?? 0,
-
-        status: v.status ?? "Active",
-
-        assignedRoute:
-          v.fromLocation && v.toLocation
-            ? `${v.fromLocation}–${v.toLocation}`
-            : null,
-
-        client: v.routes?.[0]?.clientName ?? null,
-
-        driver: v.assignedDriver?.driverName ?? null,
-      }));
-
-      setBuses(mappedBuses);
-
-      const mappedDocs = [];
-
-      vehiclesRaw.forEach((v) => {
-        const busId = v._id || v.id;
-
-        (v.complianceDocs || []).forEach((doc, i) => {
-          const daysLeft = calcDaysLeft(doc.expiryDate);
-
-          mappedDocs.push({
-            id: `BC-${busId}-${i}`,
-
-            busId,
-
-            docType: doc.docType,
-
-            docNo: doc.docNo,
-
-            issuer: doc.issuer,
-
-            issueDate: doc.issueDate,
-
-            expiryDate: doc.expiryDate,
-
-            daysLeft,
-
-            status: calcDocStatus(daysLeft),
-
-            fine: doc.fine ?? "—",
-          });
-        });
-      });
-
-      setComplianceDocs(mappedDocs);
-      const mappedRoutes = [];
-
-      vehiclesRaw.forEach((v) => {
-        const busId = v._id || v.id;
-
-        (v.routes || []).forEach((r, i) => {
-          mappedRoutes.push({
-            id: `RS-${busId}-${i}`,
-
-            busId,
-
-            routeName: r.routeName,
-
-            routeCode: r.routeCode,
-
-            type: mapTripType(v.tripType),
-
-            client: r.clientName,
-
-            stops: (r.routeStops || []).map((s) => ({
-              name: s.stopName,
-
-              time: s.stopTime,
-
-              pax: s.passengerCount ?? 0,
-            })),
-
-            totalPax: r.totalPassengers ?? 0,
-
-            amShift:
-              r.amShiftStart && r.amShiftEnd
-                ? `${r.amShiftStart}–${r.amShiftEnd}`
-                : null,
-
-            pmShift:
-              r.pmShiftStart && r.pmShiftEnd
-                ? `${r.pmShiftStart}–${r.pmShiftEnd}`
-                : null,
-
-            frequency: r.frequency,
-
-            driver: r.driverName,
-
-            conductor: r.conductorName,
-
-            daysOfWeek: r.daysOfWeek ?? [],
-
-            monthlyRate: r.monthlyRate ?? 0,
-
-            status: r.status,
-          });
-        });
-      });
-
-      setRouteSchedules(mappedRoutes);
-      const mappedTickets = [];
-
-      vehiclesRaw.forEach((v) => {
-        const busId = v._id || v.id;
-
-        (v.ticketLogs || []).forEach((t, i) => {
-          mappedTickets.push({
-            id: `TK-${busId}-${i}`,
-
-            routeName: t.routeName,
-
-            date: t.tripDate,
-
-            shift: t.shift,
-
-            tripNo: t.tripNo,
-
-            boardedPax: t.boardedPassengers,
-
-            ticketsSold: t.ticketsSold,
-
-            cashCollected: t.cashCollected,
-
-            conductorName: t.conductorName,
-
-            verified: t.verified,
-
-            remarks: t.remarks,
-          });
-        });
-      });
-
-      setTicketLogs(mappedTickets);
-
-      const driversMap = {};
-
-      vehiclesRaw.forEach((v) => {
-        if (v.assignedDriver?.driverName) {
-          const name = v.assignedDriver.driverName;
-
-          if (!driversMap[name]) {
-            driversMap[name] = {
-              driverId: `DRV-${Object.keys(driversMap).length + 1}`,
-
-              name,
-
-              dlNo: "—",
-
-              dlClass: "PSV/HMV",
-
-              dlExpiry: "—",
-
-              badgeNo: null,
-
-              badgeExpiry: null,
-
-              medFitExpiry: "—",
-
-              policeVerification: "—",
-
-              aadharLinked: false,
-
-              mobileVerified: false,
-
-              trainingCert: null,
-
-              status:
-                v.assignedDriver.status === "Assigned"
-                  ? "Valid"
-                  : "Non-Compliant",
-            };
-          }
-        }
-      });
-
-      setDriverData(Object.values(driversMap));
-    } catch (err) {
-      console.log(err);
-
-      setError(err);
-    } finally {
-      setLoading(false);
+    dispatch(getBusFleetDashboard());
+    dispatch(getAllVehicles());
+    dispatch(getBusCompliance());
+    dispatch(getBusRoutes());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
-  };
+  }, [error]);
+
+
+  const buses = vehicles.filter((v) => v.fleet === "bus").map((v) => ({
+    id: v._id,
+    regNo: v.regNo,
+    type: mapTripType(v.tripType),
+    make: v.make,
+    model: v.model,
+    year: v.year,
+    busName: v.busName,
+    seatingCapacity: v.seatingCapacity ?? 0,
+    standingCapacity: v.standingCapacity ?? 0,
+    acType: v.acType,
+    fuelType: v.fuelType,
+    fitnessScore: v.fitnessScore || 0,
+    status: v.status,
+    insuranceExpiry: v.insuranceExpiryDate,
+    fcExpiry: v.fcExpiryDate,
+    permitExpiry: v.permitExpiryDate,
+    pollutionExpiry: v.pollutionExpiryDate,
+    fromLocation: v.fromLocation,
+    toLocation: v.toLocation,
+    driver: v.assignedDriver?.driverName || "Not Assigned",
+  }));
+
+  const ticketLogs = vehicles.flatMap((v) =>
+    (v.ticketLogs || []).map((t) => ({
+      id: v._id,
+      busId: v._id,
+      regNo: v.regNo,
+      routeName: t.routeName,
+      date: t.tripDate,
+      shift: t.shift,
+      tripNo: t.tripNo,
+      boardedPax: t.boardedPassengers,
+      ticketsSold: t.ticketsSold,
+      cashCollected: t.cashCollected,
+      conductorName: t.conductorName,
+      verified: t.verified,
+      remarks: t.remarks,
+    }))
+  );
+
+  const routeSchedules = (busRoutes?.data || []).map((route) => ({
+    id: route.busId,
+    busId: route.busId,
+    routeId: route.routeId,
+    regNo: route.regNo,
+    busName: route.busName,
+    routeName: route.routeName,
+    client: route.clientName,
+    monthlyRate: route.monthlyRate,
+    amShift:
+      route.amShiftStart && route.amShiftEnd
+        ? `${route.amShiftStart} - ${route.amShiftEnd}`
+        : null,
+    pmShift:
+      route.pmShiftStart && route.pmShiftEnd
+        ? `${route.pmShiftStart} - ${route.pmShiftEnd}`
+        : null,
+    daysOfWeek: route.daysOfWeek ?? [],
+    totalPax: route.totalPassengers ?? 0,
+    status: route.status,
+    stops: (route.routeStops || []).map((stop) => ({
+      id: stop._id,
+      name: stop.stopName,
+      time: stop.stopTime,
+      pax: stop.passengerCount ?? 0,
+    })),
+  }));
+
+  const complianceDocs = (busCompliance?.documents || []).map((doc) => {
+    const daysLeft = calcDaysLeft(doc.expiryDate);
+    return {
+      id: doc.busId,
+      busId: doc.busId,
+      regNo: doc.regNo,
+      docType: doc.docType,
+      docNo: doc.docNo,
+      issuer: doc.issuer,
+      expiryDate: doc.expiryDate?.split("T")[0].split("-").reverse().join("-"),
+      daysLeft,
+      status: calcDocStatus(daysLeft),
+      fine: doc.fine,
+    };
+  });
 
   const filteredBuses = buses.filter((b) => {
     const q = search.toLowerCase();
@@ -488,31 +334,27 @@ const BusOperations = () => {
   const kpis = [
     {
       label: "Total Fleet",
-      value: buses.length,
+      value: busFleet.totalFleet,
       colorCls: "blue",
     },
-
     {
       label: "Active / On Route",
-      value: buses.filter((b) => b.status === "Active").length,
+      value: busFleet.active,
       colorCls: "green",
     },
-
     {
       label: "Available",
-      value: buses.filter((b) => b.status === "Available").length,
+      value: busFleet.available,
       colorCls: "cyan",
     },
-
     {
       label: "Compliance Issues",
-      value: expiredCount + criticalCount,
+      value: busFleet.complianceIssues,
       colorCls: "red",
     },
-
     {
       label: "MTD Revenue",
-      value: fmt(contractRev + ticketRev),
+      value: fmt(busFleet.mtdRevenue),
       colorCls: "accent",
     },
   ];
@@ -521,6 +363,14 @@ const BusOperations = () => {
     (s, arr) => s + arr.length,
     0,
   );
+  if (loading && !buses?.length) {
+    return (
+      <div className="broker-loading-wrap">
+        <div className="broker-loader"></div>
+        <p>Loading Bus...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bo-page">
@@ -544,7 +394,12 @@ const BusOperations = () => {
         />
       )}
 
-      <div className="bo-page-hdr">
+      <AddBusModal
+        open={showAddBusModal}
+        onClose={() => setShowAddBusModal(false)}
+      />
+
+      <div className="bo-page-hdr d-flex justify-content-between align-items-center">
         <div className="bo-page-hdr-left">
           <h1 className="heading">Bus Operations</h1>
 
@@ -552,267 +407,218 @@ const BusOperations = () => {
             Fleet · Compliance · Pre-Trip Safety · Routes · Driver Docs
           </p>
         </div>
+        <div>
+          <button
+            className="add-bus-btn"
+            onClick={() => setShowAddBusModal(true)}
+          >
+            + Add Bus
+          </button>
+        </div>
+      </div>
+      {error && !loading && (
+        <div className="broker-error-banner">
+          {error || "Failed to load fleet data."}
+        </div>
+      )}
+      <div className="bo-kpi-row">
+        {kpis.map((k) => (
+          <div
+            key={k.label}
+            className={`bo-kpi-card bo-kpi-card--${k.colorCls}`}
+          >
+            <div className="bo-kpi-val">{k.value}</div>
+
+            <div className="bo-kpi-label">{k.label}</div>
+          </div>
+        ))}
       </div>
 
-      {loading && <div className="bo-loading">Loading fleet data…</div>}
+      <div className="bo-tabs">
+        {[
+          ["fleet", "Fleet"],
+          ["routes", "Routes"],
+          ["compliance", "Compliance"],
+          ["drivers", "Drivers"],
+          ["tickets", "Ticket Log"],
+        ].map(([k, l]) => (
+          <button
+            key={k}
+            className={`bo-tab ${tab === k ? "bo-tab-on" : ""}`}
+            onClick={() => setTab(k)}
+          >
+            {l}
+          </button>
+        ))}
+      </div>
 
-      {error && <div className="bo-error">Failed to load fleet</div>}
-
-      {!loading && (
+      {tab === "fleet" && (
         <>
-          {!loading && (
-            <>
-              <div className="bo-kpi-row">
-                {kpis.map((k) => (
-                  <div
-                    key={k.label}
-                    className={`bo-kpi-card bo-kpi-card--${k.colorCls}`}
-                  >
-                    <div className="bo-kpi-val">{k.value}</div>
+          <div className="he-filter-bar">
+            <div className="he-search-wrap">
+              <span className="he-search-icon">⌕</span>
+              <input
+                className="he-search-input"
+                placeholder="Search reg, model, client…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
 
-                    <div className="bo-kpi-label">{k.label}</div>
+          <div className="bus-card-grid">
+            {filteredBuses.map((bus) => {
+              const route = routeSchedules.find((r) => r.busId === bus.id);
+              return (
+                <div key={bus.id} className="bus-card">
+
+                  {/* Header */}
+                  <div className="bus-card-header">
+                    <div className="bus-info">
+                      <div className="bus-icon">
+                        {
+                          BUS_FLEET_TYPES[bus.type]?.icon || "🚌"
+                        }
+                      </div>
+
+                      <div>
+                        <h3 className="bus-regno">
+                          {bus.regNo}
+                        </h3>
+
+                        <p className="bus-model">
+                          {bus.make} {bus.model} · {bus.year}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`bus-status ${busStatusCls(
+                        bus.status
+                      )}`}
+                    >
+                      {bus.status}
+                    </span>
                   </div>
-                ))}
-              </div>
 
-              <div className="bo-tabs">
-                {[
-                  ["fleet", "Fleet"],
-                  ["routes", "Routes"],
-                  ["compliance", "Compliance"],
-                  ["drivers", "Drivers"],
-                  ["tickets", "Ticket Log"],
-                ].map(([k, l]) => (
-                  <button
-                    key={k}
-                    className={`bo-tab ${tab === k ? "bo-tab-on" : ""}`}
-                    onClick={() => setTab(k)}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
+                  {/* Fitness */}
+                  <div className="fitness-section">
+                    <div className="fitness-header">
+                      <span>FITNESS SCORE</span>
 
-              {tab === "fleet" && (
-                <>
-                  <div className="bo-filter-bar">
-                    <div className="bo-search-wrap">
-                      <span className="bo-search-icon">⌕</span>
+                      <strong>
+                        {bus.fitnessScore}%
+                      </strong>
+                    </div>
 
-                      <input
-                        className="bo-search-input"
-                        placeholder="Search reg no, model, client, route…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                    <div className="fitness-bar">
+                      <div
+                        className={`fitness-progress ${fitnessCls(
+                          bus.fitnessScore
+                        )}`}
+                        style={{
+                          width: `${bus.fitnessScore}%`,
+                        }}
                       />
                     </div>
                   </div>
 
-                  <div className="he-fleet-container">
-                    <div className="bo-fleet-grid">
-                      {filteredBuses.map((bus) => {
-                        const spec = BUS_FLEET_TYPES[bus.type] || {};
+                  {/* Tags */}
+                  <div className="bus-tags">
+                    <span className="tag tag-ac">
+                      {bus.acType === "AC"
+                        ? "❄ AC"
+                        : "🌡 Non AC"}
+                    </span>
 
-                        const busDocs = complianceDocs.filter(
-                          (d) => d.busId === bus.id,
-                        );
+                    <span className="tag">
+                      💺 {bus.seatingCapacity}
+                    </span>
 
-                        const hasExp = busDocs.some((d) => d.daysLeft < 0);
+                    <span className="tag">
+                      ⛽ {bus.fuelType}
+                    </span>
+                  </div>
 
-                        const hasCrit = busDocs.some(
-                          (d) => d.daysLeft >= 0 && d.daysLeft <= 30,
-                        );
+                  {/* Route */}
+                  <div className="route-strip">
+                    📍 {bus.fromLocation || "-"}
+                    {" → "}
+                    {bus.toLocation || "-"}
+                  </div>
 
-                        return (
-                          <div
-                            key={bus.id}
-                            className={`bo-bus-card ${
-                              hasExp
-                                ? "bo-bus-card--expired"
-                                : hasCrit
-                                  ? "bo-bus-card--critical"
-                                  : ""
-                            }`}
-                          >
-                            <div className="bo-bus-card-head">
-                              <div className="bo-bus-id">
-                                <span className="bo-bus-type-icon">
-                                  {spec.icon || "🚌"}
-                                </span>
+                  <div className="meta-box">
+                    <div className="meta-item">
+                      <span className="meta-label">BUS NAME</span>
+                      <span className="meta-value">
+                        {bus.busName || "-"}
+                      </span>
+                    </div>
+                    
+                    <div className="meta-item">
+                    <span className="meta-label">CLIENT</span>
+                    <span className="meta-value">
+                       {route?.client || "-"}
+                    </span>
+                  </div>
+                  </div>
 
-                                <div>
-                                  <div className="bo-bus-regno">
-                                    {bus.regNo}
-                                  </div>
+                  {/* Expiry Dates */}
+                  <div className="expiry-section">
+                    <div>
+                      <small>Insurance</small>
+                      <p>{bus.insuranceExpiry}</p>
+                    </div>
 
-                                  <div className="bo-bus-model">
-                                    {bus.make} {bus.model} · {bus.year}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <span
-                                className={`bo-status-badge ${busStatusCls(
-                                  bus.status,
-                                )}`}
-                              >
-                                {bus.status}
-                              </span>
-                            </div>
-
-                            <div className="bo-fitness-row">
-                              <div className="bo-fitness-meta">
-                                <span className="bo-fitness-label">
-                                  Fitness Score
-                                </span>
-
-                                <span
-                                  className={`bo-fitness-val ${fitnessCls(
-                                    bus.fitnessScore,
-                                  ).replace("bo-pfill--", "bo-fit-val--")}`}
-                                >
-                                  {bus.fitnessScore}%
-                                </span>
-                              </div>
-
-                              <div className="bo-pbar">
-                                <div
-                                  className={`bo-pfill ${fitnessCls(
-                                    bus.fitnessScore,
-                                  )}`}
-                                  style={{
-                                    width: `${bus.fitnessScore}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="bo-bus-tags">
-                              <span
-                                className={`bo-tag-ac ${
-                                  bus.acType === "AC"
-                                    ? "bo-tag-ac--yes"
-                                    : "bo-tag-ac--no"
-                                }`}
-                              >
-                                ❄ {bus.acType}
-                              </span>
-
-                              <span className="bo-tag-cap">
-                                💺 {bus.seatingCapacity}
-                              </span>
-
-                              {bus.fuelType && (
-                                <span className="bo-tag-fuel">
-                                  ⛽ {bus.fuelType}
-                                </span>
-                              )}
-                            </div>
-
-                            {bus.assignedRoute && (
-                              <div className="bo-bus-route-strip">
-                                <span className="bo-route-pin">📍</span>
-
-                                <span className="bo-bus-route-text">
-                                  {bus.assignedRoute}
-                                </span>
-                              </div>
-                            )}
-
-                            {(bus.client || bus.driver) && (
-                              <div className="bo-bus-meta-row">
-                                {bus.client && (
-                                  <div className="bo-bus-meta-item">
-                                    <span className="bo-meta-label">
-                                      Client
-                                    </span>
-
-                                    <span className="bo-meta-val">
-                                      {bus.client}
-                                    </span>
-                                  </div>
-                                )}
-
-                                {bus.driver && (
-                                  <div className="bo-bus-meta-item">
-                                    <span className="bo-meta-label">
-                                      Driver
-                                    </span>
-
-                                    <span className="bo-meta-val">
-                                      {bus.driver}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {(hasExp || hasCrit) && (
-                              <div
-                                className={`bo-compliance-alert ${
-                                  hasExp
-                                    ? "bo-compliance-alert--expired"
-                                    : "bo-compliance-alert--critical"
-                                }`}
-                              >
-                                <span>⚠</span>
-
-                                <span>
-                                  {hasExp
-                                    ? `${
-                                        busDocs.filter((d) => d.daysLeft < 0)
-                                          .length
-                                      } doc(s) EXPIRED`
-                                    : `${
-                                        busDocs.filter(
-                                          (d) =>
-                                            d.daysLeft >= 0 && d.daysLeft <= 30,
-                                        ).length
-                                      } expiring within 30 days`}
-                                </span>
-                              </div>
-                            )}
-                            <div className="bo-bus-actions">
-                              <button
-                                className="bo-btn bo-btn-seat"
-                                onClick={() => setShowSeat(bus)}
-                              >
-                                💺 Seats
-                              </button>
-
-                              <button
-                                className="bo-btn bo-btn-pretrip"
-                                onClick={() => setShowPreTrip(bus)}
-                              >
-                                🔍 Pre-Trip
-                              </button>
-
-                              <button
-                                className="bo-btn bo-btn-docs"
-                                onClick={() => setShowCompliance(bus)}
-                              >
-                                📋 Docs
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {filteredBuses.length === 0 && (
-                        <div className="bo-empty">
-                          <div className="bo-empty-icon">🚌</div>
-
-                          <div>No buses match your filter</div>
-                        </div>
-                      )}
+                    <div>
+                      <small>FC</small>
+                      <p>{bus.fcExpiry}</p>
                     </div>
                   </div>
-                </>
-              )}
-            </>
+
+                  {/* Actions */}
+                  <div className="bo-action-buttons">
+                    <button
+                      className="seat-btn"
+                      onClick={() => setShowSeat(bus)}
+                    >
+                      💺 Seats
+                    </button>
+
+                    <button
+                      className="pretrip-btn"
+                      onClick={() =>
+                        setShowPreTrip(bus)
+                      }
+                    >
+                      🔍 Pre-Trip
+                    </button>
+
+                    <button
+                      className="docs-btn"
+                      onClick={() =>
+                        setShowCompliance(bus)
+                      }
+                    >
+                      📋 Docs
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {filteredBuses.length === 0 && (
+            <div className="he-empty">
+              <div className="he-empty-icon">🏗️</div>
+              <div>No Buses matches your filter</div>
+            </div>
           )}
         </>
       )}
+
+
+
+
     </div>
   );
 };

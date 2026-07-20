@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import AddDriverModal from "./AddDriverModal";
 import DriverDetailModal from "./DriverDetailModal";
-import { useDispatch } from "react-redux";
-import { deleteDriver, getAllDrivers } from "../../../redux/Driver/DriverSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteDriver, getAllDrivers, getDriverById, getDriversDashboard } from "../../../redux/Driver/DriverSlice";
 import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
 import { toast } from "react-toastify";
 
@@ -74,7 +74,7 @@ function DriverCard({ d, onClick, onEdit, onDelete }) {
 
       <div className="dm-info-rows">
         {[
-          { label: "License", val: d.license, valCls: "val-muted" },
+          { label: "License", val: d.dlNo, valCls: "val-muted" },
           { label: "Phone", val: d.phone, valCls: "" },
           { label: "Vehicle", val: d.vehicle, valCls: "val-muted" },
           { label: "Experience", val: d.exp, valCls: "val-muted" },
@@ -120,106 +120,86 @@ export default function Drivers() {
   const [search, setSearch] = useState("");
   const [openAddDriver, setOpenAddDriver] = useState(false);
   const [openDriverModal, setOpenDriverModal] = useState(false);
-  const [driverData, setDriverData] = useState();
-  const [driverDetails, setDriverDetails] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
+
   const dispatch = useDispatch();
+  const { drivers, summary, driverDetails, loading, error } = useSelector((state) => state.driver)
 
   useEffect(() => {
-    dispatch(getAllDrivers())
-      .unwrap()
-      .then((response) => {
-        console.log(response);
-        setDriverDetails(response.data || []);
-      })
-      .catch((error) => {
-        toast.error(error);
-      });
+    dispatch(getDriversDashboard());
+    dispatch(getAllDrivers());
   }, [dispatch]);
 
-  const handleDelete = () => {
-    if (!selectedDriver?._id) return;
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
-    dispatch(deleteDriver(selectedDriver._id))
-      .unwrap()
-      .then(() => {
-        toast.success("Driver deleted successfully");
-        setDriverDetails((prev) =>
-          prev.filter((d) => d._id !== selectedDriver._id),
-        );
-        setOpenDeleteModal(false);
-        setSelectedDriver(null);
-      })
-      .catch(() => {
-        toast.error("Failed to delete driver");
-      });
+  const handleViewDriver = async (id) => {
+    if (!id) return;
+    const response = await dispatch(getDriverById(id));
+    if (response?.payload !== undefined) {
+      setOpenDriverModal(true);
+    } else {
+      toast.error(response?.error?.message);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedDriver?._id) return;
+    const response = await dispatch(deleteDriver(selectedDriver._id));
+    if (response?.payload) {
+      toast.success(response.payload.message);
+      await dispatch(getAllDrivers());
+      await dispatch(getDriversDashboard());
+      setOpenDeleteModal(false);
+      setSelectedDriver(null);
+    } else {
+      toast.error(response?.error?.message);
+    }
   };
 
   const filtered = useMemo(
     () =>
-      (driverDetails || []).filter(
+      (drivers || []).filter(
         (d) =>
           d.name?.toLowerCase().includes(search.toLowerCase()) ||
-          d.dlNo?.toLowerCase().includes(search.toLowerCase()),
+          d.driverId?.toLowerCase().includes(search.toLowerCase()),
       ),
-    [search, driverDetails],
+    [search, drivers],
   );
-  const stats = useMemo(() => {
-    const total = driverDetails?.length || 0;
-    const active =
-      driverDetails?.filter(
-        (d) => d.availableStatus?.toLowerCase() === "available",
-      ).length || 0;
 
-    const onTrip =
-      driverDetails?.filter(
-        (d) => d.availableStatus?.toLowerCase() === "on trip",
-      ).length || 0;
 
-    const avgScore =
-      total > 0
-        ? Math.round(
-            driverDetails.reduce((sum, d) => sum + (Number(d.score) || 0), 0) /
-              total,
-          )
-        : 0;
+  const stats = [
+    { val: summary.totalDrivers, label: "TOTAL DRIVERS", cls: "sc-blue", id: "totalDrivers" },
+    { val: summary.available, label: "AVAILABLE", cls: "sc-green", id: "available" },
+    { val: summary.onTrip, label: "ON TRIP", cls: "sc-orange", id: "ontrip" },
+    { val: summary.onLeave, label: "ON LEAVE", cls: "sc-red", id: "onleave" },
+    { val: summary.assigned, label: "ASSIGNED", cls: "sc-purple", id: "assigned" },
+    { val: summary.unassigned, label: "UNASSIGNED", cls: "sc-accent", id: "unassigned" },
+    { val: summary.licenseExpiring, label: "LICENSE EXPIRING", cls: "sc-cyan", id: "license" },
+    { val: summary.reserved, label: "RESERVED", cls: "sc-accent", id: "reserved" },
+    { val: summary.activeTrips, label: "ACTIVE TRIPS", cls: "sc-green", id: "activeTrips" },
+  ];
 
-    return [
-      {
-        val: total,
-        label: "TOTAL",
-        cls: "sc-blue",
-        id: "total",
-      },
-      {
-        val: active,
-        label: "ACTIVE",
-        cls: "sc-green",
-        id: "active",
-      },
-      {
-        val: onTrip,
-        label: "ON TRIP",
-        cls: "sc-orange",
-        id: "ontrip",
-      },
-      {
-        val: `${avgScore}%`,
-        label: "AVG SCORE",
-        cls: "sc-accent",
-        id: "score",
-      },
-    ];
-  }, [driverDetails]);
+  if (loading && !drivers?.length) {
+    return (
+      <div className="broker-loading-wrap">
+        <div className="broker-loader"></div>
+        <p>Loading Drivers...</p>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="dm-topbar">
         <div>
           <h1 className="heading">Driver Management</h1>
           <div className="sub-heading">
-            {driverDetails?.length || 0} drivers drivers · Compliance tracking ·
+            {drivers?.length || 0} drivers · Compliance tracking ·
             Performance scores
           </div>
         </div>
@@ -256,14 +236,18 @@ export default function Drivers() {
             />
           </div>
         </div>
-
+        {error && !loading && (
+          <div className="broker-error-banner">
+            {error || "Failed to load driver data."}
+          </div>
+        )}
         <div className="dm-grid">
           {filtered.length > 0 ? (
             filtered.map((d) => (
               <DriverCard
                 key={d._id}
                 d={{
-                  id: d.id,
+                  id: d.driverId,
                   name: d.name,
                   initials: d.name?.charAt(0)?.toUpperCase(),
                   av: "av-blue",
@@ -280,16 +264,13 @@ export default function Drivers() {
                     d.availableStatus === "On Trip"
                       ? "dot-orange"
                       : "dot-green",
-                  license: d.dlNo || "—",
+                  dlNo: d.dlNo || "—",
                   phone: d.mobile || "—",
-                  vehicle: d.vehicleNumber || "",
+                  vehicle: d.vehicle?.status || "Unassigned",
                   exp: d.experience ? `${d.experience} Years` : "—",
                   score: d.score || 0,
                 }}
-                onClick={() => {
-                  setOpenDriverModal(true);
-                  setDriverData(d);
-                }}
+                onClick={() => { handleViewDriver(d._id) }}
                 onEdit={() => {
                   setModalMode("edit");
                   setSelectedDriver(d);
@@ -316,7 +297,7 @@ export default function Drivers() {
       <DriverDetailModal
         open={openDriverModal}
         onClose={() => setOpenDriverModal(false)}
-        driver={driverData}
+        driver={driverDetails}
       />
       {openDeleteModal && (
         <div className="vm-delete-backdrop">
@@ -324,9 +305,9 @@ export default function Drivers() {
             <div className="vm-delete-icon-wrap">
               <MdDelete className="vm-delete-icon" />
             </div>
-            <h3 className="vm-delete-title">Delete Vehicle?</h3>
+            <h3 className="vm-delete-title">Delete Driver?</h3>
             <p className="vm-delete-text">
-              Are you sure you want to delete this vehicle?
+              Are you sure you want to delete this driver?
             </p>
             <div className="vm-delete-actions">
               <button

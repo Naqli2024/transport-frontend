@@ -1,143 +1,243 @@
-import { useState } from "react";
-
-const STATS = [
-  { val: "473L",     label: "TOTAL LITRES", cls: "sc-blue"   },
-  { val: "₹47,300",  label: "TOTAL COST",   cls: "sc-accent" },
-  { val: "1",        label: "SUSPICIOUS",   cls: "sc-red"    },
-  { val: "₹100.0",   label: "AVG ₹/L",      cls: "sc-orange" },
-];
-
-const SUSPICIOUS = [
-  {
-    id: "FL-003",
-    meta: "TN38 EF9012 · Arjun D · 148L @ HPCL Salem",
-  },
-];
-
-const LOGS = [
-  { id: "FL-001", vehicle: "TN69 GH4789", driver: "Mani Kumar",  date: "2025-04-10", litres: "120L",  amount: "₹12,000", pump: "IOCL Coimbatore", status: "OK"         },
-  { id: "FL-002", vehicle: "TN59 AB1234", driver: "Selvam R",    date: "2025-04-11", litres: "95L",   amount: "₹9,500",  pump: "BPCL Chennai",   status: "OK"         },
-  { id: "FL-003", vehicle: "TN38 EF9012", driver: "Arjun D",     date: "2025-04-12", litres: "148L",  amount: "₹14,800", pump: "HPCL Salem",     status: "Suspicious" },
-  { id: "FL-004", vehicle: "TN32 XY7821", driver: "External",    date: "2025-04-13", litres: "110L",  amount: "₹11,000", pump: "IOCL Trichy",    status: "OK"         },
-];
-
-function Pill({ status }) {
-  const ok = status === "OK";
-  return (
-    <span className={`fc-pill ${ok ? "pill-ok" : "pill-susp"}`}>
-      {!ok && "⚠ "}
-      {status}
-    </span>
-  );
-}
-
-function TableRow({ log }) {
-  const susp = log.status === "Suspicious";
-  return (
-    <tr className={susp ? "row-susp" : ""}>
-      <td><span className={`td-id${susp ? " id-susp" : ""}`}>{log.id}</span></td>
-      <td><span className="td-vehicle">{log.vehicle}</span></td>
-      <td><span className="td-driver">{log.driver}</span></td>
-      <td><span className="td-date">{log.date}</span></td>
-      <td><span className="td-litres">{log.litres}</span></td>
-      <td><span className="td-amount">{log.amount}</span></td>
-      <td><span className="td-pump">{log.pump}</span></td>
-      <td><Pill status={log.status} /></td>
-    </tr>
-  );
-}
-
-function LogCard({ log }) {
-  const susp = log.status === "Suspicious";
-  return (
-    <div className={`fc-log-card${susp ? " card-susp" : ""}`}>
-      <div className="fc-lc-head">
-        <div className="fc-lc-id-block">
-          <span className={`fc-lc-id${susp ? " id-susp" : ""}`}>{log.id}</span>
-          <span className="fc-lc-vehicle">{log.vehicle}</span>
-        </div>
-        <Pill status={log.status} />
-      </div>
-      <div className="fc-lc-rows">
-        <div className="fc-lc-row"><span className="fc-lc-label">Driver</span><span className="fc-lc-val">{log.driver}</span></div>
-        <div className="fc-lc-row"><span className="fc-lc-label">Date</span><span className="fc-lc-val">{log.date}</span></div>
-        <div className="fc-lc-row"><span className="fc-lc-label">Litres</span><span className="fc-lc-val">{log.litres}</span></div>
-        <div className="fc-lc-row"><span className="fc-lc-label">Amount</span><span className="fc-lc-val val-green">{log.amount}</span></div>
-        <div className="fc-lc-row"><span className="fc-lc-label">Pump</span><span className="fc-lc-val">{log.pump}</span></div>
-      </div>
-    </div>
-  );
-}
+import { useEffect, useState } from "react";
+import LogFuelFillModal from "./LogFuelFillModal";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import { deleteFuelLogs, getAllFuelLogs } from "../../../redux/Fuel/FuelSlice";
+import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
+import AddVendorVehicleModal from "../../Vendor/AddVendorVehicleModal";
 
 export default function FuelControl() {
   const [theme, setTheme] = useState("dark");
+  const [openModal, setOpenModal] = useState(false);
+  const [editingFuel, setEditingFuel] = useState(null);
+  const [selectedFuelLog, setSelectedFuelLog] = useState(null);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const dispatch = useDispatch();
+  const { fuelLogs, summary, loading, error } = useSelector((state) => state.fuel);
+  const tripId = "6a3e6ee3d869fca810f35fdf"
 
+  const STATS = [
+    {
+      val: summary?.totalFuel || 0,
+      label: "TOTAL LITRES",
+      cls: "sc-blue",
+    },
+    {
+      val: `₹${(summary?.totalAmount || 0).toLocaleString("en-IN")}`,
+      label: "TOTAL COST",
+      cls: "sc-accent",
+    },
+    {
+      val: summary?.totalEntries || 0,
+      label: "TOTAL ENTRIES",
+      cls: "sc-red",
+    },
+    {
+      val:
+        summary?.totalFuel > 0
+          ? `₹${(summary.totalAmount / summary.totalFuel).toFixed(2)}`
+          : "₹0",
+      label: "AVG ₹/L",
+      cls: "sc-orange",
+    },
+  ];
+
+  const handleDelete = async () => {
+    if (!selectedFuelLog?._id) return;
+    const response = await dispatch(deleteFuelLogs(selectedFuelLog._id));
+    if (response?.payload) {
+      toast.success(response.payload.message);
+      await dispatch(getAllFuelLogs(tripId));
+      setOpenDeleteModal(false);
+      setSelectedFuelLog(null);
+    } else {
+      toast.error(response?.error?.message);
+    }
+  };
+
+  useEffect(() => {
+     dispatch(getAllFuelLogs(tripId));
+    }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  if (loading && !fuelLogs?.length) {
+    return (
+      <div className="broker-loading-wrap">
+        <div className="broker-loader"></div>
+        <p>Loading Fuel...</p>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="fc-topbar">
         <div className="fc-topbar-left">
           <h1 className="heading">Fuel Control</h1>
-          <div className="sub-heading">Consumption tracking · Theft detection · Cost analysis</div>
+          <div className="sub-heading">
+            Consumption tracking · Theft detection · Cost analysis
+          </div>
         </div>
-         <button className="vm-btn-add">
-            + Log Fuel Fill
-          </button>
+        <button className="vm-btn-add" onClick={() => setOpenModal(true)}>
+          + Log Fuel Fill
+        </button>
       </div>
-
+      {error && !loading && (
+        <div className="broker-error-banner">
+          {error || "Failed to load Fuel data."}
+        </div>
+      )}
       <div className="fc-main">
         <div className="fc-stat-row">
-          {STATS.map(s => (
+          {STATS.map((s) => (
             <div key={s.label} className={`fc-stat-card ${s.cls}`}>
               <div className="fc-stat-val">{s.val}</div>
               <div className="fc-stat-label">{s.label}</div>
             </div>
           ))}
         </div>
-        {SUSPICIOUS.length > 0 && (
-          <div className="fc-suspicious">
-            <div className="fc-susp-header">
-              <span className="fc-susp-icon">⚠️</span>
-              <span className="fc-susp-title">Suspicious Fills ({SUSPICIOUS.length})</span>
+        <div className="fc-table-section">
+          <TableContainer>
+            <Table sx={{ width: "100%" }}>
+              <TableHead>
+                <TableRow
+                  sx={{
+                    "& .MuiTableCell-root": {
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: ".07em",
+                      color: "var(--textMuted)",
+                      padding: "9px 22px",
+                      textAlign: "center",
+                      borderBottom: "1px solid var(--borderHi)",
+                      background: "var(--bgPanel)",
+                    },
+                  }}
+                >
+                  <TableCell>Fuel Station</TableCell>
+                  <TableCell>Location</TableCell>
+                  <TableCell>Fuel Type</TableCell>
+                  <TableCell>Quantity</TableCell>
+                  <TableCell>Rate</TableCell>
+                  <TableCell>Amount</TableCell>
+                  <TableCell>Payment</TableCell>
+                  <TableCell>Bill No</TableCell>
+                  <TableCell>Odometer</TableCell>
+                  <TableCell>Actions</TableCell>
+
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {fuelLogs?.map((log) => (
+                  <TableRow
+                    key={log._id}
+                    sx={{
+                      "& .MuiTableCell-root": {
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        letterSpacing: ".07em",
+                        color: "var(--textSub)",
+                        padding: "9px 12px",
+                        textAlign: "center",
+                        borderBottom: "1px solid var(--border)",
+                        background: "var(--bgPanel)",
+                      },
+                    }}
+                  >
+                    <TableCell>{log.fuelStation}</TableCell>
+                    <TableCell>{log.location}</TableCell>
+                    <TableCell>{log.fuelType}</TableCell>
+                    <TableCell>{log.quantity}</TableCell>
+                    <TableCell>₹{log.rate}</TableCell>
+                    <TableCell>₹{log.amount}</TableCell>
+                    <TableCell>{log.paymentMode}</TableCell>
+                    <TableCell>{log.billNo}</TableCell>
+                    <TableCell>{log.odometer}</TableCell>
+                    <TableCell>
+                      <div className="d-flex justify-content-center gap-2">
+                        <button
+                          className="fc-action-btn fc-action-edit"
+                          onClick={() => {
+                            setEditingFuel(log);
+                            setOpenModal(true);
+                          }}
+                        >
+                          <MdOutlineEdit />
+                        </button>
+                        <button
+                          className="fc-action-btn fc-action-delete"
+                          onClick={() => {
+                            setSelectedFuelLog(log);
+                            setOpenDeleteModal(true);
+                          }}
+                        >
+                          <MdDeleteOutline />
+                        </button>
+                      </div>
+                    </TableCell>
+
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+      </div>
+      <LogFuelFillModal
+        open={openModal}
+        onClose={() => {
+          setOpenModal(false);
+          setEditingFuel(null);
+        }}
+        editingFuel={editingFuel}
+      />
+      {openDeleteModal && (
+        <div className="fc-delete-backdrop">
+          <div className="fc-delete-modal">
+            <div className="fc-delete-icon-wrap">
+              <MdDelete className="fc-delete-icon" />
             </div>
-            <div className="fc-susp-list">
-              {SUSPICIOUS.map(s => (
-                <div key={s.id} className="fc-susp-row">
-                  <div className="fc-susp-left">
-                    <span className="fc-susp-id">{s.id}</span>
-                    <span className="fc-susp-meta">{s.meta}</span>
-                  </div>
-                  <span className="fc-review-badge">⚠ Review Required</span>
-                </div>
-              ))}
+            <h3 className="fc-delete-title">Delete Fuel Log?</h3>
+
+            <p className="fc-delete-text">
+              Are you sure you want to delete this fuel log?
+            </p>
+            <div className="fc-delete-actions">
+              <button
+                className="fc-delete-btn cancel"
+                onClick={() => setOpenDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button className="fc-delete-btn confirm" onClick={handleDelete}>
+                <MdDelete /> Delete
+              </button>
             </div>
           </div>
-        )}
-
-        <div className="fc-table-section">
-            <table className="fc-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Vehicle</th>
-                  <th>Driver</th>
-                  <th>Date</th>
-                  <th>Litres</th>
-                  <th>Amount</th>
-                  <th>Pump</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {LOGS.map(log => <TableRow key={log.id} log={log} />)}
-              </tbody>
-            </table>
         </div>
+      )}
+      <AddVendorVehicleModal
+        show={showVehicleModal}
+        onClose={() => {
+          setShowVehicleModal(false);
+        }}
 
-        <div className="fc-card-list">
-          {LOGS.map(log => <LogCard key={log.id} log={log} />)}
-        </div>
-
-      </div>
+      />
     </div>
   );
 }

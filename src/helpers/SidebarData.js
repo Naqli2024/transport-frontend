@@ -63,16 +63,16 @@ export const transportItems = [
         icon: <RiExchangeDollarLine size={15} />,
         label: "Return Loads",
       },
-      {
-        path: "pre-trip",
-        icon: <RiShieldCheckLine size={15} />,
-        label: "Pre-Trip Inspection",
-      },
-      {
-        path: "post-trip",
-        icon: <RiShieldCheckLine size={15} />,
-        label: "Post-Trip Inspection",
-      },
+      // {
+      //   path: "pre-trip",
+      //   icon: <RiShieldCheckLine size={15} />,
+      //   label: "Pre-Trip Inspection",
+      // },
+      // {
+      //   path: "post-trip",
+      //   icon: <RiShieldCheckLine size={15} />,
+      //   label: "Post-Trip Inspection",
+      // },
       {
         path: "breakdown-recovery",
         icon: <RiErrorWarningLine size={15} />,
@@ -124,11 +124,37 @@ export const transportItems = [
         label: "Drivers",
       },
       {
+        path: "customers",
+        icon: <RiUser3Line size={15} />,
+        label: "Customers",
+      },
+      {
+        path: "brokers",
+        icon: <RiUser3Line size={15} />,
+        label: "Brokers",
+      },
+      {
         path: "fuel-control",
         icon: <RiGasStationLine size={15} />,
         label: "Fuel Control",
       },
+       {
+        path: "vendors",
+        icon: <RiUser3Line size={15} />,
+        label: "Vendors",
+      },
     ],
+  },
+  {
+    group: "Vendor",
+    items: [
+     
+      {
+        path: "vendor-vehicle",
+        icon: <RiTruckLine size={15} />,
+        label: "Vehicle",
+      }
+    ]
   },
   {
     group: "Maintenance",

@@ -20,7 +20,7 @@ const {
   mobile = "—",
   experience = "",
   availableStatus = "—",
-  vehicleNumber = "Unassigned",
+  vehicle = {},
   totalTrips = 0,
   score = 0,
   dlClass = "—",
@@ -57,7 +57,7 @@ const {
 
   {
     label: "Current Vehicle",
-    value: vehicleNumber || "Unassigned",
+    value: vehicle?.status || "Unassigned",
   },
 
   {

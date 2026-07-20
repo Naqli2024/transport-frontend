@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { addDriver, editDriver } from "../../../redux/Driver/DriverSlice";
+import { addDriver, editDriver, getAllDrivers, getDriversDashboard } from "../../../redux/Driver/DriverSlice";
 
 const DL_CLASSES = [
-  "PSV/HMV",
   "LMV",
   "HMV",
-  "MCWG",
   "Transport",
-  "Non-Transport",
+  "Heavy",
 ];
 
 
@@ -53,15 +51,15 @@ const AddDriverModal = ({
   const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
-  name: "",
-  mobile: "",
-  aadhaarNo: "",
-  experience: "",
-  dlNo: "",
-  dlClass: "PSV/HMV",
-  licenseExpiryDate: "",
- 
-});
+    name: "",
+    mobile: "",
+    aadhaarNo: "",
+    experience: "",
+    dlNo: "",
+    dlClass: "PSV/HMV",
+    licenseExpiryDate: "",
+
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,44 +80,52 @@ const AddDriverModal = ({
     setStep(1);
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      name: formData.name,
+      mobile: Number(formData.mobile),
+      aadhaarNo: Number(formData.aadhaarNo),
+      experience: Number(formData.experience) || 0,
+      dlNo: formData.dlNo,
+      dlClass: formData.dlClass,
+      licenseExpiryDate: formData.licenseExpiryDate,
+    };
+
     if (mode === "edit") {
       const response = await dispatch(
         editDriver({
           id: driver._id,
-          data: formData,
+          data: payload,
         })
-      ).unwrap();
-      toast.success(
-        response?.message || "Driver updated successfully"
       );
-    } else {
-      const response = await dispatch(
-        addDriver(formData)
-      ).unwrap();
-      toast.success(
-        response?.message || "Driver added successfully"
-      );
-    }
 
-    handleClose();
-  } catch (error) {
-    console.log(error);
-    toast.error(
-      error?.message ||
-      error ||
-      `Failed to ${mode === "edit" ? "update" : "add"} driver`
-    );
-  }
-};
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        await dispatch(getAllDrivers());
+        handleClose();
+      } else {
+        toast.error(response?.error?.message);
+      }
+    } else {
+      const response = await dispatch(addDriver(payload));
+
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        await dispatch(getAllDrivers());
+        await dispatch(getDriversDashboard());
+        handleClose();
+      } else {
+        toast.error(response?.error?.message);
+      }
+    }
+  };
   const handleClose = () => {
     onClose?.();
     setStep(1);
   };
 
-   useEffect(() => {
+  useEffect(() => {
     if (mode === "edit" && driver) {
       setFormData({
         name: driver.name || "",
@@ -130,7 +136,7 @@ const handleSubmit = async (e) => {
         dlClass: driver.dlClass || "PSV/HMV",
         licenseExpiryDate: driver.licenseExpiryDate
           ? driver.licenseExpiryDate.split("T")[0]
-          : "", 
+          : "",
       });
     } else {
       setFormData({
@@ -143,10 +149,10 @@ const handleSubmit = async (e) => {
         licenseExpiryDate: "",
       });
     }
-    
+
   }, [mode, driver]);
 
-    if (!open) return null;
+  if (!open) return null;
 
   return (
     <div
@@ -163,7 +169,7 @@ const handleSubmit = async (e) => {
         <div className="dm-modal-header">
           <div className="dm-modal-title">
             <PersonIcon />
-           {mode === "edit" ? "Edit Driver" : "Add Driver"} — Step {step}/2
+            {mode === "edit" ? "Edit Driver" : "Add Driver"} - Step {step}/2
           </div>
 
           <button
@@ -191,7 +197,7 @@ const handleSubmit = async (e) => {
 
               <Field label="Mobile" required>
                 <input
-                type="number"
+                  type="number"
                   className="dm-modal-input"
                   name="mobile"
                   value={formData.mobile}
@@ -234,7 +240,7 @@ const handleSubmit = async (e) => {
                   value={formData.dlNo}
                   onChange={handleChange}
                   placeholder="MH01 2024 0012345"
-                 
+
                 />
               </Field>
 
@@ -262,8 +268,8 @@ const handleSubmit = async (e) => {
                   onChange={handleChange}
                 />
               </Field>
-              
-              
+
+
 
             </div>
           )}
@@ -313,7 +319,7 @@ const handleSubmit = async (e) => {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
 
-               {mode === "edit" ? "Update Driver" : "Add Driver"}
+                {mode === "edit" ? "Update Driver" : "Add Driver"}
               </button>
             </>
           )}

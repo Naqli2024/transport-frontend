@@ -86,25 +86,31 @@ export default function AddVehicleModal({ onClose, vehicle }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      let response;
-      if (vehicle) {
-        response = await dispatch(
-          editVehicle({
-            userId: vehicle._id,
-            payload: formData,
-          }),
-        ).unwrap();
-        toast.success(response.message);
-      } else {
-        response = await dispatch(addVehicle(formData)).unwrap();
+    let response;
 
-        toast.success(response?.message);
+    if (vehicle) {
+      response = await dispatch(
+        editVehicle({
+          userId: vehicle._id,
+          payload: formData,
+        })
+      );
+
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        onClose();
+      } else {
+        toast.error(response?.error?.message);
       }
-      onClose();
-    } catch (error) {
-      console.log(error);
-      toast.error(error);
+    } else {
+      response = await dispatch(addVehicle(formData));
+
+      if (response?.payload) {
+        toast.success(response.payload.message);
+        onClose();
+      } else {
+        toast.error(response?.error?.message);
+      }
     }
   };
 
@@ -112,356 +118,354 @@ export default function AddVehicleModal({ onClose, vehicle }) {
     <div className="vm-modal-overlay" onClick={onClose}>
       <div className="vm-modal-box" onClick={(e) => e.stopPropagation()}>
         <div className="vm-modal-header">
-<div className="vm-modal-title">
-  <span className="vm-modal-emoji">🚛</span>
-  {vehicle ? "Edit Vehicle" : "Add Vehicle"}
-</div>
+          <div className="vm-modal-title">
+            <span className="vm-modal-emoji">🚛</span>
+            {vehicle ? "Edit Vehicle" : "Add Vehicle"}
+          </div>
           <button className="vm-modal-close" onClick={onClose}>
             ✕
           </button>
         </div>
         <div>
-          
-            <div className="vm-modal-body">
-              <div className="vm-form-row vm-cols-4">
-                <div className="vm-form-group">
-                  <label className="vm-form-label">REG NO</label>
+          <div className="vm-modal-body">
+            <div className="vm-form-row vm-cols-4">
+              <div className="vm-form-group">
+                <label className="vm-form-label">REG NO</label>
 
-                  <input
-                    className={`vm-form-input ${
-                      errors.regNo ? "vm-input-error" : ""
+                <input
+                  className={`vm-form-input ${errors.regNo ? "vm-input-error" : ""
                     }`}
-                    placeholder="TN69GH1234"
-                    name="regNo"
-                    value={formData.regNo}
-                    onChange={handleChange}
-                    autoFocus
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">TYPE</label>
-
-                  <select
-                    className="vm-form-select"
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                  >
-                    {TYPE.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">MAKE</label>
-
-                  <select
-                    className="vm-form-select"
-                    name="make"
-                    value={formData.make}
-                    onChange={handleChange}
-                  >
-                    {MAKES.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">MODEL</label>
-
-                  <input
-                    className="vm-form-input"
-                    placeholder="LPT 2518"
-                    name="model"
-                    value={formData.model}
-                    onChange={handleChange}
-                  />
-                </div>
+                  placeholder="TN69GH1234"
+                  name="regNo"
+                  value={formData.regNo}
+                  onChange={handleChange}
+                  autoFocus
+                />
               </div>
 
-              <div className="vm-form-row vm-cols-4">
-                <div className="vm-form-group">
-                  <label className="vm-form-label">YEAR</label>
+              <div className="vm-form-group">
+                <label className="vm-form-label">TYPE</label>
 
-                  <select
-                    className="vm-form-select"
-                    name="year"
-                    value={formData.year}
-                    onChange={handleChange}
-                  >
-                    {YEARS.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">ENGINE NO</label>
-
-                  <input
-                    className="vm-form-input"
-                    placeholder="Engine No"
-                    name="engineNo"
-                    value={formData.engineNo}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">CHASSIS NO</label>
-
-                  <input
-                    className="vm-form-input"
-                    placeholder="Chassis No"
-                    name="chassisNo"
-                    value={formData.chassisNo}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">AXLE</label>
-
-                  <select
-                    className="vm-form-select"
-                    name="axle"
-                    value={formData.axle}
-                    onChange={handleChange}
-                  >
-                    {AXLES.map((a) => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  className="vm-form-select"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                >
+                  {TYPE.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="vm-form-row vm-cols-4">
-                <div className="vm-form-group">
-                  <label className="vm-form-label">GVW (T)</label>
-                  <input
-                    className="vm-form-input"
-                    type="number"
-                    min={1}
-                    placeholder="25"
-                    name="gvw"
-                    value={formData.gvw}
-                    onChange={handleChange}
-                  />
-                </div>
+              <div className="vm-form-group">
+                <label className="vm-form-label">MAKE</label>
 
-                <div className="vm-form-group">
-                  <label className="vm-form-label">CURRENT KM</label>
-
-                  <input
-                    className="vm-form-input"
-                    type="number"
-                    min={1}
-                    placeholder="25000"
-                    name="currentKm"
-                    value={formData.currentKm}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">HEALTH STATUS</label>
-
-                  <select
-                    className="vm-form-select"
-                    name="healthStatus"
-                    value={formData.healthStatus}
-                    onChange={handleChange}
-                  >
-                    {HEALTH.map((h) => (
-                      <option key={h} value={h}>
-                        {h}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">OWNERSHIP</label>
-
-                  <select
-                    className="vm-form-select"
-                    name="ownerShip"
-                    value={formData.ownerShip}
-                    onChange={handleChange}
-                  >
-                    {OWNERSHIPS.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  className="vm-form-select"
+                  name="make"
+                  value={formData.make}
+                  onChange={handleChange}
+                >
+                  {MAKES.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="vm-form-row vm-cols-4">
-                <div className="vm-form-group">
-                  <label className="vm-form-label">INSURANCE EXPIRY</label>
-                  <input
-                    className="vm-form-input vm-input-date"
-                    type="date"
-                    min={new Date().toISOString().split("T")[0]}
-                    name="insuranceExpiryDate"
-                    value={formData.insuranceExpiryDate}
-                    onChange={handleChange}
-                  />
-                </div>
+              <div className="vm-form-group">
+                <label className="vm-form-label">MODEL</label>
 
-                <div className="vm-form-group">
-                  <label className="vm-form-label">RC BOOK EXPIRY</label>
-
-                  <input
-                    className="vm-form-input vm-input-date"
-                    type="date"
-                    min={new Date().toISOString().split("T")[0]}
-                    name="rcBookExpiryDate"
-                    value={formData.rcBookExpiryDate}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">FC EXPIRY</label>
-
-                  <input
-                    className="vm-form-input vm-input-date"
-                    type="date"
-                    min={new Date().toISOString().split("T")[0]}
-                    name="fcExpiryDate"
-                    value={formData.fcExpiryDate}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">TAX EXPIRY</label>
-
-                  <input
-                    className="vm-form-input vm-input-date"
-                    type="date"
-                    min={new Date().toISOString().split("T")[0]}
-                    name="taxExpiryDate"
-                    value={formData.taxExpiryDate}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="vm-form-row vm-cols-4">
-                <div className="vm-form-group">
-                  <label className="vm-form-label">PERMIT EXPIRY</label>
-
-                  <input
-                    className="vm-form-input vm-input-date"
-                    type="date"
-                    min={new Date().toISOString().split("T")[0]}
-                    name="permitExpiryDate"
-                    value={formData.permitExpiryDate}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">POLLUTION EXPIRY</label>
-
-                  <input
-                    className="vm-form-input vm-input-date"
-                    type="date"
-                    min={new Date().toISOString().split("T")[0]}
-                    name="pollutionExpiryDate"
-                    value={formData.pollutionExpiryDate}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">PERMIT TYPE</label>
-
-                  <select
-                    className="vm-form-select"
-                    name="permitType"
-                    value={formData.permitType}
-                    onChange={handleChange}
-                  >
-                    {PERMITS.map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="vm-form-group">
-                  <label className="vm-form-label">PURCHASE COST</label>
-
-                  <input
-                    className="vm-form-input"
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    name="purchaseCost"
-                    value={formData.purchaseCost}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="vm-form-row vm-cols-4">
-                <div className="vm-form-group">
-                  <label className="vm-form-label">TOLL TAG</label>
-
-                  <select
-                    className="vm-form-select"
-                    value={formData.tollTagAvailable ? "Yes" : "No"}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        tollTagAvailable: e.target.value === "Yes",
-                      }))
-                    }
-                  >
-                    {TOLLTAG.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <input
+                  className="vm-form-input"
+                  placeholder="LPT 2518"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 
-          <div className="vm-modal-footer">
-  <button
-    className="vm-btn-ghost"
-    onClick={onClose}
-  >
-    Cancel
-  </button>
+            <div className="vm-form-row vm-cols-4">
+              <div className="vm-form-group">
+                <label className="vm-form-label">YEAR</label>
 
-  <button
-    className="vm-btn-accent"
-    onClick={handleSubmit}
-  >
-    {vehicle
-      ? "✓ Update Vehicle"
-      : "✓ Add Vehicle"}
-  </button>
-</div>
+                <select
+                  className="vm-form-select"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleChange}
+                >
+                  {YEARS.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">ENGINE NO</label>
+
+                <input
+                  className="vm-form-input"
+                  placeholder="Engine No"
+                  name="engineNo"
+                  value={formData.engineNo}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">CHASSIS NO</label>
+
+                <input
+                  className="vm-form-input"
+                  placeholder="Chassis No"
+                  name="chassisNo"
+                  value={formData.chassisNo}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">AXLE</label>
+
+                <select
+                  className="vm-form-select"
+                  name="axle"
+                  value={formData.axle}
+                  onChange={handleChange}
+                >
+                  {AXLES.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="vm-form-row vm-cols-4">
+              <div className="vm-form-group">
+                <label className="vm-form-label">GVW (T)</label>
+                <input
+                  className="vm-form-input"
+                  type="number"
+                  min={1}
+                  placeholder="25"
+                  name="gvw"
+                  value={formData.gvw}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">CURRENT KM</label>
+
+                <input
+                  className="vm-form-input"
+                  type="number"
+                  min={1}
+                  placeholder="25000"
+                  name="currentKm"
+                  value={formData.currentKm}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">HEALTH STATUS</label>
+
+                <select
+                  className="vm-form-select"
+                  name="healthStatus"
+                  value={formData.healthStatus}
+                  onChange={handleChange}
+                >
+                  {HEALTH.map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">OWNERSHIP</label>
+
+                <select
+                  className="vm-form-select"
+                  name="ownerShip"
+                  value={formData.ownerShip}
+                  onChange={handleChange}
+                >
+                  {OWNERSHIPS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="vm-form-row vm-cols-4">
+              <div className="vm-form-group">
+                <label className="vm-form-label">INSURANCE EXPIRY</label>
+                <input
+                  className="vm-form-input vm-input-date"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  name="insuranceExpiryDate"
+                  value={formData.insuranceExpiryDate}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">RC BOOK EXPIRY</label>
+
+                <input
+                  className="vm-form-input vm-input-date"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  name="rcBookExpiryDate"
+                  value={formData.rcBookExpiryDate}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">FC EXPIRY</label>
+
+                <input
+                  className="vm-form-input vm-input-date"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  name="fcExpiryDate"
+                  value={formData.fcExpiryDate}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">TAX EXPIRY</label>
+
+                <input
+                  className="vm-form-input vm-input-date"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  name="taxExpiryDate"
+                  value={formData.taxExpiryDate}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="vm-form-row vm-cols-4">
+              <div className="vm-form-group">
+                <label className="vm-form-label">PERMIT EXPIRY</label>
+
+                <input
+                  className="vm-form-input vm-input-date"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  name="permitExpiryDate"
+                  value={formData.permitExpiryDate}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">POLLUTION EXPIRY</label>
+
+                <input
+                  className="vm-form-input vm-input-date"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  name="pollutionExpiryDate"
+                  value={formData.pollutionExpiryDate}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">PERMIT TYPE</label>
+
+                <select
+                  className="vm-form-select"
+                  name="permitType"
+                  value={formData.permitType}
+                  onChange={handleChange}
+                >
+                  {PERMITS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="vm-form-group">
+                <label className="vm-form-label">PURCHASE COST</label>
+
+                <input
+                  className="vm-form-input"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  name="purchaseCost"
+                  value={formData.purchaseCost}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="vm-form-row vm-cols-4">
+              <div className="vm-form-group">
+                <label className="vm-form-label">TOLL TAG</label>
+
+                <select
+                  className="vm-form-select"
+                  value={formData.tollTagAvailable ? "Yes" : "No"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      tollTagAvailable: e.target.value === "Yes",
+                    }))
+                  }
+                >
+                  {TOLLTAG.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="vm-modal-footer">
+            <button
+              className="vm-btn-ghost"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+
+            <button
+              className="vm-btn-accent"
+              onClick={handleSubmit}
+            >
+              {vehicle
+                ? "✓ Update Vehicle"
+                : "✓ Add Vehicle"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

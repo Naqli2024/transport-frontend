@@ -37,6 +37,10 @@ import TeamAccess from '../pages/Settings/TeamAccess.js'
 import AiPrediction from '../pages/Intelligence/AiPrediction/AiPrediction.js'
 import Profitability from '../pages/Intelligence/Profitability/Profitability.js'
 import Settings from '../pages/Settings/Settings.js'
+import Vendors from '../pages/Vendor/Vendors.js'
+import VendorVehicles from '../pages/Vendor/VendorVehicle.js'
+import Brokers from '../pages/Fleet/Brokers/Brokers.js'
+import Customers from '../pages/Fleet/Customers/Customers.js'
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -83,7 +87,9 @@ const AppRoutes = () => {
           <Route path="tyre-intelligence" element={<TyreIntelligence />} />
           <Route path="drivers" element={<Drivers />} />
           <Route path="fuel-control" element={<FuelControl />} /> 
+          <Route path="vendors" element={<Vendors/>}/>
           <Route path="pm-settings" element={<PreventiveMaintenance/>}/>
+          <Route path="vendor-vehicle" element={<VendorVehicles/>}/>
           <Route path="workshop" element={<Workshop/>}/>
           <Route path="spare-parts" element={<SpareParts/>}/>
           <Route path="finance" element={<Finance/>}/>
@@ -91,6 +97,8 @@ const AppRoutes = () => {
           <Route path="ai-predictions" element={<AiPrediction/>}/> 
           <Route path="profitability" element={<Profitability/>}/>
           <Route path="settings" element={<Settings/>}/>
+          <Route path="brokers" element={<Brokers/>}/>
+          <Route path='customers' element={<Customers/>}/>
            </Route>
       </Routes>
     </>

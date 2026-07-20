@@ -191,14 +191,14 @@ const handleClose = () => {
 
     {
   label: "Status",
-  value: vehicle?.status?.status || "-",
+  value: vehicle?.status || "-",
   highlight: "green",
 },
 
     {
       label: "Assigned Driver",
       value:
-        vehicle?.assignedDriver ||
+        vehicle?.assignedDriver?.status ||
         "Unassigned",
 
       bold: true,
