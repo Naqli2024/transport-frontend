@@ -25,7 +25,6 @@ export default function AddVendorVehicleModal({
 }) {
   const dispatch = useDispatch();
   const [formData, setForm] = useState(payload);
-  
 
 const { vendors } = useSelector((state) => state.vendor);
 
@@ -122,37 +121,24 @@ const { vendors } = useSelector((state) => state.vendor);
 
   return (
     <div className="vendor-vehicle-modal-overlay">
-
       <div className="vendor-vehicle-modal">
-
-        {/* Header */}
-
         <div className="vendor-vehicle-modal-header">
-
           <h3>
             {vehicle
               ? "Edit Vendor Vehicle"
               : "Add Vendor Vehicle"}
           </h3>
-
           <button
             className="fc-modal-close-btn"
             onClick={onClose}
           >
             <MdClose />
           </button>
-
         </div>
-
-        {/* Body */}
-
         <div className="vendor-vehicle-modal-body">
-
           <div className="row">
-
             <div className="col-md-6 mb-3">
-              <label>Vehicle Number </label>
-
+              <label className="vm-form-label">Vehicle Number </label>
               <input
                 className="add-vendor-vehicle-input"
                 name="regNo"
@@ -160,9 +146,8 @@ const { vendors } = useSelector((state) => state.vendor);
                 onChange={handleChange}
               />
             </div>
-
             <div className="col-md-6 mb-3">
-              <label>Vendor </label>
+              <label className="vm-form-label">Vendor </label>
 <select
 className="add-vendor-vehicle-input"
   name="vendorId"
@@ -178,10 +163,8 @@ className="add-vendor-vehicle-input"
   ))}
 </select>
             </div>
-
             <div className="col-md-6 mb-3">
-              <label>Vehicle Type *</label>
-
+              <label className="vm-form-label">Vehicle Type *</label>
               <select
                 className="add-vendor-vehicle-input"
                 name="vehicleType"
@@ -191,99 +174,70 @@ className="add-vendor-vehicle-input"
                 <option value="">
                   Select
                 </option>
-
                 <option>
                   Trailer
                 </option>
-
                 <option>
                   Container
                 </option>
-
                 <option>
                   Truck
                 </option>
-
                 <option>
                   LCV
                 </option>
-
                 <option>
                   Mini Truck
                 </option>
-
               </select>
             </div>
-
             <div className="col-md-6 mb-3">
-
-              <label>Capacity</label>
-
+              <label className="vm-form-label">Capacity</label>
               <input
                 className="add-vendor-vehicle-input"
                 name="capacity"
                 value={formData.capacity}
                 onChange={handleChange}
               />
-
             </div>
-
             <div className="col-md-6 mb-3">
-
-              <label>Driver Name</label>
-
+              <label className="vm-form-label">Driver Name</label>
               <input
                 className="add-vendor-vehicle-input"
                 name="driverName"
                 value={formData.driverName}
                 onChange={handleChange}
               />
-
             </div>
-
             <div className="col-md-6 mb-3">
-
-              <label>Driver Mobile</label>
-
+              <label className="vm-form-label">Driver Mobile</label>
               <input
                 className="add-vendor-vehicle-input"
                 name="driverMobile"
                 value={formData.driverMobile}
                 onChange={handleChange}
               />
-
             </div>
-
             <div className="col-md-6 mb-3">
-
-              <label>Make</label>
-
+              <label className="vm-form-label">Make</label>
               <input
                 className="add-vendor-vehicle-input"
                 name="make"
                 value={formData.make}
                 onChange={handleChange}
               />
-
             </div>
-
             <div className="col-md-6 mb-3">
-
-              <label>model</label>
-
+              <label className="vm-form-label">Model</label>
               <input
                 className="add-vendor-vehicle-input"
                 name="model"
                 value={formData.model}
                 onChange={handleChange}
               />
-
             </div>
-
             <div className="col-md-6 mb-3">
-
-              <label>Status</label>
-
+              <label className="vm-form-label">Status</label>
               <select
                 className="add-vendor-vehicle-input"
                 name="status"
@@ -294,24 +248,16 @@ className="add-vendor-vehicle-input"
                 <option>Maintenance</option>
                 <option>Inactive</option>
               </select>
-
             </div>
-
           </div>
-
         </div>
-
-        {/* Footer */}
-
         <div className="vendor-modal-footer">
-
           <button
             className="btn btn-secondary"
             onClick={onClose}
           >
             Cancel
           </button>
-
           <button
             className="btn btn-primary"
             onClick={handleSubmit}
@@ -320,11 +266,8 @@ className="add-vendor-vehicle-input"
               ? "Update Vehicle"
               : "Save Vehicle"}
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

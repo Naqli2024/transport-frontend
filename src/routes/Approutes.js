@@ -4,8 +4,6 @@ import TransportMain from '../pages/Dashboard/TransportMain.js'
 import ControlTower from '../pages/command/ControlTower.js'
 import LiveTracking from '../pages/command/LiveTracking.js'
 import Header from '../components/Header/Header.js'
-import Demo from '../pages/Dashboard/Demo.js'
-import Demo1 from '../pages/Dashboard/Demo1.js'
 import FleetContracts from '../pages/operations/FleetContracts/FleetContracts.js'
 import AllTrips from '../pages/operations/AllTrips/AllTrips.js'
 import ProofOfDelivery from '../pages/operations/ProofOfDelivery/ProofOfDelivery.js'
@@ -30,7 +28,6 @@ import PreventiveMaintenance from '../pages/Maintenance/PreventMaintenance/Preve
 import Workshop from '../pages/Maintenance/WorkShop/Workshop.js'
 import SpareParts from '../pages/Maintenance/SpareParts/SpareParts.js'
 import SignIn from '../pages/Auth/SignIn.js'
-import AI from '../pages/Dashboard/AI.js'
 import Color from '../services/Color.js'
 import Finance from '../pages/Finance/Finance.js'
 import TeamAccess from '../pages/Settings/TeamAccess.js'
@@ -38,7 +35,6 @@ import AiPrediction from '../pages/Intelligence/AiPrediction/AiPrediction.js'
 import Profitability from '../pages/Intelligence/Profitability/Profitability.js'
 import Settings from '../pages/Settings/Settings.js'
 import Vendors from '../pages/Vendor/Vendors.js'
-import VendorVehicles from '../pages/Vendor/VendorVehicle.js'
 import Brokers from '../pages/Fleet/Brokers/Brokers.js'
 import Customers from '../pages/Fleet/Customers/Customers.js'
 
@@ -63,11 +59,8 @@ const AppRoutes = () => {
               <SignIn />
           }
         />
-        <Route path="demo" element={<Demo />} />
-        <Route path="demo1" element={<Demo1 />} />
-        <Route path="ai" element={<AI />} />
         <Route path='/transport' element={<TransportMain />}>
-          <Route path="control-tower" element={<ControlTower />} />
+          <Route path="dashboard" element={<ControlTower />} />
           <Route path="live-gps-tracking" element={<LiveTracking />} />
           <Route path="all-trips" element={<AllTrips />} />
           <Route path="fleet-contracts" element={<FleetContracts />} />
@@ -89,7 +82,6 @@ const AppRoutes = () => {
           <Route path="fuel-control" element={<FuelControl />} /> 
           <Route path="vendors" element={<Vendors/>}/>
           <Route path="pm-settings" element={<PreventiveMaintenance/>}/>
-          <Route path="vendor-vehicle" element={<VendorVehicles/>}/>
           <Route path="workshop" element={<Workshop/>}/>
           <Route path="spare-parts" element={<SpareParts/>}/>
           <Route path="finance" element={<Finance/>}/>

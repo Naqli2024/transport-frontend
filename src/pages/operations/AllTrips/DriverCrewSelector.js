@@ -195,7 +195,7 @@ onClick={() => set("driver1", d._id)}
       )}
        <div className="row g-3">
           <div className="col-md-6">
-            <label className="driver-screw-flabel">Driver 1 Advance (₹)</label>
+            <label className="driver-screw-flabel">Driver Advance (₹)</label>
             <input
               value={form.driverAdvance}
               onChange={(e) => set("driverAdvance", e.target.value)}
@@ -203,19 +203,6 @@ onClick={() => set("driver1", d._id)}
               className="driver-screw-input"
             />
           </div>
-          <div className="col-md-6">
-            <label className="driver-screw-flabel">Payment Mode</label>
-            <select
-              className="driver-screw-input"
-              value={form.driverAdvanceType}
-              onChange={(e) => set("driverAdvanceType", e.target.value)}
-            >
-              <option>Cash</option>
-              <option>UPI</option>
-              <option>Account Transfer</option>
-            </select>
-          </div>
-       
         </div>
     </div>
   );

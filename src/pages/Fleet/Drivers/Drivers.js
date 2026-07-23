@@ -5,51 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { deleteDriver, getAllDrivers, getDriverById, getDriversDashboard } from "../../../redux/Driver/DriverSlice";
 import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
 import { toast } from "react-toastify";
-
-function ScoreBar({ score }) {
-  const fillCls =
-    score >= 85 ? "fill-high" : score >= 70 ? "fill-mid" : "fill-low";
-  return (
-    <div className="dm-score-section">
-      <div className="dm-bar-track">
-        <div
-          className={`dm-bar-fill ${fillCls}`}
-          style={{ width: `${score}%` }}
-        />
-      </div>
-      <div className="dm-score-line">
-        <span
-          style={{
-            fontSize: "9px",
-            color: "var(--textMuted)",
-            fontFamily: "var(--font-mono)",
-          }}
-        >
-          0
-        </span>
-        <span
-          className="dm-score-val"
-          style={{
-            fontSize: "11px",
-            fontFamily: "var(--font-mono)",
-            color: "var(--textSub)",
-          }}
-        >
-          Score: {score}%
-        </span>
-        <span
-          style={{
-            fontSize: "9px",
-            color: "var(--textMuted)",
-            fontFamily: "var(--font-mono)",
-          }}
-        >
-          100
-        </span>
-      </div>
-    </div>
-  );
-}
+import { IoSearchOutline } from "react-icons/io5";
 
 function DriverCard({ d, onClick, onEdit, onDelete }) {
   return (
@@ -75,7 +31,7 @@ function DriverCard({ d, onClick, onEdit, onDelete }) {
       <div className="dm-info-rows">
         {[
           { label: "License", val: d.dlNo, valCls: "val-muted" },
-          { label: "Phone", val: d.phone, valCls: "" },
+          { label: "Phone", val: d.phone, valCls: "val-muted" },
           { label: "Vehicle", val: d.vehicle, valCls: "val-muted" },
           { label: "Experience", val: d.exp, valCls: "val-muted" },
         ].map((row) => (
@@ -85,11 +41,8 @@ function DriverCard({ d, onClick, onEdit, onDelete }) {
           </div>
         ))}
       </div>
-
-      <ScoreBar score={d.score} />
       <div className="d-flex justify-content-between">
         <span></span>
-
         <div className="d-flex gap-2">
           <span
             className="dm-edit-btn d-flex align-items-center justify-content-center gap-2"
@@ -227,7 +180,7 @@ export default function Drivers() {
 
         <div className="dm-search-wrap">
           <div className="dm-search">
-            <span className="dm-search-icon">🔍</span>
+            <span className="dm-search-icon"><IoSearchOutline size={16}/></span>
             <input
               type="text"
               placeholder="Search driver name or license..."

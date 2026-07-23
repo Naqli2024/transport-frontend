@@ -32,7 +32,7 @@ const SignIn = () => {
       const response = await dispatch(login(formData)).unwrap();
       toast.success(response.message);
       setLoading(false);
-      navigateTo('/transport/control-tower')
+      navigateTo('/transport/dashboard')
     } catch (error) {
       toast.error(error);
       setLoading(false);

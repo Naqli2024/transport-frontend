@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { MdOutlineRemoveRedEye, MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
 import AddBrokerModal from './AddBrokerModal';
 import BrokerDetailModal from './BrokerDetailModal';
+import { IoSearchOutline } from "react-icons/io5";
 
 function BrokerRow({ b, onView, onEdit, onDelete }) {
     return (
@@ -173,7 +174,7 @@ const Brokers = () => {
                 </div>
                 <div className="broker-search-wrap">
                     <div className="broker-search">
-                        <span className="broker-search-icon">⌕</span>
+                        <span className="broker-search-icon"><IoSearchOutline size={16}/></span>
                         <input
                             type="text"
                             placeholder="Search contact person or broker id..."

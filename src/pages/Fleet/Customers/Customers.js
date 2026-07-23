@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { deleteCustomer, getAllCustomers, getCustomerById, getCustomerDashboard } from '../../../redux/Customer/CustomerSlice'
 import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
 import CustomerDetailModal from './CustomerDetailModal';
-
+import { IoSearchOutline } from "react-icons/io5";
 
 function CustomerCard({ c, onClick, onEdit, onDelete }) {
     return (
@@ -32,8 +32,8 @@ function CustomerCard({ c, onClick, onEdit, onDelete }) {
                 {[
                     { label: "Company Name", val: c.companyName, valCls: "" },
                     { label: "Mobile", val: c.mobile, valCls: "" },
-                    { label: "Total Trips", val: c.totalTrips, valCls: "val-muted" },
-                    { label: "Active Trips", val: c.activeTrips, valCls: "val-muted" },
+                    { label: "Total Trips", val: c.totalTrips, valCls: "" },
+                    { label: "Active Trips", val: c.activeTrips, valCls: "" },
                 ].map((row) => (
                     <div key={row.label} className="customer-info-row">
                         <span className="customer-info-label">{row.label}</span>
@@ -214,7 +214,7 @@ const Customers = () => {
                 </div>
                 <div className="customer-search-wrap">
                     <div className="customer-search">
-                        <span className="customer-search-icon">🔍</span>
+                        <span className="customer-search-icon"><IoSearchOutline size={16}/></span>
                         <input
                             type="text"
                             placeholder="Search contact person,company name or cust id..."

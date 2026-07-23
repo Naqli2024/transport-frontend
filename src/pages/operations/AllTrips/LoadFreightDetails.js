@@ -70,8 +70,6 @@ const LoadFreightDetails = ({ form, set, handleChange }) => {
           >
             <option>Account</option>
             <option>Cash</option>
-            <option>NEFT</option>
-            <option>Cheque</option>
           </select>
         </div>
       </div>
@@ -84,15 +82,6 @@ const LoadFreightDetails = ({ form, set, handleChange }) => {
             value={form.lrNo|| ""}
             onChange={(e) => set("lrNo", e.target.value)}
             placeholder="LR-2025-XXXX"
-          />
-        </div>
-        <div className="col-md-6">
-          <label className="load-details-flabel">UOM</label>
-          <input
-            className="load-details-input"
-            value={form.uom|| ""}
-            onChange={(e) => set("uom", e.target.value)}
-            placeholder=""
           />
         </div>
       </div>

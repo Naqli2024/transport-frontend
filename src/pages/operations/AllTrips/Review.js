@@ -63,7 +63,7 @@ const Review = ({ form, set, fleetSource }) => {
       value: form.fleetSource || "-",
     },
     {
-      label: fleetSource === "own" ? "Vehicle" : "Vendor Vehicle",
+      label: fleetSource === "Own Fleet" ? "Vehicle" : "Vendor Vehicle",
       value: form.vehicleCategory || "-",
     },
     {
@@ -72,11 +72,11 @@ const Review = ({ form, set, fleetSource }) => {
     },
     {
       label: "Driver 2 / Co-Driver",
-      value: fleetSource === "own" ? form.secondDriver || "Not assigned" : "—",
+      value: fleetSource === "Own Fleet" ? form.secondDriver || "Not assigned" : "—",
     },
     {
       label: "Cleaner / Khalasi",
-      value: fleetSource === "own" ? form.cleanerName || "Not assigned" : "—",
+      value: fleetSource === "Own Fleet" ? form.cleanerName || "Not assigned" : "—",
     },
     { label: "Customer", value: form.customer || "—" },
     { label: "Load Type", value: form.loadType },
@@ -105,7 +105,7 @@ const Review = ({ form, set, fleetSource }) => {
         <strong style={{ color: "var(--accent)" }}>Next Step:</strong> Trip
         created as{" "}
         <strong style={{ color: "var(--orange)" }}>Pre-Trip Pending</strong>.{" "}
-        {fleetSource === "own"
+        {fleetSource === "Own Fleet"
           ? "Driver must complete vehicle inspection before departure."
           : "Vendor confirms pickup and driver assignment."}
       </div>

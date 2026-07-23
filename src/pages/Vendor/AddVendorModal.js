@@ -87,20 +87,18 @@ export default function AddVendorModal({ show, onClose, vendor }) {
     <div className="vendor-modal-overlay">
       <div className="vendor-modal">
         <div className="vendor-modal-header">
-          <h4>Add Vendor</h4>
-
+          <h3>Add Vendor</h3>
           <button
-            className="vendor-close-btn"
+            className="fc-modal-close-btn"
             onClick={onClose}
           >
             ✕
           </button>
         </div>
-
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label">Company Name</label>
+              <label className="vm-form-label">Company Name</label>
               <input
                 type="text"
                 className="add-vendor-input"
@@ -112,7 +110,7 @@ export default function AddVendorModal({ show, onClose, vendor }) {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">Contact Person</label>
+              <label className="vm-form-label">Contact Person</label>
               <input
                 type="text"
                 className="add-vendor-input"
@@ -124,7 +122,7 @@ export default function AddVendorModal({ show, onClose, vendor }) {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">Mobile</label>
+              <label className="vm-form-label">Mobile</label>
               <input
                 type="text"
                 className="add-vendor-input"
@@ -136,7 +134,7 @@ export default function AddVendorModal({ show, onClose, vendor }) {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">Email</label>
+              <label className="vm-form-label">Email</label>
               <input
                 type="email"
                 className="add-vendor-input"
@@ -147,7 +145,7 @@ export default function AddVendorModal({ show, onClose, vendor }) {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">GST No</label>
+              <label className="vm-form-label">GST No</label>
               <input
                 type="text"
                 className="add-vendor-input"
@@ -158,7 +156,7 @@ export default function AddVendorModal({ show, onClose, vendor }) {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">City</label>
+              <label className="vm-form-label">City</label>
               <input
                 type="text"
                 className="add-vendor-input"
@@ -169,7 +167,7 @@ export default function AddVendorModal({ show, onClose, vendor }) {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label">State</label>
+              <label className="vm-form-label">State</label>
               <input
                 type="text"
                 className="add-vendor-input"
@@ -180,7 +178,7 @@ export default function AddVendorModal({ show, onClose, vendor }) {
             </div>
 
             <div className="col-md-12">
-              <label className="form-label">Address</label>
+              <label className="vm-form-label">Address</label>
               <textarea
                 rows="3"
                 className="add-vendor-input"

@@ -9,10 +9,9 @@ import VehicleTypeSelector from "./VehicleTypeSelector";
 import { VENDOR_VEHICLES } from "../../../helpers/VendorsVehicles";
 import LoadFreightDetails from "./LoadFreightDetails";
 import DriverCrewSelector from "./DriverCrewSelector";
-import CostBreakdownSection from "./CostBreakdownSection";
 import Review from "./Review";
 import { useDispatch, useSelector } from "react-redux";
-import { addTrip, editTrip, getAllTrips } from "../../../redux/Trip/TripSlice";
+import { addTrip, editTrip } from "../../../redux/Trip/TripSlice";
 import { toast } from "react-toastify";
 import { getAllVendor } from "../../../redux/Vendor/VendorSlice";
 import { getAllVendorVehicles } from "../../../redux/VendorVehicle/VendorVehicleSlice";
@@ -62,7 +61,6 @@ const TripGeneratorModal = ({
       },
     ],
     lrNo: "",
-    uom:"",
     driver1: "",
     driver2: "",
     driverAdvance: "",
@@ -74,23 +72,17 @@ const TripGeneratorModal = ({
     vendorId: "",
     vendorVehicleId: "",
   });
- const buildJourneyLegs = () => {
-  return form.journeyLegs
-    .filter(
-      (leg) =>
-        leg.from?.trim() !== "" ||
-        leg.to?.trim() !== "" ||
-        leg.customerId ||
-        leg.brokerId
-    )
-    .map((leg) => ({
-      legNo: leg.legNo,
-      from: leg.from,
-      to: leg.to,
-      customerId: leg.customerId || undefined,
-      brokerId: leg.brokerId || undefined,
-    }));
-};
+  const buildJourneyLegs = () => {
+    return form.journeyLegs
+      .filter(
+        (leg) =>
+          leg.from?.trim() !== "" || leg.to?.trim() !== "" || leg.customerId,
+      )
+      .map((leg) => ({
+        ...leg,
+        brokerId: form.brokerId || undefined,
+      }));
+  };
 
   const handleChange = (e) => {
     setForm({
@@ -126,25 +118,18 @@ const TripGeneratorModal = ({
         trip.journeyLegs?.length > 0
           ? trip.journeyLegs
           : [
-              {
-                legNo: 1,
-                from: "",
-                to: "",
-                customerId: "",
-                brokerId: "",
-              },
-            ],
+            {
+              legNo: 1,
+              from: "",
+              to: "",
+              customerId: "",
+              brokerId: "",
+            },
+          ],
       lrNo: trip.lrNo || "",
-      uom: trip.uom || " ",
       driver1: trip.driver1?._id || trip.driver1 || "",
       driver2: trip.driver2?._id || trip.driver2 || "",
       driverAdvance: trip.driverAdvance || "",
-      dieselAmount: trip.dieselAmount || "",
-      tollAmount: trip.tollAmount || "",
-      loadingAmount: trip.loadingAmount || "",
-      unloadingAmount: trip.unloadingAmount || "",
-      commissionAmount: trip.commissionAmount || "",
-      miscAmount: trip.miscAmount || "",
       vendorId: trip.vendorId?._id || trip.vendorId || "",
       vendorVehicleId: trip.vendorVehicleId || "",
     });
@@ -152,76 +137,58 @@ const TripGeneratorModal = ({
     setFleetSource(trip.fleetSource === "Vendor" ? "Vendor" : "Own Fleet");
   }, [trip]);
 
- const handleCreate = async () => {
-  const payload = {
-    fleetSource: fleetSource === "Own Fleet" ? "Own Fleet" : "Vendor",
-    vehicleId: form.vehicleId,
-    vehicleCategory: form.vehicleCategory,
-    journeyType: form.journeyType,
-    commodity: form.commodity,
-    weight: Number(form.weight),
-    freightAmount: Number(form.freightAmount),
-    advanceAmount: Number(form.advanceAmount),
-    loadType: form.loadType,
-    paymentType: form.paymentType,
-    origin: form.origin,
-    destination: form.destination,
-    lrNo: form.lrNo,
-    uom: form.uom,
+  const handleCreate = async () => {
+    const payload = {
+      fleetSource: fleetSource === "Own Fleet" ? "Own Fleet" : "Vendor",
+      vehicleId: form.vehicleId,
+      vehicleCategory: form.vehicleCategory,
+      journeyType: form.journeyType,
+      commodity: form.commodity,
+      weight: Number(form.weight),
+      freightAmount: Number(form.freightAmount),
+      advanceAmount: Number(form.advanceAmount),
+      loadType: form.loadType,
+      paymentType: form.paymentType,
+      origin: form.origin,
+      destination: form.destination,
+      lrNo: form.lrNo,
+      driver1: form.driver1 || undefined,
+      driver2: form.driver2 || undefined,
+      driverAdvance: Number(form.driverAdvance),
+      vendorId: form.vendorId || undefined,
+      vendorVehicleId: form.vendorVehicleId,
+      journeyLegs: buildJourneyLegs(),
+    };
+    console.log(payload);
+    try {
+      let res;
 
-    driver1: form.driver1 || undefined,
-    driver2: form.driver2 || undefined,
+      if (trip) {
+        res = await dispatch(
+          editTrip({
+            id: trip._id,
+            data: payload,
+          }),
+        ).unwrap();
 
-    driverAdvance: Number(form.driverAdvance),
-    dieselAmount: Number(form.dieselAmount),
-    tollAmount: Number(form.tollAmount),
-    loadingAmount: Number(form.loadingAmount),
-    unloadingAmount: Number(form.unloadingAmount),
-    commissionAmount: Number(form.commissionAmount),
-    miscAmount: Number(form.miscAmount),
+        toast.success(res);
+      } else {
+        res = await dispatch(addTrip(payload)).unwrap();
 
-    journeyLegs: buildJourneyLegs(),
-  };
+        toast.success(res);
+      }
 
-  if (fleetSource === "Vendor") {
-    payload.vendorId = form.vendorId;
-    payload.vendorVehicleId = form.vendorVehicleId;
-  }
-
-  console.log(payload);
-
-  try {
-    let res;
-
-    if (trip) {
-      res = await dispatch(
-        editTrip({
-          id: trip._id,
-          data: payload,
-        })
-      ).unwrap();
-
-      toast.success(res);
-    } else {
-      res = await dispatch(addTrip(payload)).unwrap();
-
-      toast.success(res);
+      onClose();
+    } catch (err) {
+      toast.error(err);
     }
-
-await dispatch(getAllTrips()); 
-
-    onClose();
-  } catch (err) {
-    toast.error(err);
-  }
-};
+  };
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const steps = [
     { n: 1, label: "Journey Type" },
     { n: 2, label: "Vehicle" },
     { n: 3, label: "Load & Freight" },
     { n: 4, label: "Driver & Crew" },
-    { n: 5, label: "Costs & P&L" },
   ];
 
   return (
@@ -245,14 +212,23 @@ await dispatch(getAllTrips());
             border: `1px solid var(--borderHi)`,
             borderRadius: "16px",
             width: "100%",
-            maxWidth: "900px",
-            maxHeight: "92vh",
-            overflowY: "visible",
-            margin: 0,
+            maxWidth: "1000px",
+            height: "80vh",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           },
         }}
       >
-        <DialogContent sx={{ p: 0 }}>
+        <DialogContent
+          sx={{
+            p: 0,
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            overflow: "hidden",
+          }}
+        >
           <div
             className="trip-generator-modal-header"
             style={{ background: "linear-gradient(135deg,#1746A2,#0F2D7A)" }}
@@ -317,7 +293,7 @@ await dispatch(getAllTrips());
                             ? "#fff"
                             : step === s.n
                               ? "#080B10"
-                              : "var(--textMuted)",
+                              : "var(--textSub)",
                         margin: "0 auto",
                       }}
                     >
@@ -333,11 +309,15 @@ await dispatch(getAllTrips());
                       />
                     )}
                   </div>
-                  <div
-                    className="trip-generator-modal-step-label"
+                  <div className={`trip-generator-modal-step-label ${i === 0
+                    ? "step-label-first"
+                    : i === steps.length - 1
+                      ? "step-label-last"
+                      : ""
+                    }`}
                     style={{
                       color:
-                        step === s.n ? "var(--accent)" : "var(--textMuted)",
+                        step === s.n ? "var(--accent)" : "var(--textSub)",
                     }}
                   >
                     {s.label}
@@ -360,37 +340,38 @@ await dispatch(getAllTrips());
             )}
             {step === 3 && <LoadFreightDetails form={form} set={set} />}
             {step === 4 && <DriverCrewSelector form={form} set={set} />}
-            {step === 5 && (
-              <div>
-                <div className="trip-generator-modal-cost-title">
-                  💰 Cost Breakdown & P&L
-                </div>
-                <CostBreakdownSection form={form} set={set} />
-              </div>
-            )}
-            <DialogActions
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: "20px",
-              }}
-            >
-              <button
-                className="control-btn trip-generator-modal-btn-gh"
-                onClick={() => (step > 1 ? setStep((s) => s - 1) : onClose())}
-              >
-                {step === 1 ? "Cancel" : "← Back"}
-              </button>
-              <button
-                className="control-btn trip-generator-modal-btn-p"
-                onClick={() =>
-                  step < steps.length ? setStep((s) => s + 1) : handleCreate()
-                }
-              >
-                {step === steps.length ? "🚀 Save Trip" : "Next →"}
-              </button>
-            </DialogActions>
           </div>
+          <DialogActions
+            sx={{
+              position: "sticky",
+              bottom: 0,
+              zIndex: 1000,
+
+              display: "flex",
+              justifyContent: "space-between",
+
+              background: "var(--bgCard)",
+              borderTop: "1px solid var(--border)",
+              padding: "16px 22px",
+
+              flexShrink: 0,
+            }}
+          >
+            <button
+              className="control-btn trip-generator-modal-btn-gh"
+              onClick={() => (step > 1 ? setStep((s) => s - 1) : onClose())}
+            >
+              {step === 1 ? "Cancel" : "← Back"}
+            </button>
+            <button
+              className="control-btn trip-generator-modal-btn-p"
+              onClick={() =>
+                step < steps.length ? setStep((s) => s + 1) : handleCreate()
+              }
+            >
+              {step === steps.length ? "🚀 Save Trip" : "Next →"}
+            </button>
+          </DialogActions>
         </DialogContent>
       </Dialog>
     </div>

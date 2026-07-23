@@ -1,35 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FaSearch } from "react-icons/fa";
-
-import { MdOutlineEdit, MdDeleteOutline, MdDelete, MdOutlineRemoveRedEye } from "react-icons/md";
+import { IoSearchOutline } from "react-icons/io5";
+import {
+  MdOutlineEdit,
+  MdDeleteOutline,
+  MdDelete,
+  MdOutlineRemoveRedEye,
+} from "react-icons/md";
 import AddVendorModal from "./AddVendorModal";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteVendor, getAllVendor, getVendorById } from "../../redux/Vendor/VendorSlice";
+import {
+  deleteVendor,
+  getAllVendor,
+  getVendorById,
+} from "../../redux/Vendor/VendorSlice";
 import { toast } from "react-toastify";
 import AddVendorVehicleModal from "./AddVendorVehicleModal";
 import VendorDetailModal from "./VendorDetailModal";
-
-const HERO = [
-  {
-    val: "125",
-    label: "TOTAL VENDORS",
-    cls: "hc-green",
-  },
-  {
-    val: "98",
-    label: "ACTIVE VENDORS",
-    cls: "hc-accent",
-  },
-  {
-    val: "27",
-    label: "INACTIVE VENDORS",
-    cls: "hc-red",
-  },
-];
-
-
-
-
 
 function TripRow({ t }) {
   return (
@@ -99,20 +85,22 @@ export default function Vendors() {
   const [search, setSearch] = useState("");
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
-  const [openDeleteModal, setOpenDeleteModal] = useState(false)
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [openViewModal, setOpenViewModal] = useState(false);
 
   const dispatch = useDispatch();
-  const { vendors, vendorDetails, loading, error } = useSelector((state) => state.vendor)
+  const { vendors, vendorDetails, loading, error } = useSelector(
+    (state) => state.vendor,
+  );
 
   const filteredVendors = useMemo(() => {
     return vendors.filter(
       (vendor) =>
         vendor.companyName?.toLowerCase().includes(search.toLowerCase()) ||
         vendor.contactPerson?.toLowerCase().includes(search.toLowerCase()) ||
-        vendor.mobile?.includes(search)
+        vendor.mobile?.includes(search),
     );
   }, [vendors, search]);
 
@@ -158,48 +146,41 @@ export default function Vendors() {
     );
   }
   return (
-    <div data-theme={theme}>
-      <div className="vendor-topbar d-flex p-3">
-        <div className="vendor-topbar-sub w-100 ">
-          <h1>Vendors </h1>
-          Trip-level profitability — own fleet vs vendor analysis
+    <div>
+      <div className="vm-topbar">
+        <div className="vm-topbar-left">
+          <h1 className="heading">Vendors</h1>
+          <div className="sub-heading">
+            Trip-level profitability — own fleet vs vendor analysis
+          </div>
         </div>
-        <div>
+        <div className="vm-topbar-right">
           <button
             className="add-vendor-btn"
             onClick={() => {
-              setSelectedVendor(null);   // Add mode
+              setSelectedVendor(null);
               setShowVendorModal(true);
             }}
           >
             + Add Vendor
           </button>
         </div>
-
       </div>
-
-
       <div className="vendor-main">
-        <div className="vendor-hero-row">
-          {HERO.map((h) => (
-            <div key={h.label} className={`vendor-hero-card ${h.cls}`}>
-              <div className="vendor-hero-val">{h.val}</div>
-              <div className="vendor-hero-label">{h.label}</div>
+        <div className="vendor-filter-bar">
+          <div className="broker-search-wrap">
+            <div className="broker-search">
+              <span className="broker-search-icon">
+                <IoSearchOutline size={16} />
+              </span>
+              <input
+                type="text"
+                className="vendor-search-input"
+                placeholder="Search company, contact, mobile..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-          ))}
-        </div>
-
-        <div className="vendor-filter-bar py-4">
-          <div className="vendor-search-wrap">
-            <FaSearch className="vendor-search-icon" />
-
-            <input
-              type="text"
-              className="vendor-search-input"
-              placeholder="Search company, contact, mobile..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
           </div>
         </div>
         {error && !loading && (
@@ -296,7 +277,6 @@ export default function Vendors() {
                   </tr>
                 )}
               </tbody>
-
             </table>
           </div>
         </div>
@@ -318,7 +298,10 @@ export default function Vendors() {
               >
                 Cancel
               </button>
-              <button className="vendor-delete-btn confirm" onClick={handleDelete}>
+              <button
+                className="vendor-delete-btn confirm"
+                onClick={handleDelete}
+              >
                 <MdDelete /> Delete
               </button>
             </div>
@@ -333,21 +316,21 @@ export default function Vendors() {
           setSelectedVendor(null);
         }}
         vendor={selectedVendor}
-
       />
       <VendorDetailModal
         open={openViewModal}
-        onClose={() => { setOpenViewModal(false) }}
-        vendors={vendorDetails} />
+        onClose={() => {
+          setOpenViewModal(false);
+        }}
+        vendors={vendorDetails}
+      />
 
       <AddVendorVehicleModal
         show={showVehicleModal}
         onClose={() => {
           setShowVehicleModal(false);
         }}
-
       />
-
     </div>
   );
 }

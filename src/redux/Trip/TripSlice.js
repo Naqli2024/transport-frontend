@@ -1,9 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { TyreIntelligenceApiUrl } from "../../services/ApiUrl";
-import TyreIntelligenceService from "../../services/TyreIntelligenceService";
 import handleApiError from "../../helpers/helperApiError";
 import Cookies from "js-cookie";
 import TripService from "../../services/TripService";
+import BulkService from "../../services/BulkService";
 
 export const addTrip = createAsyncThunk(
   "addTrip",
@@ -28,23 +27,6 @@ export const getAllTrips = createAsyncThunk(
     }
   }
 )
-
-export const uploadTripDocuments = createAsyncThunk(
-  "uploadTripDocuments",
-  async ({ id, formData }, { rejectWithValue }) => {
-    console.log("Uploading for:", id);
-
-    try {
-      const { data } = await TripService.post(
-        `/${id}/documents`,
-        formData
-      );
-      return data;
-    } catch (error) {
-      return rejectWithValue(handleApiError(error));
-    }
-  }
-);
 
 export const editTrip = createAsyncThunk(
   "editTrip",
@@ -73,44 +55,115 @@ export const deleteTrip = createAsyncThunk(
     }
   }
 )
+export const getTripById = createAsyncThunk(
+  "getTripById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await TripService.get(`/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
 
+export const bulkUploadDocuments = createAsyncThunk(
+  "trips/bulkUploadDocuments",
+  async ({ tripId, payload }, { rejectWithValue }) => {
+    try {
+      const { data } = await BulkService.post(
+        `/${tripId}/documents/bulk-upload`,
+        payload);
 
+      return data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
 
-
+export const getTripDocuments = createAsyncThunk(
+  "trip/getTripDocuments",
+  async (tripId, { rejectWithValue }) => {
+    try {
+      const { data } = await BulkService.get(`/${tripId}/documents`);
+      return data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
 
 const TripSlice = createSlice({
   name: "trip",
   initialState: {
     trips: [],
+    tripDetail: null,
+    documents: [],
     loading: false,
+    loadingDetail: false,
+    uploading: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
-    const handlePending = (state) => {
-      state.loading = true;
+    const handlePending = (state, action) => {
+      switch (action.type) {
+        case getAllTrips.pending.type:
+          state.loading = true;
+          break;
+
+        case getTripById.pending.type:
+        case getTripDocuments.pending.type:
+          state.loadingDetail = true;
+          break;
+
+        case bulkUploadDocuments.pending.type:
+          state.uploading = true;
+          break;
+
+        default:
+          state.loading = true;
+          break;
+      }
     };
     const handleFullFilled = (state, action) => {
-      state.loading = false;
       state.error = null;
       switch (action.type) {
         case getAllTrips.fulfilled.type:
+          state.loading = false;
           state.trips = action.payload?.data || [];
+          break;
+        case getTripById.fulfilled.type:
+          state.loadingDetail = false;
+          state.tripDetail = action.payload?.data;
+          break;
+        case getTripDocuments.fulfilled.type:
+          state.loadingDetail = false;
+          state.documents = action.payload?.data || [];
           break;
         case addTrip.fulfilled.type:
         case editTrip.fulfilled.type:
         case deleteTrip.fulfilled.type:
-        case uploadTripDocuments.fulfilled.type:
+           state.loading = false;
+           break;
+        case bulkUploadDocuments.fulfilled.type:
+           state.uploading = false;
           break;
         default:
+          state.loading = false;
+          state.loadingDetail = false;
+          state.uploading = false;
           break;
       }
     };
     const handleRejected = (state, action) => {
       state.loading = false;
+      state.loadingDetail = false;
+      state.uploading = false;
       state.error = action.payload;
     };
-    [addTrip, getAllTrips, editTrip, deleteTrip,uploadTripDocuments].forEach((action) => {
+    [addTrip, getAllTrips, editTrip, deleteTrip, bulkUploadDocuments, getTripById, getTripDocuments].forEach((action) => {
       builder
         .addCase(action.pending, handlePending)
         .addCase(action.fulfilled, handleFullFilled)

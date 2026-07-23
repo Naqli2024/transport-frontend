@@ -268,9 +268,6 @@ const AddDriverModal = ({
                   onChange={handleChange}
                 />
               </Field>
-
-
-
             </div>
           )}
         </div>

@@ -9,10 +9,14 @@ import {
 import {
   deleteVehicle,
   getAllVehicles,
+  uploadVehicleDocs,
 } from "../../../redux/Vehicle/VehicleSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import VehicleViewModal from "./VehicleViewModal";
+import { IoSearchOutline } from "react-icons/io5";
+import { MdOutlineFileUpload } from "react-icons/md";
+import UploadVehicleDocModal from "./UploadVehicleDocModal";
 
 const TABS = ["All", "Available", "On Trip", "Maintenance"];
 const getStatusStr = (status) =>
@@ -90,11 +94,12 @@ function HealthBar({ pct, fillCls, pctCls }) {
   );
 }
 
-function VehicleRow({ v, onView, onEdit, onDelete }) {
+function VehicleRow({ v, vehicleDocs, onView, onEdit, onDelete, onUpload }) {
   const insurance = getDocStatus(v.insuranceExpiryDate);
   const fc = getDocStatus(v.fcExpiryDate);
   const tax = getDocStatus(v.taxExpiryDate, "tax");
   const statusStr = getStatusStr(v.status);
+  const allDocsUploaded = vehicleDocs.length === 10;
 
   return (
     <tr>
@@ -143,6 +148,14 @@ function VehicleRow({ v, onView, onEdit, onDelete }) {
         >
           <MdOutlineEdit />
         </button>
+        {!allDocsUploaded && (
+          <button
+            className="vm-action-btn vm-action-upload"
+            onClick={() => onUpload(v)}
+          >
+            <MdOutlineFileUpload />
+          </button>
+        )}
         <button
           className="vm-action-btn vm-action-delete"
           onClick={() => onDelete(v)}
@@ -185,8 +198,11 @@ const VehicleMaster = () => {
   const [openVehicleViewModal, setOpenVehicleViewModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openUploadModal, setOpenUploadModal] = useState(false);
+  const [vehicle, setVehicle] = useState(null);
   const [search, setSearch] = useState("");
   const { vehicles, loading, error } = useSelector((state) => state.vehicle);
+  const { vehicleDocs } = useSelector((state) => state.vehicle);
   const vehicleOnlyData = vehicles?.filter((v) => v.fleet === "vehicle");
 
 
@@ -233,7 +249,6 @@ const VehicleMaster = () => {
     { val: vehicleOnlyData.length, label: "Total Fleet", cls: "sc-blue" },
     { val: availableCount, label: "Available", cls: "sc-green" },
     { val: onTripCount, label: "On Trip", cls: "sc-amber" },
-    { val: maintenanceCount, label: "Maintenance", cls: "sc-orange" },
     { val: complianceCount, label: "Compliance Issues", cls: "sc-red" },
   ];
 
@@ -245,6 +260,17 @@ const VehicleMaster = () => {
       await dispatch(getAllVehicles());
       setOpenDeleteModal(false);
       setSelectedVehicle(null);
+    } else {
+      toast.error(response?.error?.message);
+    }
+  };
+
+  const handleUpload = async (vehicleId, payload) => {
+    const response = await dispatch(uploadVehicleDocs({ vehicleId, payload }));
+    if (response?.payload) {
+      toast.success(response.payload.message);
+      setOpenUploadModal(false);
+      setVehicle(null);
     } else {
       toast.error(response?.error?.message);
     }
@@ -317,7 +343,7 @@ const VehicleMaster = () => {
         </div>
 
         <div className="he-search-wrap mb-3">
-          <span className="he-search-icon">⌕</span>
+          <span className="he-search-icon"><IoSearchOutline size={16} /></span>
           <input
             className="he-search-input"
             placeholder="Search vehicle no..."
@@ -353,6 +379,7 @@ const VehicleMaster = () => {
                   <VehicleRow
                     key={v._id}
                     v={v}
+                    vehicleDocs={vehicleDocs}
                     onView={(vehicle) => {
                       setSelectedVehicle(vehicle);
                       setOpenVehicleViewModal(true);
@@ -364,6 +391,10 @@ const VehicleMaster = () => {
                     onDelete={(vehicle) => {
                       setSelectedVehicle(vehicle);
                       setOpenDeleteModal(true);
+                    }}
+                    onUpload={(vehicle) => {
+                      setVehicle(vehicle)
+                      setOpenUploadModal(true);
                     }}
                   />
                 ))
@@ -433,6 +464,16 @@ const VehicleMaster = () => {
             </div>
           </div>
         </div>
+      )}
+      {openUploadModal && (
+        <UploadVehicleDocModal
+          vehicle={vehicle}
+          onClose={() => {
+            setOpenUploadModal(false);
+            setVehicle(null);
+          }}
+          onUpload={handleUpload}
+        />
       )}
     </div>
   );
