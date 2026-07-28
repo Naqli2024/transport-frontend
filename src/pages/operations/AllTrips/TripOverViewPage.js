@@ -60,7 +60,7 @@ const TripOverViewPage = ({ onBack, tripDetail, documents }) => {
     
     const vehicle = tripDetail?.vehicleId || {};
     const driver = tripDetail?.driver1 || {};
-
+    const expensesType = ["Fuel Entries", "Loading" , "Unloading", "Weighbridge"]
     const complianceItems = useMemo(() => {
         const list = [
             { label: "Insurance", date: vehicle.insuranceExpiryDate, owner: vehicle.regNo },
@@ -229,8 +229,30 @@ const TripOverViewPage = ({ onBack, tripDetail, documents }) => {
                     </div>
                 </div>
             </div>
-            <div className="trip-overview-card">
+            <div className="trip-overview-card ">
                 <div className="trip-overview-card-title">Trip documents</div>
+                {documents.length > 0 ? (
+                    <div className="trip-overview-docs">
+                        {documents.map((doc) => (
+                            <div className="trip-overview-doc" key={doc._id}>
+                                <span className="trip-overview-doc-type">{docTypeLabel(doc.documentType)}</span>
+                                <a
+                                    className="trip-overview-doc-link"
+                                    href={doc.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    View
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="trip-overview-doc-empty">No documents uploaded for this trip yet.</div>
+                )}
+            </div>
+            <div className="trip-overview-card mt-3">
+                <div className="trip-overview-card-title">Expenses</div>
                 {documents.length > 0 ? (
                     <div className="trip-overview-docs">
                         {documents.map((doc) => (

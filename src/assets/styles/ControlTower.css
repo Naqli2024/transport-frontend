@@ -1,0 +1,205 @@
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+* {
+  letter-spacing: 0.5px;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+}
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sub);
+  border-radius: 2px;
+}
+:root {
+  --bg: #010b24;
+  --bgCard: #001942;
+  --bgSidebar: #001942;
+  --bgPanel: #00153a;
+  --bgDeep: #012561;
+  --bgHover: #101c2e;
+  --border: #1a2133;
+  --borderDark: #1a2133;
+  --borderHi: #222d42;
+  --accent: #f59e0b;
+  --accentGlow: #f59e0b18;
+  --accentDim: rgba(245, 158, 11, 0.12);
+  --accent2: #ff6b35;
+  --accentDim2: rgba(255, 107, 53, 0.12);
+  --accentGlow2: rgba(255, 107, 53, 0.3);
+  --accentSoft: #fcd34d;
+  --blue: #3b82f6;
+  --blueGlow: #3b82f618;
+  --green: #10b981;
+  --greenGlow: #10b98118;
+  --red: #ef4444;
+  --redGlow: #ef444418;
+  --orange: #f97316;
+  --orangeGlow: #f9731618;
+  --purple: #8b5cf6;
+  --purpleGlow: #8b5cf618;
+  --cyan: #06b6d4;
+  --cyanGlow: #06b6d418;
+  --text: #f1f5f9;
+  --textSub: #94a3b8;
+  --textMuted: #3d4f6a;
+  --tableBg: #0d1525;
+  --tableHead: #101c2e;
+}
+[data-theme="light"] {
+  --hbg: radial-gradient(circle at top, #e6f0ff, #f9fbff);
+  --bg: #dee9f565;
+  --bgCard: white;
+  --bgSidebar: #15263f;
+  --bgHover: #ebf0fa;
+  --surface: #ffffff;
+  --bgPanel: #f7f9fe;
+  --elevated: #ebf0fa;
+  --card: #e4eaf7;
+  --border: rgba(0, 0, 0, 0.07);
+  --borderDark: #243852;
+  --border2: rgba(0, 0, 0, 0.13);
+  --borderHi: #222d423a;
+  --text: #0d1830;
+  --textSub: #334155;
+  --muted: #5a6a8a;
+  --accent: #f59e0b;
+  --accentGlow: #f59e0b18;
+  --accentDim: rgba(245, 158, 11, 0.12);
+  --tableBg: #f7f9fe;
+  --tableHead: #ebf0fa;
+}
+/* Industry themes */
+:root[data-industry="tyre"] {
+  --accent: #ff6b35;
+  --accentDim: rgba(255, 107, 53, 0.12);
+  --accentGlow: rgba(255, 107, 53, 0.3);
+}
+:root[data-industry="seafood"] {
+  --accent: #00c4ff;
+  --accentDim: rgba(0, 196, 255, 0.12);
+  --accentGlow: rgba(0, 196, 255, 0.3);
+}
+:root[data-industry="supermarket"] {
+  --accent: #22c55e;
+  --accentDim: rgba(34, 197, 94, 0.12);
+  --accentGlow: rgba(34, 197, 94, 0.3);
+}
+:root[data-industry="restaurant"] {
+  --accent: #f59e0b;
+  --accentDim: rgba(245, 158, 11, 0.12);
+  --accentGlow: rgba(245, 158, 11, 0.3);
+}
+:root[data-industry="custom"] {
+  --accent: #8b5cf6;
+  --accentDim: #8a5cf62f;
+  --accentGlow: rgba(85, 11, 245, 0.3);
+}
+.controlTower{
+
+    padding:25px;
+    background:#F5F7FB;
+    min-height:100vh;
+
+}
+
+.dashboardHeader{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+
+}
+
+.dashboardHeader h2{
+
+    margin:0;
+    color:#243B55;
+
+}
+
+.dashboardHeader p{
+
+    margin-top:5px;
+    color:#888;
+
+}
+
+.refreshBtn{
+
+    border:none;
+    background:#2563eb;
+    color:white;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+
+}
+
+.refreshBtn:hover{
+
+    background:#1d4ed8;
+
+}
+
+.dashboard-loading{
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-size:22px;
+    font-weight:bold;
+
+}
+
+.cardGrid{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    margin-bottom:25px;
+
+}
+
+.chartGrid{
+
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+    margin-bottom:25px;
+
+}
+
+.tableGrid{
+
+    display:grid;
+    gap:20px;
+
+}
+
+@media(max-width:900px){
+
+.chartGrid{
+
+grid-template-columns:1fr;
+
+}
+
+}

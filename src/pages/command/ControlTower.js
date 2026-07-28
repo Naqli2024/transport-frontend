@@ -1,203 +1,209 @@
-import React, { useState } from 'react'
-import { AI_PREDICTIONS } from '../../helpers/AiPredictionsData';
-import { WORK_ORDERS } from '../../helpers/WorkOrdersData';
-import { Ic } from '../../components/icons/Ic'
-import { transportItems } from '../../helpers/SidebarData'
-import { useNavigate } from 'react-router-dom';
-import { FLEET_DATA } from '../../helpers/FleetData';
-import { VEHICLE_SCHEMA } from '../../helpers/VehicleSchema';
-import { riskBadge } from '../../helpers/RiskBadge';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
+import DashboardCard from "../../components/Dashboard/DashboardCard";
+import IncomeExpenseChart from "../../components/Dashboard/IncomeExpenseChart";
+import ExpensePieChart from "../../components/Dashboard/ExpensePieChart";
+import TripStatusChart from "../../components/Dashboard/TripStatusChart";
+import ExpenseTable from "../../components/Dashboard/ExpenseTable";
+import SettlementCard from "../../components/Dashboard/SettlementCard";
+import ExpenseProgress from "../../components/Dashboard/ExpenseProgress";
+import ProfitGauge from "../../components/Executive/profitGauge";
+import FinancialSummary from "../../components/Executive/FinancialSummary";
+import TopExpenseCard from "../../components/Executive/TopExpenseCard";
+import ExpenseRanking from "../../components/Executive/ExpenseRanking";
+import "../../assets/styles/ControlTower.css";
+
+import {
+  FaTruck,
+  FaWallet,
+  FaMoneyBillWave,
+  FaRoute,
+  FaCheckCircle,
+  FaRoad,
+  FaUndo,
+  FaBuilding,
+} from "react-icons/fa";
+import Loader from "../../components/Loader";
 
 const ControlTower = () => {
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-     const JOURNEY_TYPES = [
-  { id:"oneway", label:"One-Way Load", icon:"→", color:"#3B82F6", desc:"Truck goes A→B with load. Returns empty or on its own.", legs:["Origin → Destination"], tag:"Single Leg" },
-  { id:"roundtrip", label:"Round Trip", icon:"⇄", color:"#10B981", desc:"A→B with load, B→A with return load from another party.", legs:["Origin → Destination","Destination → Origin (Return Load)"], tag:"2 Legs" },
-  { id:"multileg", label:"Multi-Leg (Hub & Spoke)", icon:"⟳", color:"#F59E0B", desc:"A→B→C. Deliver at B, pick new load to C, then return.", legs:["Origin → Stop 1","Stop 1 → Stop 2","Stop 2 → Origin"], tag:"3 Legs" },
-  { id:"crossregion", label:"Cross-Region Relay", icon:"↬", color:"#8B5CF6", desc:"Long-haul trip with driver relay handoff at midpoint depot.", legs:["Origin → Relay Point","Relay Point → Destination"], tag:"Driver Relay" },
-  { id:"dedicated", label:"Dedicated Fleet Run", icon:"∞", color:"#F97316", desc:"Fixed route, recurring trips for one customer.", legs:["Fixed Route (Repeating)"], tag:"Recurring" },
-];
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
 
-  const highRisk = AI_PREDICTIONS.filter(p => p.riskScore === "HIGH");
-  const status = WORK_ORDERS.filter(w => w.status !== 'Completed')
-  const navigate = useNavigate()
+      const token = Cookies.get("token");
+      const res = await axios.get(
+        "http://localhost:5000/api/trips/ledger-dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-  const dashboardData = [
-    {
-      label: "Today Revenue",
-      value: "₹2,83,000",
-      color: "#10B981"
-    },
-    {
-      label: "Active Trips",
-      value: "3",
-      color: "#3B82F6"
-    },
-    {
-      label: "Inspection Pending",
-      value: "2",
-      color: "#F97316"
-    },
-    {
-      label: "High Risk Vehicles",
-      value: highRisk.length,
-      color: "#EF4444"
-    },
-    {
-      label: "Today Revenue",
-      value: status.length,
-      color: "#8B5CF6"
-    },
-  ]
+      setDashboard(res.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const actions = [
-    {
-      icon: "pretrip",
-      label: "Pre-Trip Pending — TRP-2025-0043",
-      sub: "Trichy → Mumbai · Sri Murugan Transport",
-      bgcolor: "green",
-      path: "all-trips"
-    },
-    {
-      icon: "posttrip",
-      label: "Post-Trip Pending — TRP-2025-0042",
-      sub: "Madurai → Bangalore · Selvam R",
-      bgcolor: "blue",
-      path: "all-trips"
-    },
-    {
-      icon: "alert",
-      label: `${highRisk.length} Vehicles HIGH Risk`,
-      sub: highRisk.map(p => p.vehicle).join(", "),
-      bgcolor: "red",
-      path: "ai-predictions"
-    },
-    {
-      icon: "wrench",
-      label: "Work Order Open — TN59 AB1234",
-      sub: "Alternator fault — Power Electricals",
-      bgcolor: "orange",
-      path: "workshop"
-    },
-    {
-      icon: "shield",
-      label: "Insurance Expiring — TN59 AB1234",
-      sub: "7 days remaining",
-      bgcolor: "red",
-      path: "vehicle-master"
-    },
-  ]
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
+  if (loading)
+    return <><Loader isLoading={loading}/></>;
+
+  if (!dashboard)
+    return <div className="dashboard-loading">No Dashboard Data</div>;
+
+  const { income, expenses, summary, driverSettlement } = dashboard;
 
   return (
-    <div>
-      <div style={{ marginBottom: "22px" }}>
-        <h1 className='rj control-title' >Control Tower</h1>
-        <p className='control-sub'>Wednesday, 15 April 2026 — Fleet Business OS Overview</p>
+    <div className="controlTower">
+      <div className="dashboardHeader">
+        <div>
+          <h2>Trip Ledger Dashboard</h2>
+          <p>Financial Overview</p>
+        </div>
+
+        <button className="refreshBtn" onClick={fetchDashboard}>
+          Refresh
+        </button>
       </div>
-      <div className='control-row control-col'>
-        {dashboardData.map((item) => (
-          <div className='control-stat'>
-            <div className='control-stat-value' style={{color:item.color}}>{item.value}</div>
-            <div className='control-stat-label'>{item.label}</div>
-          </div>
-        ))}
+
+      {/* KPI Cards */}
+
+      <div className="cardGrid">
+        <DashboardCard
+          title="Freight Income"
+          value={income.freight}
+          icon={<FaTruck />}
+          color="#2563EB"
+          isCurrency
+        />
+
+        <DashboardCard
+          title="Profit"
+          value={summary.profit}
+          icon={<FaWallet />}
+          color="#10B981"
+          isCurrency
+        />
+
+        <DashboardCard
+          title="Total Expense"
+          value={summary.totalExpense}
+          icon={<FaMoneyBillWave />}
+          color="#EF4444"
+          isCurrency
+        />
+
+        <DashboardCard
+          title="Total Trips"
+          value={summary.totalTrips}
+          icon={<FaRoute />}
+          color="#7C3AED"
+        />
+
+        <DashboardCard
+          title="Completed Trips"
+          value={summary.completedTrips}
+          icon={<FaCheckCircle />}
+          color="#14B8A6"
+        />
+
+        <DashboardCard
+          title="Running Trips"
+          value={summary.runningTrips}
+          icon={<FaRoad />}
+          color="#F59E0B"
+        />
+
+        <DashboardCard
+          title="Driver Return"
+          value={driverSettlement.driverShouldReturn}
+          icon={<FaUndo />}
+          color="#0EA5E9"
+          isCurrency
+        />
+
+        <DashboardCard
+          title="Office Pay"
+          value={driverSettlement.officeShouldPay}
+          icon={<FaBuilding />}
+          color="#EC4899"
+          isCurrency
+        />
       </div>
-      <div className='row g-3' style={{ marginBottom: "16px" }}>
-        <div className='col-lg-6'>
-          <div className='control-card-box'>
-            <div className='section-title' style={{ color: 'var(--orange)' }}>⚡ Pending Actions</div>
-            {actions.map((a, i) => (
-              <div key={i} className='control-actions-row' style={{ borderLeftColor: a.bgcolor }}>
-                <Ic n={a.icon} s={13} c={a.bgcolor} />
-                <div style={{ flex: 1 }}>
-                  <div className='control-pending-label' style={{ color: a.bgcolor }}>{a.label}</div>
-                  <div className='control-pending-sub'>{a.sub}</div>
-                </div>
-                <button className="control-btn control-btn-gh " onClick={() => { navigate(`/transport/${a.path}`) }}>Fix →</button>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='col-lg-6'>
-          <div className='control-card-box' style={{ height: '355px' }}>
-            <div className="section-title">Fleet Health Overview</div>
-            {FLEET_DATA.map((v) => {
-              const vt = VEHICLE_SCHEMA.find(x => x.id === v.typeId)
-              return (
-                <div key={v.id} style={{ marginBottom: "10px" }}>
-                  <div className='control-fleet-data-container'>
-                    <div className='control-fleet-data-head'>
-                      <span className='control-vt-icon'>{vt?.icon}</span>
-                      <span className='mono control-num'>{v.num}</span>
-                    </div>
-                    <div className='control-fleet-data-heads'>
-                      <span className={`control-badge control-badge-size ${v.status === "Active" ? "control-bg" : v.status === "On Trip" ? "control-bb" : "control-ba"}`}>{v.status}</span>
-                      <span style={{ color: v.health > 80 ? 'var(--green)' : v.health > 60 ? 'var(--accent)' : 'var(--red)', fontWeight: 600 }}>{v.health}%</span>
-                    </div>
-                  </div>
-                  <div className="control-pbar"><div className="control-pfill" style={{ width: `${v.health}%`, background: v.health > 80 ? 'var(--green)' : v.health > 60 ? 'var(--accent)' : 'var(--red)' }} /></div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+
+      {/* Charts */}
+
+      <div className="chartGrid">
+        <IncomeExpenseChart income={income} summary={summary} />
+
+        <ExpensePieChart expenses={expenses} />
       </div>
-      <div className='row g-3'>
-        <div className='col-md-4'>
-          <div className='control-card-box'>
-            <div className="section-title">Journey Types Active</div>
-            {JOURNEY_TYPES.map((jt) => (
-              <div className='control-journey-container' key={jt.id}>
-                <div className='control-journey-head'>
-                  <span className='control-icon-size' style={{ color: jt.color }}>{jt.icon}</span>
-                  <span className='control-journey-label'>{jt.label}</span>
-                </div>
-                <span className="control-badge" style={{ background: jt.color + "20", color: jt.color, fontSize: 9 }}>{jt.tag}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='col-md-4'>
-          <div className='control-card-box' style={{ height: '245px' }}>
-            <div className="section-title">AI Risk Summary</div>
-            {AI_PREDICTIONS.map((p) => (
-              <div className='control-journey-container' key={p.vehicle}>
-                <span className="mono control-vehicle">{p.vehicle}</span>
-                {riskBadge(p.riskScore)}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='col-md-4'>
-          <div className="control-card-box" style={{ height: "245px" }}>
-            <div className="section-title">Work Orders</div>
-            {WORK_ORDERS.map((wo) => {
-              const statusClass =
-                wo.status === "Completed"
-                  ? "control-completed"
-                  : wo.status === "In Progress"
-                    ? "control-progress"
-                    : "control-pending";
-              return (
-                <div key={wo.id} className="control-work-orders-container">
-                  <div className="control-work-orders-row">
-                    <div>
-                      <div className="mono control-work-id">{wo.id}</div>
-                      <div className="control-work-sub">{wo.vehicle} · {wo.category}</div>
-                    </div>
-                    <span className={`control-badge control-badge-size ${statusClass}`}>
-                      {wo.status}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+
+      <div className="chartGrid" style={{ marginTop: 20 }}>
+        <TripStatusChart summary={summary} />
+      </div>
+
+      {/* Tables */}
+
+      <div
+        className="tableGrid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
+          gap: "20px",
+        }}
+      >
+        <ExpenseTable expenses={expenses} />
+
+        <SettlementCard settlement={driverSettlement} />
+      </div>
+
+      <div
+        style={{
+          marginTop: "20px",
+        }}
+      >
+        <ExpenseProgress expenses={expenses} />
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "20px",
+          marginTop: "20px",
+        }}
+      >
+        <ProfitGauge income={income} summary={summary} />
+
+        <FinancialSummary income={income} summary={summary} />
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 2fr",
+          gap: "20px",
+          marginTop: "20px",
+        }}
+      >
+        <TopExpenseCard expenses={expenses} />
+
+        <ExpenseRanking expenses={expenses} />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ControlTower
+export default ControlTower;

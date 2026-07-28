@@ -192,7 +192,7 @@ const AllTrips = () => {
           </div>
         ) : (<TripOverViewPage tripDetail={tripDetail} documents={documents} onBack={() => setShowOverview(false)} />)) :
         (openTrackTrip
-          ? (<TrackTrip trips={trips} close={() => setOpenTrackTrip(false)} />)
+          ? (<TrackTrip trip={activeTrip} close={() => setOpenTrackTrip(false)} />)
           : (
             <div>
               <div className="tracking-container">
@@ -205,15 +205,6 @@ const AllTrips = () => {
                   </p>
                 </div>
                 <div className="d-flex gap-3">
-                  <button
-                    className="control-btn trips-btn-booking"
-                    onClick={() => {
-                      setOpenTrackTrip(true);
-                    }}
-                  >
-                    <CgTrack size={18} />
-                    Track Trip
-                  </button>
                   <button
                     className="control-btn trips-btn-booking"
                     onClick={() => {
@@ -297,7 +288,7 @@ const AllTrips = () => {
                         <TableCell>Customer</TableCell>
                         <TableCell>Freight</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell>Action</TableCell>
+                        <TableCell className="text-center">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -335,10 +326,11 @@ const AllTrips = () => {
                           <TableCell>{t.tripStatus}</TableCell>
                           <TableCell>
                             <div className="vm-td-actions">
-                              <button className="vm-action-btn vm-action-view" onClick={() => handleView(t)}>
+                              <button title="View Trip Details" className="vm-action-btn vm-action-view" onClick={() => handleView(t)}>
                                 <MdOutlineRemoveRedEye />
                               </button>
                               <button
+                              title="Edit Trip Details"
                                 className="vm-action-btn vm-action-edit"
                                 onClick={() => {
                                   setEditingTrip(t);
@@ -348,6 +340,7 @@ const AllTrips = () => {
                                 <MdOutlineEdit />
                               </button>
                               <button
+                              title="Upload Trip Documents"
                                 className="vm-action-btn vm-action-upload"
                                 onClick={() => {
                                   setActiveTrip(t)
@@ -358,6 +351,7 @@ const AllTrips = () => {
                                 <MdOutlineFileUpload />
                               </button>
                               <button
+                              title="Delete Trip"
                                 className="vm-action-btn vm-action-delete"
                                 onClick={() => {
                                   setSelectedTrip(t);
@@ -366,6 +360,16 @@ const AllTrips = () => {
                               >
                                 <MdDeleteOutline />
                               </button>
+                              <button
+                              title="Track Vehicle"
+                    className="vm-action-btn vm-action-track"
+                    onClick={() => {
+                      setActiveTrip(t);
+                      setOpenTrackTrip(true);
+                    }}
+                  >
+                    <CgTrack size={18} />
+                  </button>
                             </div>
                           </TableCell>
                         </TableRow>

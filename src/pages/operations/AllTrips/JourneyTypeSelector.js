@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { CUSTOMERS } from "../../../helpers/CustomersData";
 import { DRIVERS_DATA } from "../../../helpers/DriversData";
-import { getAllCustomer, getAllCustomers } from "../../../redux/Customer/CustomerSlice";
+import {
+  getAllCustomer,
+  getAllCustomers,
+} from "../../../redux/Customer/CustomerSlice";
 import { getAllBrokers } from "../../../redux/Broker/BrokerSlice";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
+import { Autocomplete } from "@react-google-maps/api";
 
 const JourneyTypeSelector = ({ form, set, setForm }) => {
-  
+  const [originAutoComplete, setOriginAutoComplete] = useState(null);
+  const [destinationAutoComplete, setDestinationAutoComplete] = useState(null);
   const { customers } = useSelector((state) => state.customer);
   const { brokers } = useSelector((state) => state.broker);
   const dispatch = useDispatch();
@@ -292,33 +297,72 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               <div className="py-3">
                 <div className="row g-3 mb-4">
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Origin Location</label>
-                    <input
-                      value={form.origin.location}
-                      onChange={(e) =>
+                    <label className="journey-type-flabel">
+                      Origin Location
+                    </label>
+                    <Autocomplete
+                      onLoad={(autocomplete) =>
+                        setOriginAutoComplete(autocomplete)
+                      }
+                      onPlaceChanged={() => {
+                        if (!originAutoComplete) return;
+
+                        const place = originAutoComplete.getPlace();
+
                         set("origin", {
                           ...form.origin,
-                          location: e.target.value,
-                        })
-                      }
-                      placeholder="Enter Origin Location..."
-                      className="journey-type-input"
-                    />
+                          location: place.formatted_address || place.name,
+                          lat: place.geometry.location.lat(),
+                          lng: place.geometry.location.lng(),
+                        });
+                      }}
+                    >
+                      <input
+                        value={form.origin.location}
+                        onChange={(e) =>
+                          set("origin", {
+                            ...form.origin,
+                            location: e.target.value,
+                          })
+                        }
+                        placeholder="Enter Origin Location..."
+                        className="journey-type-input"
+                      />
+                    </Autocomplete>
                   </div>
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Destination Location</label>
-                    <input
-                      type="text"
-                      value={form.destination.location}
-                      onChange={(e) =>
+                    <label className="journey-type-flabel">
+                      Destination Location
+                    </label>
+                    <Autocomplete
+                      onLoad={(autocomplete) =>
+                        setDestinationAutoComplete(autocomplete)
+                      }
+                      onPlaceChanged={() => {
+                        if (!destinationAutoComplete) return;
+
+                        const place = destinationAutoComplete.getPlace();
+
                         set("destination", {
                           ...form.destination,
-                          location: e.target.value,
-                        })
-                      }
-                      className="journey-type-input"
-                      placeholder="Enter Destination Location..."
-                    />
+                          location: place.formatted_address || place.name,
+                          lat: place.geometry.location.lat(),
+                          lng: place.geometry.location.lng(),
+                        });
+                      }}
+                    >
+                      <input
+                        value={form.destination.location}
+                        onChange={(e) =>
+                          set("destination", {
+                            ...form.destination,
+                            location: e.target.value,
+                          })
+                        }
+                        placeholder="Enter Destination Location..."
+                        className="journey-type-input"
+                      />
+                    </Autocomplete>
                   </div>
                 </div>
               </div>
@@ -330,7 +374,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From</label>
                     <input
                       value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(0, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "from", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -340,7 +386,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(0, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "to", e.target.value)
+                      }
                       placeholder="Coimbatore"
                       className="journey-type-input"
                     />
@@ -382,7 +430,6 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                       ))}
                     </select>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -393,7 +440,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               <div className="py-3">
                 <div className="row g-3 mb-4">
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Origin Location</label>
+                    <label className="journey-type-flabel">
+                      Origin Location
+                    </label>
                     <input
                       value={form.origin.location}
                       onChange={(e) =>
@@ -407,7 +456,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Destination Location</label>
+                    <label className="journey-type-flabel">
+                      Destination Location
+                    </label>
                     <input
                       type="text"
                       value={form.destination.location}
@@ -432,7 +483,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From </label>
                     <input
                       value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(0, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "from", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
@@ -440,7 +493,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(0, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "to", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
@@ -486,9 +541,7 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               <div className="journey-type-leg-conn">
                 ↕ Return leg (truck picks up load at destination)
               </div>
-              <div
-                className="journey-type-leg-block"
-              >
+              <div className="journey-type-leg-block">
                 <div className="journey-type-leg-title-green">
                   LEG 2 — Return Loaded Run
                 </div>
@@ -497,7 +550,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From</label>
                     <input
                       value={form.journeyLegs[1]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(1, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(1, "from", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
@@ -505,14 +560,14 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To </label>
                     <input
                       value={form.journeyLegs[1]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(1, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(1, "to", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">
-                      Customer
-                    </label>
+                    <label className="journey-type-flabel">Customer</label>
                     <select
                       className="load-details-input"
                       value={form.journeyLegs[1]?.customerId || ""}
@@ -558,7 +613,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               <div className="py-3">
                 <div className="row g-3 ">
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Origin Location</label>
+                    <label className="journey-type-flabel">
+                      Origin Location
+                    </label>
                     <input
                       value={form.origin.location}
                       onChange={(e) =>
@@ -572,8 +629,10 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Destination Location</label>
-                     <input
+                    <label className="journey-type-flabel">
+                      Destination Location
+                    </label>
+                    <input
                       type="text"
                       value={form.destination.location}
                       onChange={(e) =>
@@ -601,7 +660,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From</label>
                     <input
                       value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(0, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "from", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -610,7 +671,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(0, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "to", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -657,10 +720,7 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               <div className="journey-type-leg-conn">
                 ↓ Continues to next leg
               </div>
-              <div
-                className="journey-type-leg-block"
-
-              >
+              <div className="journey-type-leg-block">
                 <div
                   className="journey-type-leg-header"
                   style={{ color: "var(--accent)" }}
@@ -672,7 +732,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From</label>
                     <input
                       value={form.journeyLegs[1]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(1, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(1, "from", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
@@ -680,7 +742,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[1]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(1, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(1, "to", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
@@ -723,22 +787,21 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                   </div>
                 </div>
               </div>
-              <div
-                className="journey-type-leg-block"
-
-              >
+              <div className="journey-type-leg-block">
                 <div
                   className="journey-type-leg-header"
                   style={{ color: "var(--accent)" }}
                 >
-                  LEG 3 — Loaded Run  C→A
+                  LEG 3 — Loaded Run C→A
                 </div>
                 <div className="row g-3" style={{ marginTop: 2 }}>
                   <div className="col-md-3">
                     <label className="journey-type-flabel">From</label>
                     <input
                       value={form.journeyLegs[2]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(2, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(2, "from", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
@@ -746,7 +809,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[2]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(2, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(2, "to", e.target.value)
+                      }
                       className="journey-type-input"
                     />
                   </div>
@@ -789,7 +854,6 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                   </div>
                 </div>
               </div>
-
             </div>
           )}
 
@@ -798,7 +862,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               <div className="py-3">
                 <div className="row g-3 ">
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Origin Location</label>
+                    <label className="journey-type-flabel">
+                      Origin Location
+                    </label>
                     <input
                       value={form.origin.location}
                       onChange={(e) =>
@@ -812,8 +878,10 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Destination Location</label>
-                     <input
+                    <label className="journey-type-flabel">
+                      Destination Location
+                    </label>
+                    <input
                       value={form.destination.location}
                       onChange={(e) =>
                         set("destination", {
@@ -836,7 +904,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From</label>
                     <input
                       value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(0, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "from", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -845,7 +915,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(0, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "to", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -895,10 +967,7 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               >
                 🔄 Driver handoff at relay point — fresh driver takes over
               </div>
-              <div
-                className="journey-type-leg-block"
-
-              >
+              <div className="journey-type-leg-block">
                 <div className="journey-type-leg-title-purple">
                   LEG 2 — Relay to Destination (Driver 2)
                 </div>
@@ -907,7 +976,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From </label>
                     <input
                       value={form.journeyLegs[1]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(1, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(1, "from", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -916,7 +987,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[1]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(1, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(1, "to", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -968,7 +1041,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
               <div className="py-3">
                 <div className="row g-3 ">
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Origin Location</label>
+                    <label className="journey-type-flabel">
+                      Origin Location
+                    </label>
                     <input
                       value={form.origin.location}
                       onChange={(e) =>
@@ -977,12 +1052,14 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                           location: e.target.value,
                         })
                       }
-                       placeholder="Enter Origin Location..."
+                      placeholder="Enter Origin Location..."
                       className="journey-type-input"
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="journey-type-flabel">Destination Location</label>
+                    <label className="journey-type-flabel">
+                      Destination Location
+                    </label>
                     <input
                       type="text"
                       value={form.destination.location}
@@ -993,7 +1070,7 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                         })
                       }
                       className="journey-type-input"
-                       placeholder="Enter Destination Location..."
+                      placeholder="Enter Destination Location..."
                     />
                   </div>
                 </div>
@@ -1007,7 +1084,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">From</label>
                     <input
                       value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) => updateJourneyLeg(0, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "from", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />
@@ -1016,7 +1095,9 @@ const JourneyTypeSelector = ({ form, set, setForm }) => {
                     <label className="journey-type-flabel">To</label>
                     <input
                       value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) => updateJourneyLeg(0, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateJourneyLeg(0, "to", e.target.value)
+                      }
                       placeholder="Chennai"
                       className="journey-type-input"
                     />

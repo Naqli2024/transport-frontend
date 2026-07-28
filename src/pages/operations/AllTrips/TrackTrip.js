@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { MdOutlineCancel } from "react-icons/md";
+import { RxCross2 } from "react-icons/rx";
+import TripMap from "../../../components/Map/TripMap";
+import { getTripById } from "../../../redux/Trip/TripSlice";
+import { getDriverById } from "../../../redux/Driver/DriverSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const STATUS_FLOW = [
   "Pre Trip Pending",
@@ -14,94 +18,107 @@ const STATUS_FLOW = [
   "Closed",
 ];
 
-const TrackTrip = ({ trips = [], close }) => {
-  const [selectedTripId, setSelectedTripId] = useState("");
-  const [selectedTrip, setSelectedTrip] = useState(null);
+const TrackTrip = ({ trip, close }) => {
+  const dispatch = useDispatch();
+  const { tripDetail } = useSelector((state) => state.trip);
+  const { driverDetails } = useSelector((state) => state.driver);
 
-  const sortedTrips = useMemo(() => {
-    return [...trips].sort((a, b) =>
-      a.tripNo.localeCompare(b.tripNo, undefined, { numeric: true }),
-    );
-  }, [trips]);
+  const markers = useMemo(() => {
+    if (!driverDetails?.lat || !driverDetails?.lng) {
+      return [];
+    }
+
+    return [
+      {
+        id: driverDetails._id,
+        lat: Number(driverDetails.lat),
+        lng: Number(driverDetails.lng),
+        tripId: tripDetail?._id,
+        driverName: driverDetails.driverName,
+        vehicleNo: driverDetails.vehicleNo,
+      },
+    ];
+  }, [driverDetails, tripDetail]);
+
+  if (driverDetails?.lat && driverDetails?.lng) {
+    markers.push({
+      id: driverDetails._id,
+      lat: Number(driverDetails.lat),
+      lng: Number(driverDetails.lng),
+      tripId: tripDetail._id,
+      driverName: driverDetails.name,
+      vehicleNo: driverDetails.vehicleNo,
+    });
+  }
 
   useEffect(() => {
-    if (!selectedTripId) return;
-
-    const trip = sortedTrips.find((t) => t._id === selectedTripId);
-    setSelectedTrip(trip || null);
-  }, [selectedTripId, sortedTrips]);
+    if (!trip._id) return;
+    dispatch(getTripById(trip._id));
+  }, [trip._id, dispatch]);
 
   useEffect(() => {
-    if (!trips.length) return;
+    if (!tripDetail?.driver1._id) {
+      console.log("No driverId found");
+      return;
+    }
 
-    const sortedTrips = [...trips].sort((a, b) =>
-      a.tripNo.localeCompare(b.tripNo, undefined, { numeric: true }),
-    );
-
-    setSelectedTripId(sortedTrips[0]._id);
-    setSelectedTrip(sortedTrips[0]);
-  }, [trips]);
+    dispatch(getDriverById(tripDetail.driver1._id));
+  }, [tripDetail, dispatch]);
 
   const currentIndex = useMemo(() => {
-    if (!selectedTrip) return -1;
-    return STATUS_FLOW.indexOf(selectedTrip.tripStatus);
-  }, [selectedTrip]);
+    if (!tripDetail) return -1;
+    return STATUS_FLOW.indexOf(tripDetail.tripStatus);
+  }, [tripDetail]);
 
   const formatDateTime = (date) => {
-  if (!date) return "";
+    if (!date) return "";
 
-  return new Date(date).toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+    return new Date(date).toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
-const getStatusTime = (status) => {
-  if (!selectedTrip) return "";
+  const getStatusTime = (status) => {
+    if (!tripDetail) return "";
 
-  switch (status) {
-    case "Reached Pickup":
-      return selectedTrip.pickupReachedAt;
+    switch (status) {
+      case "Reached Pickup":
+        return tripDetail.pickupReachedAt;
 
-    case "Ready For Loading":
-      return selectedTrip.loading?.loadingEndTime; 
+      case "Ready For Loading":
+        return tripDetail.loading?.loadingEndTime;
 
-    case "Documents Pending":
-      return selectedTrip.weighbridge?.measuredAt; 
+      case "Documents Pending":
+        return tripDetail.weighbridge?.measuredAt;
 
-    case "Ready To Start":
-      return selectedTrip.startTime;
+      case "Ready To Start":
+        return tripDetail.startTime;
 
-    case "Completed":
-      return selectedTrip.arrivalTime;
+      case "Completed":
+        return tripDetail.arrivalTime;
 
-    default:
-      return "";
-  }
-};
+      default:
+        return "";
+    }
+  };
 
   return (
     <div className="track-container">
-      <div  className="tracking-container">
-        <h1 className="rj tracking-header">Track Trip</h1>
-        <MdOutlineCancel size={30} color="white" cursor={'pointer'} onClick={close}/>
+      <div className="tracking-container">
+        <h1 className="rj tracking-header">Track Trip - {trip.tripNo}</h1>
+        <div className="track-cancel">
+          <RxCross2
+          size={25}
+          onClick={close}
+        />
         </div>
-        <select
-          value={selectedTripId}
-          onChange={(e) => setSelectedTripId(e.target.value)}
-          className="trip-dropdown"
-        >
-          {sortedTrips.map((trip) => (
-            <option key={trip._id} value={trip._id}>
-              {trip.tripNo} - ({trip.tripStatus})
-            </option>
-          ))}
-        </select>
-        <div className="track-trip-container">
-            <div className="timeline-container col-md-6">
+      </div>
+      <div className="track-trip-container">
+        <div className="timeline-container col-md-5">
           {STATUS_FLOW.map((status, index) => {
             const completed = index < currentIndex;
             const current = index === currentIndex;
@@ -124,28 +141,28 @@ const getStatusTime = (status) => {
                 </div>
 
                 <div
-                    className={`timeline-text
+                  className={`timeline-text
                         ${completed ? "completed-text" : ""}
                         ${current ? "current-text" : ""}
                     `}
-                    >
-                    <div className="status-title">{status}</div>
+                >
+                  <div className="status-title">{status}</div>
 
-                    {getStatusTime(status) && (
-                        <div className="status-time">
-                        {formatDateTime(getStatusTime(status))}
-                        </div>
-                    )}
+                  {getStatusTime(status) && (
+                    <div className="status-time">
+                      {formatDateTime(getStatusTime(status))}
                     </div>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
-        <div className="track-map-container col-md-6">
-                Google Map
-            </div>
+        <div className="track-map-container col-md-7">
+          <TripMap markers={markers} />
         </div>
       </div>
+    </div>
   );
 };
 

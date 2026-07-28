@@ -6,65 +6,53 @@ import { deleteDriver, getAllDrivers, getDriverById, getDriversDashboard } from 
 import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
 import { toast } from "react-toastify";
 import { IoSearchOutline } from "react-icons/io5";
+import { MdOutlineRemoveRedEye } from "react-icons/md";
 
-function DriverCard({ d, onClick, onEdit, onDelete }) {
+function DriverRow({ d, onView, onEdit, onDelete }) {
   return (
-    <div
-      className={`dm-card ${d.sc}`}
-      onClick={onClick}
-      style={{ cursor: "pointer" }}
-    >
-      <div className="dm-card-head">
-        <div className="dm-driver-identity">
-          <div className={`dm-avatar ${d.av}`}>
-            {d.initials}
-            <span className={`dm-avatar-dot ${d.dot}`} />
-          </div>
-          <div className="dm-driver-info">
-            <div className="dm-driver-name">{d.name}</div>
-            <div className="dm-driver-id">{d.id}</div>
-          </div>
-        </div>
-        <span className={`dm-status-badge ${d.sb}`}>{d.status}</span>
-      </div>
+    <tr>
+      <td>{d.driverId}</td>
+      <td>{d.name}</td>
+      <td>{d.mobile}</td>
+      <td>{d.dlNo || "-"}</td>
+      <td>{d.experience ? `${d.experience} Years` : "-"}</td>
+      <td>{d.vehicle?.regNo || "Unassigned"}</td>
+      <td>
+        <span
+          className={`broker-status ${
+            d.availableStatus === "On Trip"
+              ? "st-warning"
+              : d.availableStatus === "Available"
+              ? "st-active"
+              : "st-inactive"
+          }`}
+        >
+          {d.availableStatus || "Available"}
+        </span>
+      </td>
+      <td className="broker-td-actions">
+        <button
+          className="broker-action-btn broker-action-view"
+          onClick={() => onView(d)}
+        >
+          <MdOutlineRemoveRedEye />
+        </button>
 
-      <div className="dm-info-rows">
-        {[
-          { label: "License", val: d.dlNo, valCls: "val-muted" },
-          { label: "Phone", val: d.phone, valCls: "val-muted" },
-          { label: "Vehicle", val: d.vehicle, valCls: "val-muted" },
-          { label: "Experience", val: d.exp, valCls: "val-muted" },
-        ].map((row) => (
-          <div key={row.label} className="dm-info-row">
-            <span className="dm-info-label">{row.label}</span>
-            <span className={`dm-info-val ${row.valCls}`}>{row.val}</span>
-          </div>
-        ))}
-      </div>
-      <div className="d-flex justify-content-between">
-        <span></span>
-        <div className="d-flex gap-2">
-          <span
-            className="dm-edit-btn d-flex align-items-center justify-content-center gap-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-          >
-            <MdOutlineEdit />
-          </span>
-          <span
-            className="dm-delete-btn d-flex align-items-center justify-content-center gap-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-          >
-            <MdDeleteOutline />
-          </span>
-        </div>
-      </div>
-    </div>
+        <button
+          className="broker-action-btn broker-action-edit"
+          onClick={() => onEdit(d)}
+        >
+          <MdOutlineEdit />
+        </button>
+
+        <button
+          className="broker-action-btn broker-action-delete"
+          onClick={() => onDelete(d)}
+        >
+          <MdDeleteOutline />
+        </button>
+      </td>
+    </tr>
   );
 }
 
@@ -194,51 +182,56 @@ export default function Drivers() {
             {error || "Failed to load driver data."}
           </div>
         )}
-        <div className="dm-grid">
-          {filtered.length > 0 ? (
-            filtered.map((d) => (
-              <DriverCard
-                key={d._id}
-                d={{
-                  id: d.driverId,
-                  name: d.name,
-                  initials: d.name?.charAt(0)?.toUpperCase(),
-                  av: "av-blue",
-                  status: d.availableStatus || "Available",
-                  sb:
-                    d.availableStatus === "On Trip"
-                      ? "sb-ontrip"
-                      : "sb-available",
-                  sc:
-                    d.availableStatus === "On Trip"
-                      ? "status-ontrip"
-                      : "status-available",
-                  dot:
-                    d.availableStatus === "On Trip"
-                      ? "dot-orange"
-                      : "dot-green",
-                  dlNo: d.dlNo || "—",
-                  phone: d.mobile || "—",
-                  vehicle: d.vehicle?.status || "Unassigned",
-                  exp: d.experience ? `${d.experience} Years` : "—",
-                  score: d.score || 0,
-                }}
-                onClick={() => { handleViewDriver(d._id) }}
-                onEdit={() => {
-                  setModalMode("edit");
-                  setSelectedDriver(d);
-                  setOpenAddDriver(true);
-                }}
-                onDelete={() => {
-                  setSelectedDriver(d);
-                  setOpenDeleteModal(true);
-                }}
-              />
-            ))
-          ) : (
-            <div className="dm-empty">No drivers match your search.</div>
-          )}
-        </div>
+        <div className="dm-table-wrap">
+  <table className="dm-table">
+    <thead>
+      <tr>
+        <th>Driver ID</th>
+        <th>Name</th>
+        <th>Mobile</th>
+        <th>License No</th>
+        <th>Experience</th>
+        <th>Vehicle</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {filtered.length > 0 ? (
+        filtered.map((d) => (
+          <DriverRow
+            key={d._id}
+            d={d}
+            onView={() => handleViewDriver(d._id)}
+            onEdit={() => {
+              setModalMode("edit");
+              setSelectedDriver(d);
+              setOpenAddDriver(true);
+            }}
+            onDelete={() => {
+              setSelectedDriver(d);
+              setOpenDeleteModal(true);
+            }}
+          />
+        ))
+      ) : (
+        <tr>
+          <td
+            colSpan="8"
+            style={{
+              textAlign: "center",
+              padding: "30px",
+              color: "#888",
+            }}
+          >
+            No Drivers Found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
       </div>
       <AddDriverModal
         open={openAddDriver}
