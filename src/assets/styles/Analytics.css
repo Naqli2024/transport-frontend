@@ -113,7 +113,7 @@ body {
 
 .analyticsCard{
 
-background:#fff;
+background: var(--bgCard);
 
 padding:20px;
 
@@ -127,7 +127,7 @@ box-shadow:0 8px 20px rgba(0,0,0,.08);
 
 margin-bottom:20px;
 
-color:#243B55;
+color:var(--textSub);
 
 }
 
@@ -144,9 +144,10 @@ border-collapse:collapse;
 
 padding:12px;
 
-border-bottom:1px solid #eee;
-
+border-bottom:1px solid  var(--textMuted);
+background-color: var(--bgCard);
 text-align:left;
+color: var(--textSub);
 
 }
 
@@ -154,7 +155,7 @@ text-align:left;
 
 font-weight:bold;
 
-background:#f5f7fb;
+background: var(--textSub);
 
 }
 
@@ -168,7 +169,9 @@ padding:15px 0;
 
 font-size:17px;
 
-border-bottom:1px solid #eee;
+border-bottom:1px solid var(--textMuted);
+
+color: var(--textSub);
 
 }
 
@@ -199,6 +202,7 @@ justify-content:space-between;
 margin-bottom:6px;
 
 font-size:14px;
+color: var(--textSub);
 
 }
 
@@ -206,11 +210,13 @@ font-size:14px;
 
 height:10px;
 
-background:#e5e7eb;
+background: var(--textSub);
 
 border-radius:20px;
 
 overflow:hidden;
+
+color: var(--textMuted);
 
 }
 

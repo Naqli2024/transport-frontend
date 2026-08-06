@@ -97,16 +97,16 @@ export const transportItems = [
   {
     group: "Ledger",
     items: [
-      {
-        path: "driver-settlement",
-        icon: <RiWallet3Line size={15} />,
-        label: "Driver Settlement",
-      },
-      {
-        path: "p&l",
-        icon: <GiProfit size={15} />,
-        label: "P & L",
-      },
+      // {
+      //   path: "driver-settlement",
+      //   icon: <RiWallet3Line size={15} />,
+      //   label: "Driver Settlement",
+      // },
+      // {
+      //   path: "p&l",
+      //   icon: <GiProfit size={15} />,
+      //   label: "P & L",
+      // },
     ],
   },
 ];

@@ -111,11 +111,8 @@ body {
   --accentGlow: rgba(85, 11, 245, 0.3);
 }
 .controlTower{
-
-    padding:25px;
-    background:#F5F7FB;
+    background: var(--bg);
     min-height:100vh;
-
 }
 
 .dashboardHeader{
@@ -130,21 +127,21 @@ body {
 .dashboardHeader h2{
 
     margin:0;
-    color:#243B55;
+    color:var(--text);
 
 }
 
 .dashboardHeader p{
 
     margin-top:5px;
-    color:#888;
+    color: var(--textSub);
 
 }
 
 .refreshBtn{
 
     border:none;
-    background:#2563eb;
+    background:var(--accent2);
     color:white;
     padding:10px 20px;
     border-radius:8px;
@@ -193,6 +190,19 @@ body {
     gap:20px;
 
 }
+.cardValue {
+  display: flex;
+  align-items: center;      /* Vertical alignment */
+  justify-content: start;  /* Horizontal alignment */
+  gap: 4px;                 /* Space between ₹ and number */
+}
+
+.currencySymbol {
+  font-size: 0.5em;
+  line-height: 1;
+}
+
+
 
 @media(max-width:900px){
 

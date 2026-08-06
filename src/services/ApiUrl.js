@@ -1,13 +1,13 @@
-export const AuthApiUrl = "https://transport-backend-2vwp.onrender.com/api/auth"
-export const VehicleApiUrl = "https://transport-backend-2vwp.onrender.com/api/vehicles"
-export const DriverApiUrl = "https://transport-backend-2vwp.onrender.com/api/drivers"
-export const TyreIntelligenceApiUrl = "https://transport-backend-2vwp.onrender.com/api/tyres"
-export const VendorApiUrl = "https://transport-backend-2vwp.onrender.com/api/vendor"
-export const VendorVehicleApiUrl = "https://transport-backend-2vwp.onrender.com/api/vendor-vehicle"
-export const TripsApiUrl = "https://transport-backend-2vwp.onrender.com/api/trips"
-export const CustomerApiUrl = "https://transport-backend-2vwp.onrender.com/api/customer"
-export const BrokerApiUrl = "https://transport-backend-2vwp.onrender.com/api/broker"
-export const FuelApiUrl =  "https://transport-backend-2vwp.onrender.com/api/fuel"
+export const AuthApiUrl = "http://34.100.208.190/api/auth"
+export const VehicleApiUrl = "http://34.100.208.190/api/vehicles"
+export const DriverApiUrl = "http://34.100.208.190/api/drivers"
+export const TyreIntelligenceApiUrl = "http://34.100.208.190/api/tyres"
+export const VendorApiUrl = "http://34.100.208.190/api/vendor"
+export const VendorVehicleApiUrl = "http://34.100.208.190/api/vendor-vehicle"
+export const TripsApiUrl = "http://34.100.208.190/api/trips"
+export const CustomerApiUrl = "http://34.100.208.190/api/customer"
+export const BrokerApiUrl = "http://34.100.208.190/api/broker"
+export const FuelApiUrl =  "http://34.100.208.190/api/fuel"
 
 
 

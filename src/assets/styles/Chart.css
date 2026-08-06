@@ -112,7 +112,7 @@ body {
 }
 .chartCard{
 
-background:#fff;
+background: var(--bgCard);
 
 border-radius:15px;
 
@@ -128,6 +128,6 @@ margin-bottom:20px;
 
 font-size:18px;
 
-color:#243B55;
+color: var(--textSub);
 
 }

@@ -55,7 +55,7 @@ function docTypeLabel(type) {
     return DOC_TYPE_LABELS[type];
 }
 
-const TripOverViewPage = ({ onBack, tripDetail, documents }) => {
+const TripOverViewPage = ({ onBack, tripDetail, documents, expenses, weighBridge, fuelEntries }) => {
    
     
     const vehicle = tripDetail?.vehicleId || {};
@@ -252,15 +252,15 @@ const TripOverViewPage = ({ onBack, tripDetail, documents }) => {
                 )}
             </div>
             <div className="trip-overview-card mt-3">
-                <div className="trip-overview-card-title">Expenses</div>
-                {documents.length > 0 ? (
+                <div className="trip-overview-card-title">Trip Expenses</div>
+                {expenses.length > 0 ? (
                     <div className="trip-overview-docs">
-                        {documents.map((doc) => (
-                            <div className="trip-overview-doc" key={doc._id}>
-                                <span className="trip-overview-doc-type">{docTypeLabel(doc.documentType)}</span>
+                        {expenses.map((exp) => (
+                            <div className="trip-overview-doc" key={exp._id}>
+                                <span className="trip-overview-doc-type">{exp.expenseType}</span>
                                 <a
                                     className="trip-overview-doc-link"
-                                    href={doc.fileUrl}
+                                    href={exp.billUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -270,8 +270,46 @@ const TripOverViewPage = ({ onBack, tripDetail, documents }) => {
                         ))}
                     </div>
                 ) : (
-                    <div className="trip-overview-doc-empty">No documents uploaded for this trip yet.</div>
+                    <div className="trip-overview-doc-empty">No Trip Expenses uploaded for this trip yet.</div>
                 )}
+            </div>
+            <div className="trip-overview-card mt-3">
+                <div className="trip-overview-card-title">Fuel Entries</div>
+                {fuelEntries.length > 0 ? (
+                    <div className="trip-overview-docs">
+                        {fuelEntries.map((fuel) => (
+                            <div className="trip-overview-doc" key={fuel._id}>
+                                <span className="trip-overview-doc-type">{fuel.fuelType} ({fuel.quantity}L)</span>
+                                <a
+                                    className="trip-overview-doc-link"
+                                    href={fuel.billUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    View
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="trip-overview-doc-empty">No Fuel Entries uploaded for this trip yet.</div>
+                )}
+            </div>
+            <div className="trip-overview-card mt-3">
+                <div className="trip-overview-card-title">Weigh Bridge Bill</div>
+                    <div className="trip-overview-docs">
+                            <div className="trip-overview-doc" key={weighBridge._id}>
+                                <span className="trip-overview-doc-type">Weight {weighBridge.grossWeight} Kg</span>
+                                <a
+                                    className="trip-overview-doc-link"
+                                    href={weighBridge.receiptUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    View
+                                </a>
+                            </div>
+                    </div>
             </div>
         </div>
     )

@@ -113,12 +113,13 @@ body {
 
 .dashboardCard{
 
-    background:white;
+    background: var(--bgCard);
     border-radius:16px;
     padding:20px;
     box-shadow:0 8px 20px rgba(0,0,0,.08);
     transition:.3s;
     cursor:pointer;
+    color: var(--textSub);
 
 }
 
@@ -153,7 +154,7 @@ body {
 .cardTitle{
 
     font-size:15px;
-    color:#666;
+    color: var(--textSub);
     font-weight:600;
 
 }
@@ -163,6 +164,6 @@ body {
     margin-top:25px;
     font-size:32px;
     font-weight:700;
-    color:#222;
+    color: var(--textSub);
 
 }

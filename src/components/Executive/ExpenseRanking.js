@@ -30,7 +30,7 @@ const ExpenseRanking = ({ expenses }) => {
 
           <XAxis type="number" />
 
-          <YAxis dataKey="expense" type="category" />
+          <YAxis dataKey="expense" type="category" width={110} />
 
           <Tooltip />
 

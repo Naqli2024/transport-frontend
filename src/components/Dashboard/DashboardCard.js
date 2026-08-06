@@ -26,8 +26,11 @@ const DashboardCard = ({
         </div>
       </div>
 
-      <div className="cardValue">
-        {isCurrency ? "₹" : ""}
+      <div className="cardValue align-items-center">
+      <span className="currencySymbol">
+  {isCurrency ? "₹" : ""}
+</span>
+
 
         <CountUp
           end={value || 0}

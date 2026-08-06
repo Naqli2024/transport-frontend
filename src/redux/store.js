@@ -9,6 +9,7 @@ import Trip from "../redux/Trip/TripSlice";
 import Customer from "../redux/Customer/CustomerSlice";
 import Broker from "../redux/Broker/BrokerSlice";
 import Fuel from "../redux/Fuel/FuelSlice";
+import Ledger from "../redux/Ledger/LedgerSlice";
 
 const rootReducer = combineReducers({
    authAdmin: AuthReducer,
@@ -21,7 +22,7 @@ const rootReducer = combineReducers({
    customer: Customer,
    broker: Broker,
    fuel: Fuel,
-  
+   ledger: Ledger
 });
 
 const store = configureStore({

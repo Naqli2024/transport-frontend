@@ -2,57 +2,90 @@ import { useState, useMemo, useEffect } from "react";
 import AddDriverModal from "./AddDriverModal";
 import DriverDetailModal from "./DriverDetailModal";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteDriver, getAllDrivers, getDriverById, getDriversDashboard } from "../../../redux/Driver/DriverSlice";
+import {
+  deleteDriver,
+  getAllDrivers,
+  getDriverById,
+  getDriversDashboard,
+} from "../../../redux/Driver/DriverSlice";
 import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
 import { toast } from "react-toastify";
 import { IoSearchOutline } from "react-icons/io5";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
+import DriverSettlementModal from "./DriverSettlementModal";
 
 function DriverRow({ d, onView, onEdit, onDelete }) {
+  const [driverId, setDriverId] = useState(null);
+  const [openDriverSettlementModal, setOpenDriverSettlementModal] =
+    useState(false);
+
   return (
-    <tr>
-      <td>{d.driverId}</td>
-      <td>{d.name}</td>
-      <td>{d.mobile}</td>
-      <td>{d.dlNo || "-"}</td>
-      <td>{d.experience ? `${d.experience} Years` : "-"}</td>
-      <td>{d.vehicle?.regNo || "Unassigned"}</td>
-      <td>
-        <span
-          className={`broker-status ${
-            d.availableStatus === "On Trip"
-              ? "st-warning"
-              : d.availableStatus === "Available"
-              ? "st-active"
-              : "st-inactive"
-          }`}
-        >
-          {d.availableStatus || "Available"}
-        </span>
-      </td>
-      <td className="broker-td-actions">
-        <button
-          className="broker-action-btn broker-action-view"
-          onClick={() => onView(d)}
-        >
-          <MdOutlineRemoveRedEye />
-        </button>
+    <>
+      <tr>
+        <td>{d.driverId}</td>
+        <td>{d.name}</td>
+        <td>{d.mobile}</td>
+        <td>{d.dlNo || "-"}</td>
+        <td>{d.experience ? `${d.experience} Years` : "-"}</td>
+        <td>{d.vehicle?.regNo || "Unassigned"}</td>
+        <td>
+          <span
+            className={`broker-status ${
+              d.availableStatus === "On Trip"
+                ? "st-warning"
+                : d.availableStatus === "Available"
+                  ? "st-active"
+                  : "st-inactive"
+            }`}
+          >
+            {d.availableStatus || "Available"}
+          </span>
+        </td>
+        <td className="broker-td-actions">
+          <button
+            className="broker-action-btn broker-action-view"
+            onClick={() => onView(d)}
+          >
+            <MdOutlineRemoveRedEye />
+          </button>
 
-        <button
-          className="broker-action-btn broker-action-edit"
-          onClick={() => onEdit(d)}
-        >
-          <MdOutlineEdit />
-        </button>
+          <button
+            className="broker-action-btn broker-action-edit"
+            onClick={() => onEdit(d)}
+          >
+            <MdOutlineEdit />
+          </button>
 
-        <button
-          className="broker-action-btn broker-action-delete"
-          onClick={() => onDelete(d)}
-        >
-          <MdDeleteOutline />
-        </button>
-      </td>
-    </tr>
+          <button
+            className="broker-action-btn broker-action-delete"
+            onClick={() => onDelete(d)}
+          >
+            <MdDeleteOutline />
+          </button>
+        </td>
+        {d?.currentTripId && (
+          <td>
+            {" "}
+            <button
+              className="logout-btn confirm"
+              onClick={() => {
+                setDriverId(d?._id);
+                setOpenDriverSettlementModal(true);
+              }}
+            >
+              Settle
+            </button>
+          </td>
+        )}
+      </tr>
+      {openDriverSettlementModal && (
+        <DriverSettlementModal
+          open={() => setOpenDriverSettlementModal(true)}
+          onClose={() => setOpenDriverSettlementModal(false)}
+          driverId={driverId}
+        />
+      )}
+    </>
   );
 }
 
@@ -66,7 +99,9 @@ export default function Drivers() {
   const [modalMode, setModalMode] = useState("add");
 
   const dispatch = useDispatch();
-  const { drivers, summary, driverDetails, loading, error } = useSelector((state) => state.driver)
+  const { drivers, summary, driverDetails, loading, error } = useSelector(
+    (state) => state.driver,
+  );
 
   useEffect(() => {
     dispatch(getDriversDashboard());
@@ -113,17 +148,51 @@ export default function Drivers() {
     [search, drivers],
   );
 
-
   const stats = [
-    { val: summary.totalDrivers, label: "TOTAL DRIVERS", cls: "sc-blue", id: "totalDrivers" },
-    { val: summary.available, label: "AVAILABLE", cls: "sc-green", id: "available" },
+    {
+      val: summary.totalDrivers,
+      label: "TOTAL DRIVERS",
+      cls: "sc-blue",
+      id: "totalDrivers",
+    },
+    {
+      val: summary.available,
+      label: "AVAILABLE",
+      cls: "sc-green",
+      id: "available",
+    },
     { val: summary.onTrip, label: "ON TRIP", cls: "sc-orange", id: "ontrip" },
     { val: summary.onLeave, label: "ON LEAVE", cls: "sc-red", id: "onleave" },
-    { val: summary.assigned, label: "ASSIGNED", cls: "sc-purple", id: "assigned" },
-    { val: summary.unassigned, label: "UNASSIGNED", cls: "sc-accent", id: "unassigned" },
-    { val: summary.licenseExpiring, label: "LICENSE EXPIRING", cls: "sc-cyan", id: "license" },
-    { val: summary.reserved, label: "RESERVED", cls: "sc-accent", id: "reserved" },
-    { val: summary.activeTrips, label: "ACTIVE TRIPS", cls: "sc-green", id: "activeTrips" },
+    {
+      val: summary.assigned,
+      label: "ASSIGNED",
+      cls: "sc-purple",
+      id: "assigned",
+    },
+    {
+      val: summary.unassigned,
+      label: "UNASSIGNED",
+      cls: "sc-accent",
+      id: "unassigned",
+    },
+    {
+      val: summary.licenseExpiring,
+      label: "LICENSE EXPIRING",
+      cls: "sc-cyan",
+      id: "license",
+    },
+    {
+      val: summary.reserved,
+      label: "RESERVED",
+      cls: "sc-accent",
+      id: "reserved",
+    },
+    {
+      val: summary.activeTrips,
+      label: "ACTIVE TRIPS",
+      cls: "sc-green",
+      id: "activeTrips",
+    },
   ];
 
   if (loading && !drivers?.length) {
@@ -140,8 +209,8 @@ export default function Drivers() {
         <div>
           <h1 className="heading">Driver Management</h1>
           <div className="sub-heading">
-            {drivers?.length || 0} drivers · Compliance tracking ·
-            Performance scores
+            {drivers?.length || 0} drivers · Compliance tracking · Performance
+            scores
           </div>
         </div>
         <div
@@ -168,7 +237,9 @@ export default function Drivers() {
 
         <div className="dm-search-wrap">
           <div className="dm-search">
-            <span className="dm-search-icon"><IoSearchOutline size={16}/></span>
+            <span className="dm-search-icon">
+              <IoSearchOutline size={16} />
+            </span>
             <input
               type="text"
               placeholder="Search driver name or license..."
@@ -183,55 +254,56 @@ export default function Drivers() {
           </div>
         )}
         <div className="dm-table-wrap">
-  <table className="dm-table">
-    <thead>
-      <tr>
-        <th>Driver ID</th>
-        <th>Name</th>
-        <th>Mobile</th>
-        <th>License No</th>
-        <th>Experience</th>
-        <th>Vehicle</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+          <table className="dm-table">
+            <thead>
+              <tr>
+                <th>Driver ID</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>License No</th>
+                <th>Experience</th>
+                <th>Vehicle</th>
+                <th>Status</th>
+                <th>Actions</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
 
-    <tbody>
-      {filtered.length > 0 ? (
-        filtered.map((d) => (
-          <DriverRow
-            key={d._id}
-            d={d}
-            onView={() => handleViewDriver(d._id)}
-            onEdit={() => {
-              setModalMode("edit");
-              setSelectedDriver(d);
-              setOpenAddDriver(true);
-            }}
-            onDelete={() => {
-              setSelectedDriver(d);
-              setOpenDeleteModal(true);
-            }}
-          />
-        ))
-      ) : (
-        <tr>
-          <td
-            colSpan="8"
-            style={{
-              textAlign: "center",
-              padding: "30px",
-              color: "#888",
-            }}
-          >
-            No Drivers Found
-          </td>
-        </tr>
-      )}
-    </tbody>
-  </table>
-</div>
+            <tbody>
+              {filtered.length > 0 ? (
+                filtered.map((d) => (
+                  <DriverRow
+                    key={d._id}
+                    d={d}
+                    onView={() => handleViewDriver(d._id)}
+                    onEdit={() => {
+                      setModalMode("edit");
+                      setSelectedDriver(d);
+                      setOpenAddDriver(true);
+                    }}
+                    onDelete={() => {
+                      setSelectedDriver(d);
+                      setOpenDeleteModal(true);
+                    }}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="8"
+                    style={{
+                      textAlign: "center",
+                      padding: "30px",
+                      color: "#888",
+                    }}
+                  >
+                    No Drivers Found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       <AddDriverModal
         open={openAddDriver}

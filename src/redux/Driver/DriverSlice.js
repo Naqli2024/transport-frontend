@@ -78,12 +78,39 @@ export const getDriversDashboard = createAsyncThunk(
   }
 )
 
+export const getDriverSettlementSummary = createAsyncThunk(
+  "driver/getDriverSettlementSummary",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await DriverService.get(`${id}/settlement/get`)
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+)
+
+export const driverSettlement = createAsyncThunk(
+  "driverSettlement",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await DriverService.put(
+        `/${id}/settle`
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
+
 
 const DriverSlice = createSlice({
   name: "driver",
   initialState: {
     drivers: [],
     summary: {},
+    settlement: null,
     driverDetails: null,
     loading: false,
     error: null,
@@ -103,6 +130,9 @@ const DriverSlice = createSlice({
         case getDriversDashboard.fulfilled.type:
           state.summary = action.payload?.data?.summary || {};
           break;
+        case getDriverSettlementSummary.fulfilled.type:
+          state.settlement = action.payload?.data;
+          break;
         case getDriverById.fulfilled.type:
           state.driverDetails = action.payload?.data;
           break;
@@ -118,7 +148,7 @@ const DriverSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     };
-    [addDriver, getAllDrivers, editDriver, deleteDriver,getDriversDashboard,getDriverById].forEach((action) => {
+    [addDriver, getAllDrivers, editDriver, deleteDriver,getDriversDashboard,getDriverById, getDriverSettlementSummary, driverSettlement].forEach((action) => {
       builder
         .addCase(action.pending, handlePending)
         .addCase(action.fulfilled, handleFullFilled)

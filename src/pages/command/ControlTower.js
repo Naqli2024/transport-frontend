@@ -25,50 +25,55 @@ import {
   FaBuilding,
 } from "react-icons/fa";
 import Loader from "../../components/Loader";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { getAllLedgers } from "../../redux/Ledger/LedgerSlice";
 
 const ControlTower = () => {
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchDashboard = async () => {
-    try {
-      setLoading(true);
-
-      const token = Cookies.get("token");
-      const res = await axios.get(
-        "http://localhost:5000/api/trips/ledger-dashboard",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      setDashboard(res.data.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const {
+    income,
+    expenses,
+    summary,
+    driverSettlement,
+    loading,
+    error,
+  } = useSelector((state) => state.ledger);
+ 
+ 
+  const dipatch = useDispatch();
+ 
+  const fetchDashboard = () => {
+    dipatch(getAllLedgers());
+  }
+ 
   useEffect(() => {
-    fetchDashboard();
-  }, []);
-
+    dipatch(getAllLedgers())
+  }, [dipatch]);
+ 
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+ 
   if (loading)
-    return <><Loader isLoading={loading}/></>;
-
-  if (!dashboard)
-    return <div className="dashboard-loading">No Dashboard Data</div>;
-
-  const { income, expenses, summary, driverSettlement } = dashboard;
+    return <><Loader isLoading={loading} /></>;
+ 
+  if (
+    !income ||
+    !expenses ||
+    !summary ||
+    !driverSettlement
+  ) {
+    return <div>No dashboard data found.</div>;
+  }
+ 
 
   return (
     <div className="controlTower">
       <div className="dashboardHeader">
         <div>
-          <h2>Trip Ledger Dashboard</h2>
+          <h2 className="rj tracking-header">Trip Ledger Dashboard</h2>
           <p>Financial Overview</p>
         </div>
 
@@ -76,6 +81,11 @@ const ControlTower = () => {
           Refresh
         </button>
       </div>
+      {error && !loading && (
+        <div className="broker-error-banner">
+          {error}
+        </div>
+      )}
 
       {/* KPI Cards */}
 
@@ -83,15 +93,16 @@ const ControlTower = () => {
         <DashboardCard
           title="Freight Income"
           value={income.freight}
-          icon={<FaTruck />}
+          icon={<FaTruck size={25}/>}
           color="#2563EB"
+          
           isCurrency
         />
 
         <DashboardCard
           title="Profit"
           value={summary.profit}
-          icon={<FaWallet />}
+          icon={<FaWallet size={25}/>}
           color="#10B981"
           isCurrency
         />
@@ -99,7 +110,7 @@ const ControlTower = () => {
         <DashboardCard
           title="Total Expense"
           value={summary.totalExpense}
-          icon={<FaMoneyBillWave />}
+          icon={<FaMoneyBillWave size={25}/>}
           color="#EF4444"
           isCurrency
         />
@@ -107,28 +118,28 @@ const ControlTower = () => {
         <DashboardCard
           title="Total Trips"
           value={summary.totalTrips}
-          icon={<FaRoute />}
+          icon={<FaRoute size={25}/>}
           color="#7C3AED"
         />
 
         <DashboardCard
           title="Completed Trips"
           value={summary.completedTrips}
-          icon={<FaCheckCircle />}
+          icon={<FaCheckCircle size={25}/>}
           color="#14B8A6"
         />
 
         <DashboardCard
           title="Running Trips"
           value={summary.runningTrips}
-          icon={<FaRoad />}
+          icon={<FaRoad size={25}/>}
           color="#F59E0B"
         />
 
         <DashboardCard
           title="Driver Return"
           value={driverSettlement.driverShouldReturn}
-          icon={<FaUndo />}
+          icon={<FaUndo size={25}/>}
           color="#0EA5E9"
           isCurrency
         />
@@ -136,7 +147,7 @@ const ControlTower = () => {
         <DashboardCard
           title="Office Pay"
           value={driverSettlement.officeShouldPay}
-          icon={<FaBuilding />}
+          icon={<FaBuilding size={25}/>}
           color="#EC4899"
           isCurrency
         />
