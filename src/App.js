@@ -11,7 +11,7 @@ const libraries = ["places"];
 function App() {
   return (
     <div>
-      <BrowserRouter>
+      <BrowserRouter basename={process.env.REACT_APP_BASE_PATH || "/"}>
       <AuthGuard />
         <LoadScript
           googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
