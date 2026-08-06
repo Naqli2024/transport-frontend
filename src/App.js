@@ -1,7 +1,7 @@
 import React from "react";
 import "../src/assets/styles/transport.css";
 import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "./routes/AppRoutes";
+import AppRoutes from "./routes/Approutes";
 import { ToastContainer } from "react-toastify";
 import { LoadScript } from "@react-google-maps/api";
 import AuthGuard from "./components/AuthGuard";

@@ -46,9 +46,9 @@ const Header = () => {
   return (
 <div className="header-container">
   <div className="header-left-content">
-    <div className="header-logo">
+    {/* <div className="header-logo">
       <img src={Logo} alt="Logo" />
-    </div>
+    </div> */}
 
     <div className="header-title">
      {customerData?.business?.transportName}

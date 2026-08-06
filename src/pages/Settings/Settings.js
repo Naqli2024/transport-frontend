@@ -27,11 +27,11 @@ const Settings = () => {
   return (
     <div className='settings-container'>
       {loading && <Loader isLoading={loading} />}
-      <div className='settings-avatar-container'>
+      {/* <div className='settings-avatar-container'>
         <div className='setting-avatar'>
           <img src={Logo} alt="Logo" />
         </div>
-      </div>
+      </div> */}
 
       <div className='settings-card'>
         <div className="settings-grid">
