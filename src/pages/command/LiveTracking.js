@@ -7,7 +7,6 @@ const LiveTracking = () => {
   const dispatch = useDispatch();
 
   const { drivers, loading } = useSelector((state) => state.driver);
-  console.log("Drivers:", drivers);
   const [selectedTripId, setSelectedTripId] = useState(null);
 
   useEffect(() => {
@@ -17,8 +16,6 @@ const LiveTracking = () => {
   const markers = useMemo(() => {
     const activeMarkers = (drivers || [])
       .filter((driver) => {
-        console.log("Checking Driver:", driver);
-
         return driver.currentTripId && driver.lat && driver.lng;
       })
       .map((driver) => ({
@@ -31,17 +28,10 @@ const LiveTracking = () => {
         driverId: driver.driverId,
       }));
 
-    console.log("Markers:", activeMarkers);
-
     return activeMarkers;
   }, [drivers]);
-  console.log("Markers:", markers);
 
   const handleMarkerClick = (marker) => {
-    console.log("Clicked Marker:", marker);
-
-    console.log("Trip ID:", marker.tripId);
-
     setSelectedTripId(marker.tripId);
   };
 
@@ -93,31 +83,33 @@ const LiveTracking = () => {
             <hr />
 
             {markers.map((marker) => (
-  <div
-    key={`${marker.id}-${marker.tripId}`}
-    className="live-driver-card"
-    style={{
-      border: "1px solid #ddd",
-      borderRadius: "8px",
-      padding: "10px",
-      marginBottom: "10px",
-      cursor: "pointer",
-    }}
-    onClick={() => handleMarkerClick(marker)}
-  >
-    <div>
-      <strong style={{color:"var(--accent)"}}>{marker.driverName}</strong>
-    </div>
+              <div
+                key={`${marker.id}-${marker.tripId}`}
+                className="live-driver-card"
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  padding: "10px",
+                  marginBottom: "10px",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleMarkerClick(marker)}
+              >
+                <div>
+                  <strong style={{ color: "var(--accent)" }}>
+                    {marker.driverName}
+                  </strong>
+                </div>
 
-    <div>Driver ID: {marker.driverId}</div>
+                <div>Driver ID: {marker.driverId}</div>
 
-    <div>Trip ID: {marker.tripId}</div>
+                <div>Trip ID: {marker.tripId}</div>
 
-    <div>
-      {marker.lat}, {marker.lng}
-    </div>
-  </div>
-))}
+                <div>
+                  {marker.lat}, {marker.lng}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

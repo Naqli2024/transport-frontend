@@ -103,7 +103,7 @@ const AllTrips = () => {
             map[id] = result.data;
           }
         } catch (e) {
-          console.error("Failed to fetch customer", id, e);
+          // console.error("Failed to fetch customer", id, e);
         }
       }
       setCustomerMap(map);
@@ -114,7 +114,6 @@ const AllTrips = () => {
 
   const handleUpload = async (tripId, payload) => {
     const response = await dispatch(bulkUploadDocuments({ tripId, payload }));
-    console.log(response);
     if (response?.payload) {
       toast.success(response.payload.message);
       dispatch(getAllTrips());

@@ -5,7 +5,7 @@ import { IoEyeOutline } from "react-icons/io5";
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import Loader from '../../components/Loader';
-import { login } from '../../redux/Auth/AuthSlice';
+import { login, getUserById } from '../../redux/Auth/AuthSlice';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +30,7 @@ const SignIn = () => {
     try {
       setLoading(true);
       const response = await dispatch(login(formData)).unwrap();
+      await dispatch(getUserById()).unwrap();
       toast.success(response.message);
       setLoading(false);
       navigateTo('/transport/dashboard', {replace: true,})

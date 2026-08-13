@@ -1,13 +1,10 @@
-export const AuthApiUrl = "http://34.100.208.190/api/auth"
-export const VehicleApiUrl = "http://34.100.208.190/api/vehicles"
-export const DriverApiUrl = "http://34.100.208.190/api/drivers"
-export const TyreIntelligenceApiUrl = "http://34.100.208.190/api/tyres"
-export const VendorApiUrl = "http://34.100.208.190/api/vendor"
-export const VendorVehicleApiUrl = "http://34.100.208.190/api/vendor-vehicle"
-export const TripsApiUrl = "http://34.100.208.190/api/trips"
-export const CustomerApiUrl = "http://34.100.208.190/api/customer"
-export const BrokerApiUrl = "http://34.100.208.190/api/broker"
-export const FuelApiUrl =  "http://34.100.208.190/api/fuel"
-
-
-
+export const AuthApiUrl = "/transport/api/auth";
+export const VehicleApiUrl = "/transport/api/vehicles";
+export const DriverApiUrl = "/transport/api/drivers";
+export const TyreIntelligenceApiUrl = "/transport/api/tyres";
+export const VendorApiUrl = "/transport/api/vendor";
+export const VendorVehicleApiUrl = "/transport/api/vendor-vehicle";
+export const TripsApiUrl = "/transport/api/trips";
+export const CustomerApiUrl = "/transport/api/customer";
+export const BrokerApiUrl = "/transport/api/broker";
+export const FuelApiUrl = "/transport/api/fuel";

@@ -12,11 +12,11 @@ const defaultCenter = {
 };
 
 export default function TripMap({ markers = [], onMarkerClick }) {
-  console.log("TripMap Markers:", markers);
-  console.log("Markers Count:", markers.length);
+  // console.log("TripMap Markers:", markers);
+  // console.log("Markers Count:", markers.length);
 
   markers.forEach((m, i) => {
-    console.log(`Marker ${i}`, m);
+    // console.log(`Marker ${i}`, m);
   });
 
   const center = useMemo(() => {
@@ -33,7 +33,7 @@ export default function TripMap({ markers = [], onMarkerClick }) {
   return (
     <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={15}>
       {markers.map((marker, index) => {
-        console.log("Marker:", marker);
+        // console.log("Marker:", marker);
 
         return (
           <Marker

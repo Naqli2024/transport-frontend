@@ -1,27 +1,111 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../src/assets/styles/transport.css";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import AppRoutes from "./routes/Approutes";
 import { ToastContainer } from "react-toastify";
 import { LoadScript } from "@react-google-maps/api";
 import AuthGuard from "./components/AuthGuard";
+import { useDispatch, useSelector } from "react-redux";
+import Cookies from "js-cookie";
+
+import { getUserById } from "./redux/Auth/AuthSlice";
+import { getGoogleMapsKey } from "./config/googleMaps";
 
 const libraries = ["places"];
 
+function AppContent() {
+  const dispatch = useDispatch();
+  const location = useLocation();
+
+  const admin = useSelector((state) => state.authAdmin.admin);
+
+  const [initializing, setInitializing] = useState(true);
+
+  const token = Cookies.get("token");
+
+  const businessId = admin?.user?.businessId;
+
+  const googleMapsApiKey = getGoogleMapsKey(businessId);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        if (token && !admin) {
+          await dispatch(getUserById()).unwrap();
+        }
+      } catch (error) {
+        console.error("Authentication initialization failed:", error);
+        Cookies.remove("token");
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    initializeAuth();
+  }, [token, admin, dispatch]);
+
+  /*
+   * Login page
+   */
+  const isLoginPage = location.pathname === "/";
+
+  /*
+   * Login page does not need Google Maps.
+   */
+  if (isLoginPage && !token) {
+    return (
+      <>
+        <AuthGuard />
+        <AppRoutes />
+        <ToastContainer autoClose={2000} />
+      </>
+    );
+  }
+
+  /*
+   * Existing logged-in user:
+   * wait until business information is loaded.
+   */
+  if (initializing || (token && !googleMapsApiKey)) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        Loading your account...
+      </div>
+    );
+  }
+
+  /*
+   * Protected application.
+   * Google Maps is loaded BEFORE AppRoutes.
+   */
+  return (
+    <>
+      <AuthGuard />
+
+      <LoadScript
+        googleMapsApiKey={googleMapsApiKey}
+        libraries={libraries}
+      >
+        <AppRoutes />
+      </LoadScript>
+
+      <ToastContainer autoClose={2000} />
+    </>
+  );
+}
+
 function App() {
   return (
-    <div>
-      <BrowserRouter basename={process.env.REACT_APP_BASE_PATH || "/"}>
-      <AuthGuard />
-        <LoadScript
-          googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
-          libraries={libraries}
-        >
-          <AppRoutes />
-          <ToastContainer autoClose={2000} />
-        </LoadScript>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 
