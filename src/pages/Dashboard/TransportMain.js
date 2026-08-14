@@ -52,7 +52,7 @@ const TransportMain = () => {
   };
 
   const isDark = theme === "dark";
-  const basePath = "/transport";
+  const basePath = "/";
 
   return (
     <>

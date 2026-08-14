@@ -33,7 +33,7 @@ const SignIn = () => {
       await dispatch(getUserById()).unwrap();
       toast.success(response.message);
       setLoading(false);
-      navigateTo('/transport/dashboard', {replace: true,})
+      navigateTo('/dashboard', {replace: true,})
     } catch (error) {
       toast.error(error);
       setLoading(false);

@@ -87,7 +87,7 @@ const Header = () => {
              className={`header-profile-avatar-container ${
     isSettingsActive ? "header-profile-active" : ""
   }`}
-            onClick={() => navigateTo("/transport/settings")}
+            onClick={() => navigateTo("/settings")}
           >
             <div className="header-profile-avatar">AD</div>
             <div className="header-profile-name">
