@@ -48,9 +48,9 @@ import ProtectedRoutes from "./ProtectedRoutes.js";
 
 const AppRoutes = () => {
   const location = useLocation();
-  const publicPaths = ["/"];
 
   const hideHeaderRoutes = ["/"];
+
   const hideHeader = hideHeaderRoutes.some((route) =>
     matchPath({ path: route, end: true }, location.pathname),
   );
@@ -58,7 +58,13 @@ const AppRoutes = () => {
   return (
     <>
       {!hideHeader && <Header />}
+
       <Routes>
+        {/* =====================================================
+            PUBLIC LOGIN
+            Browser URL:
+            /transport/
+            ===================================================== */}
         <Route
           path="/"
           element={
@@ -67,285 +73,87 @@ const AppRoutes = () => {
             </PublicRoutes>
           }
         />
-        <Route path="/transport" element={<TransportMain />}>
-          <Route
-            path="dashboard"
-            element={
-              <ProtectedRoutes>
-                <ControlTower />
-              </ProtectedRoutes>
-            }
-          />
 
-          <Route
-            path="live-gps-tracking"
-            element={
-              <ProtectedRoutes>
-                <LiveTracking />
-              </ProtectedRoutes>
-            }
-          />
+        {/* =====================================================
+            PROTECTED TRANSPORT ERP
+            Browser URL:
+            /transport/dashboard
+            /transport/drivers
+            /transport/vendors
+            etc.
 
-          <Route
-            path="all-trips"
-            element={
-              <ProtectedRoutes>
-                <AllTrips />
-              </ProtectedRoutes>
-            }
-          />
+            Because basename="/transport", React route
+            "/dashboard" becomes browser URL:
+            "/transport/dashboard"
+            ===================================================== */}
+        <Route
+          element={
+            <ProtectedRoutes>
+              <TransportMain />
+            </ProtectedRoutes>
+          }
+        >
+          <Route path="/dashboard" element={<ControlTower />} />
 
-          <Route
-            path="fleet-contracts"
-            element={
-              <ProtectedRoutes>
-                <FleetContracts />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/live-gps-tracking" element={<LiveTracking />} />
 
-          <Route
-            path="proof-delivery"
-            element={
-              <ProtectedRoutes>
-                <ProofOfDelivery />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/all-trips" element={<AllTrips />} />
 
-          <Route
-            path="return-loads"
-            element={
-              <ProtectedRoutes>
-                <ReturnLoads />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/fleet-contracts" element={<FleetContracts />} />
 
-          <Route
-            path="pre-trip"
-            element={
-              <ProtectedRoutes>
-                <PreTrip />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/proof-delivery" element={<ProofOfDelivery />} />
 
-          <Route
-            path="post-trip"
-            element={
-              <ProtectedRoutes>
-                <PostTrip />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/return-loads" element={<ReturnLoads />} />
 
-          <Route
-            path="breakdown-recovery"
-            element={
-              <ProtectedRoutes>
-                <Breakdown />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/pre-trip" element={<PreTrip />} />
 
-          <Route
-            path="driver-settlement"
-            element={
-              <ProtectedRoutes>
-                <DriverSettlement />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/post-trip" element={<PostTrip />} />
 
-          <Route
-            path="agents-commission"
-            element={
-              <ProtectedRoutes>
-                <AgentsCommission />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/breakdown-recovery" element={<Breakdown />} />
 
-          <Route
-            path="vendor-fleet"
-            element={
-              <ProtectedRoutes>
-                <VendorFleet />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/driver-settlement" element={<DriverSettlement />} />
 
-          <Route
-            path="equipment-billing"
-            element={
-              <ProtectedRoutes>
-                <EquipmentBillingPage />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/agents-commission" element={<AgentsCommission />} />
 
-          <Route
-            path="payment-collections"
-            element={
-              <ProtectedRoutes>
-                <PaymentsPage />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/vendor-fleet" element={<VendorFleet />} />
 
-          <Route
-            path="vehicle-master"
-            element={
-              <ProtectedRoutes>
-                <VehicleMaster />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/equipment-billing" element={<EquipmentBillingPage />} />
 
-          <Route
-            path="heavy-equipment"
-            element={
-              <ProtectedRoutes>
-                <HeavyEquipment />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/payment-collections" element={<PaymentsPage />} />
 
-          <Route
-            path="bus-operations"
-            element={
-              <ProtectedRoutes>
-                <BusOperations />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/vehicle-master" element={<VehicleMaster />} />
 
-          <Route
-            path="tyre-intelligence"
-            element={
-              <ProtectedRoutes>
-                <TyreIntelligence />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/heavy-equipment" element={<HeavyEquipment />} />
 
-          <Route
-            path="drivers"
-            element={
-              <ProtectedRoutes>
-                <Drivers />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/bus-operations" element={<BusOperations />} />
 
-          <Route
-            path="fuel-control"
-            element={
-              <ProtectedRoutes>
-                <FuelControl />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/tyre-intelligence" element={<TyreIntelligence />} />
 
-          <Route
-            path="vendors"
-            element={
-              <ProtectedRoutes>
-                <Vendors />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/drivers" element={<Drivers />} />
 
-          <Route
-            path="pm-settings"
-            element={
-              <ProtectedRoutes>
-                <PreventiveMaintenance />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/fuel-control" element={<FuelControl />} />
 
-          <Route
-            path="workshop"
-            element={
-              <ProtectedRoutes>
-                <Workshop />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/vendors" element={<Vendors />} />
 
-          <Route
-            path="spare-parts"
-            element={
-              <ProtectedRoutes>
-                <SpareParts />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/pm-settings" element={<PreventiveMaintenance />} />
 
-          <Route
-            path="finance"
-            element={
-              <ProtectedRoutes>
-                <Finance />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/workshop" element={<Workshop />} />
 
-          <Route
-            path="team-access"
-            element={
-              <ProtectedRoutes>
-                <TeamAccess />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/spare-parts" element={<SpareParts />} />
 
-          <Route
-            path="ai-predictions"
-            element={
-              <ProtectedRoutes>
-                <AiPrediction />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/finance" element={<Finance />} />
 
-          <Route
-            path="profitability"
-            element={
-              <ProtectedRoutes>
-                <Profitability />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/team-access" element={<TeamAccess />} />
 
-          <Route
-            path="settings"
-            element={
-              <ProtectedRoutes>
-                <Settings />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/ai-predictions" element={<AiPrediction />} />
 
-          <Route
-            path="brokers"
-            element={
-              <ProtectedRoutes>
-                <Brokers />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/profitability" element={<Profitability />} />
 
-          <Route
-            path="customers"
-            element={
-              <ProtectedRoutes>
-                <Customers />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/settings" element={<Settings />} />
+
+          <Route path="/brokers" element={<Brokers />} />
+
+          <Route path="/customers" element={<Customers />} />
         </Route>
       </Routes>
     </>

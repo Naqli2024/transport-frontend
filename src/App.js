@@ -34,7 +34,11 @@ function AppContent() {
           await dispatch(getUserById()).unwrap();
         }
       } catch (error) {
-        console.error("Authentication initialization failed:", error);
+        console.error(
+          "Authentication initialization failed:",
+          error
+        );
+
         Cookies.remove("token");
       } finally {
         setInitializing(false);
@@ -44,28 +48,20 @@ function AppContent() {
     initializeAuth();
   }, [token, admin, dispatch]);
 
-  /*
-   * Login page
-   */
-  const isLoginPage = location.pathname === "/";
+  const isLoginPage =
+    location.pathname === "/" ||
+    location.pathname === "/transport" ||
+    location.pathname === "/transport/";
 
-  /*
-   * Login page does not need Google Maps.
-   */
   if (isLoginPage && !token) {
     return (
       <>
-        <AuthGuard />
         <AppRoutes />
         <ToastContainer autoClose={2000} />
       </>
     );
   }
 
-  /*
-   * Existing logged-in user:
-   * wait until business information is loaded.
-   */
   if (initializing || (token && !googleMapsApiKey)) {
     return (
       <div
@@ -81,14 +77,8 @@ function AppContent() {
     );
   }
 
-  /*
-   * Protected application.
-   * Google Maps is loaded BEFORE AppRoutes.
-   */
   return (
     <>
-      <AuthGuard />
-
       <LoadScript
         googleMapsApiKey={googleMapsApiKey}
         libraries={libraries}
@@ -103,7 +93,9 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      basename={process.env.REACT_APP_BASE_PATH || "/"}
+    >
       <AppContent />
     </BrowserRouter>
   );
