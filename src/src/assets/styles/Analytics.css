@@ -1,0 +1,852 @@
+.analyticsCard {
+  position: relative;
+  background: var(--bgCard);
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.08);
+
+  transition:
+    border-color 250ms ease,
+    box-shadow 250ms ease;
+}
+
+/* =========================================
+   EXPENSE CARD HEADER
+========================================= */
+
+.expense-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.expense-card-header h3 {
+  margin: 0;
+  color: var(--text);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* =========================================
+   TABLE
+========================================= */
+
+.expense-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.expenseTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.expenseTable thead {
+  background: var(--bgPanel);
+}
+
+.expenseTable th {
+  height: 38px;
+  padding: 0 13px;
+  color: var(--textSub);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.expenseTable th:last-child {
+  text-align: right;
+}
+
+
+/* BODY */
+
+.expenseTable tbody tr {
+  background: var(--bgCard);
+
+  transition:
+    background-color 180ms ease;
+}
+
+.expenseTable tbody tr:not(.totalRow):hover {
+  background: var(--bgPanel);
+}
+
+.expenseTable td {
+  height: 42px;
+
+  padding: 0 13px;
+
+  border-bottom: 1px solid var(--border);
+
+  color: var(--textSub);
+
+  font-family: "DM Sans", sans-serif;
+  font-size: 11px;
+}
+
+.expenseTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* EXPENSE NAME */
+
+.expense-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.expense-dot {
+  width: 5px;
+  height: 5px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: var(--accent);
+
+  box-shadow:
+    0 0 7px var(--accentGlow);
+}
+
+
+/* AMOUNT */
+
+.expense-amount {
+  text-align: right;
+
+  color: var(--text);
+
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 10px !important;
+  font-weight: 500;
+}
+
+
+/* =========================================
+   TOTAL
+========================================= */
+
+.expenseTable .totalRow {
+  background:
+    linear-gradient(
+      90deg,
+      var(--accentDim),
+      transparent
+    );
+
+  border-top: 1px solid var(--accentGlow);
+}
+
+.expenseTable .totalRow td {
+  height: 50px;
+
+  border-bottom: none;
+}
+
+.total-label {
+  display: flex;
+  align-items: center;
+
+  color: var(--text);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.total-label span::before {
+  content: "";
+
+  display: inline-block;
+
+  width: 3px;
+  height: 14px;
+
+  margin-right: 8px;
+
+  vertical-align: middle;
+
+  border-radius: 3px;
+
+  background: var(--accent);
+}
+
+.total-amount {
+  text-align: right;
+
+  color: var(--accent) !important;
+
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   LIGHT THEME
+========================================= */
+
+[data-theme="light"] .expense-table-wrapper {
+  border-color: var(--border);
+}
+
+[data-theme="light"] .expenseTable tbody tr:not(.totalRow):hover {
+  background: var(--bgHover);
+}
+
+[data-theme="light"] .expenseTable .totalRow {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(245, 158, 11, 0.08),
+      transparent
+    );
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 600px) {
+
+  .analyticsCard {
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  .expense-card-header {
+    margin-bottom: 14px;
+  }
+
+  .expense-card-header h3 {
+    font-size: 18px;
+  }
+
+  .expense-count {
+    padding: 5px 8px;
+  }
+
+  .expenseTable th {
+    height: 35px;
+    padding: 0 10px;
+    font-size: 8px;
+  }
+
+  .expenseTable td {
+    height: 40px;
+    padding: 0 10px;
+  }
+
+  .expense-name {
+    font-size: 10px;
+  }
+
+  .expense-amount {
+    font-size: 9px !important;
+  }
+
+  .total-amount {
+    font-size: 11px !important;
+  }
+}
+
+
+/* =========================================
+   DRIVER SETTLEMENT
+========================================= */
+
+.settlement-card {
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* Header */
+
+.settlement-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.settlement-card-header h3 {
+  margin: 0;
+
+  color: var(--text);
+
+  font-family: "Rajdhani", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* =========================================
+   SETTLEMENT ITEMS
+========================================= */
+
+.settlement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settlement-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 72px;
+
+  padding: 12px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  background: var(--bgPanel);
+
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease;
+}
+
+.settlement-item:hover {
+  transform: translateY(-2px);
+}
+
+
+/* =========================================
+   LEFT SIDE
+========================================= */
+
+.settlement-item-left {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+
+  gap: 11px;
+}
+
+.settlement-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  border-radius: 9px;
+
+  font-family: "JetBrains Mono", monospace;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.settlement-info {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+
+  min-width: 0;
+}
+
+.settlement-label {
+  color: var(--text);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.settlement-info small {
+  color: var(--textSub);
+
+  font-size: 8px;
+}
+
+
+/* =========================================
+   PAYABLE
+========================================= */
+
+.settlement-pay {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.settlement-pay:hover {
+  border-color: rgba(239, 68, 68, 0.30);
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(239, 68, 68, 0.05),
+      var(--bgPanel)
+    );
+}
+
+.settlement-pay .settlement-icon {
+  background: var(--redGlow);
+
+  color: var(--red);
+}
+
+
+/* =========================================
+   RETURN
+========================================= */
+
+.settlement-return {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.settlement-return:hover {
+  border-color: rgba(16, 185, 129, 0.30);
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(16, 185, 129, 0.05),
+      var(--bgPanel)
+    );
+}
+
+.settlement-return .settlement-icon {
+  background: var(--greenGlow);
+
+  color: var(--green);
+}
+
+
+/* =========================================
+   AMOUNTS
+========================================= */
+
+.settlement-amount {
+  flex-shrink: 0;
+
+  margin-left: 15px;
+
+  font-family: "JetBrains Mono", monospace;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.settlement-red {
+  color: var(--red);
+}
+
+.settlement-green {
+  color: var(--green);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+
+  .settlement-card {
+    padding: 15px;
+  }
+
+  .settlement-card-header h3 {
+    font-size: 18px;
+  }
+
+  .settlement-item {
+    min-height: 66px;
+
+    padding: 10px 11px;
+  }
+
+  .settlement-icon {
+    width: 31px;
+    height: 31px;
+
+    font-size: 15px;
+  }
+
+  .settlement-label {
+    font-size: 10px;
+  }
+
+  .settlement-info small {
+    font-size: 7px;
+  }
+
+  .settlement-amount {
+    font-size: 10px;
+  }
+}
+
+
+@media (max-width: 380px) {
+
+  .settlement-item {
+    align-items: flex-start;
+  }
+
+  .settlement-amount {
+    margin-left: 8px;
+    font-size: 9px;
+  }
+
+  .settlement-info small {
+    display: none;
+  }
+}
+
+/* =========================================
+   EXPENSE ANALYSIS
+========================================= */
+
+.expense-analysis-card {
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* Header */
+
+.expense-analysis-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.expense-analysis-header h3 {
+  margin: 0;
+  color: var(--text);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   TOTAL
+========================================= */
+
+.expense-analysis-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bgPanel);
+}
+
+.expense-analysis-total small {
+  color: var(--textSub);
+
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7px;
+
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.expense-analysis-total strong {
+  color: var(--accent);
+
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+}
+
+
+/* =========================================
+   LIST
+========================================= */
+
+.expense-analysis-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+
+/* =========================================
+   ROW
+========================================= */
+
+.expense-analysis-item {
+  width: 100%;
+}
+
+.expense-analysis-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 7px;
+}
+
+
+/* Name */
+
+.expense-analysis-name {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+
+  gap: 8px;
+
+  color: var(--textSub);
+
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.expense-analysis-dot {
+  width: 5px;
+  height: 5px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: var(--accent);
+
+  box-shadow:
+    0 0 7px var(--accentGlow);
+}
+
+
+/* =========================================
+   VALUE
+========================================= */
+
+.expense-analysis-value {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.expense-analysis-value strong {
+  color: var(--text);
+
+  font-family: "JetBrains Mono", monospace;
+
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.expense-analysis-value span {
+  min-width: 36px;
+
+  padding: 2px 5px;
+
+  border-radius: 4px;
+
+  background: var(--accentDim);
+
+  color: var(--accent);
+
+  font-family: "JetBrains Mono", monospace;
+
+  font-size: 7px;
+
+  text-align: center;
+}
+
+
+/* =========================================
+   PROGRESS TRACK
+========================================= */
+
+.expense-analysis-track {
+  position: relative;
+
+  width: 100%;
+  height: 7px;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+
+  border-radius: 20px;
+
+  background: var(--bgPanel);
+}
+
+
+/* Progress */
+
+.expense-analysis-fill {
+  height: 100%;
+
+  min-width: 0;
+
+  border-radius: 20px;
+
+  background: var(--accent);
+
+  box-shadow:
+    0 0 8px var(--accentGlow);
+
+  transform-origin: left center;
+
+  animation:
+    expense-progress-grow
+    650ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+
+@keyframes expense-progress-grow {
+
+  from {
+    transform: scaleX(0);
+    opacity: 0.4;
+  }
+
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+
+}
+
+
+/* =========================================
+   HOVER
+========================================= */
+
+.expense-analysis-item {
+  transition: transform 200ms ease;
+}
+
+.expense-analysis-item:hover {
+  transform: translateX(3px);
+}
+
+.expense-analysis-item:hover
+.expense-analysis-dot {
+  box-shadow:
+    0 0 10px var(--accent);
+}
+
+.expense-analysis-item:hover
+.expense-analysis-fill {
+  box-shadow:
+    0 0 12px var(--accentGlow);
+}
+
+
+/* =========================================
+   LIGHT THEME
+========================================= */
+
+[data-theme="light"]
+.expense-analysis-track {
+  background: var(--bgHover);
+}
+
+[data-theme="light"]
+.expense-analysis-total {
+  background: var(--bgPanel);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 600px) {
+
+  .expense-analysis-card {
+    padding: 15px;
+  }
+
+  .expense-analysis-header h3 {
+    font-size: 18px;
+  }
+
+  .expense-analysis-list {
+    gap: 13px;
+  }
+
+  .expense-analysis-name {
+    font-size: 9px;
+  }
+
+  .expense-analysis-value strong {
+    font-size: 9px;
+  }
+
+  .expense-analysis-value span {
+    min-width: 32px;
+    font-size: 6px;
+  }
+
+  .expense-analysis-track {
+    height: 6px;
+  }
+}
+
+
+@media (max-width: 380px) {
+
+  .expense-analysis-total {
+    padding: 5px 7px;
+  }
+
+  .expense-analysis-total strong {
+    font-size: 9px;
+  }
+
+  .expense-analysis-value {
+    gap: 4px;
+  }
+
+  .expense-analysis-value span {
+    display: none;
+  }
+}

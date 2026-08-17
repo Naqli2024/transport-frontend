@@ -1,0 +1,616 @@
+.executiveCard {
+  position: relative;
+  overflow: hidden;
+
+  padding: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--bgCard),
+      var(--bgPanel)
+    );
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+
+  color: var(--text);
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  transition:
+    transform 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.executiveCard-header {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+.executiveCard h3 {
+  margin: 0;
+
+  color: var(--text);
+
+  font-family: "Rajdhani", sans-serif;
+
+  font-size: 19px;
+  font-weight: 700;
+
+  letter-spacing: 0.3px;
+}
+
+
+/* =========================
+   ICON
+========================= */
+
+.executiveCard-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--accent);
+
+  background: var(--accentDim);
+
+  border: 1px solid var(--border);
+
+  border-radius: 10px;
+
+  font-family: "Rajdhani", sans-serif;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   MAIN PROFIT
+========================= */
+
+.executiveCard-main {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 14px 16px;
+
+  background: var(--blueGlow);
+
+  border: 1px solid var(--border);
+
+  border-radius: 11px;
+}
+
+.executiveCard-main-label {
+  margin-bottom: 5px;
+
+  color: var(--textSub);
+
+  font-family: "JetBrains Mono", monospace;
+
+  font-size: 8px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+}
+
+.executiveCard-profit {
+  color: var(--green);
+
+  font-family: "Rajdhani", sans-serif;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  letter-spacing: 0.5px;
+}
+
+
+/* =========================
+   DIVIDER
+========================= */
+
+.executiveCard-divider {
+  height: 1px;
+
+  margin: 18px 0;
+
+  background: var(--border);
+}
+
+
+/* =========================
+   INCOME / EXPENSE GRID
+========================= */
+
+.executiveCard-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.summaryItem {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  padding: 13px;
+
+  background: var(--bgPanel);
+
+  border: 1px solid var(--border);
+
+  border-radius: 10px;
+
+  transition:
+    border-color 250ms ease,
+    background 250ms ease;
+}
+
+/* =========================
+   LABEL
+========================= */
+
+.summaryItem-label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: var(--textSub);
+
+  font-size: 10px;
+
+  font-weight: 500;
+}
+
+.summaryItem-dot {
+  width: 6px;
+  height: 6px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+}
+
+.income-dot {
+  background: var(--blue);
+
+  box-shadow:
+    0 0 7px var(--blueGlow);
+}
+
+.expense-dot {
+  background: var(--red);
+
+  box-shadow:
+    0 0 7px var(--redGlow);
+}
+
+
+/* =========================
+   VALUES
+========================= */
+
+.summaryItem-value {
+  font-family: "Rajdhani", sans-serif;
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+.income-value {
+  color: var(--blue);
+}
+
+.expense-value {
+  color: var(--red);
+}
+
+
+/* =========================
+   LIGHT THEME
+========================= */
+
+[data-theme="light"] .executiveCard {
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .executiveCard-main,
+[data-theme="light"] .summaryItem {
+  background: var(--bgPanel);
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 600px) {
+
+  .executiveCard {
+    padding: 18px;
+  }
+
+  .executiveCard-profit {
+    font-size: 25px;
+  }
+
+  .executiveCard-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 360px) {
+
+  .executiveCard {
+    padding: 16px;
+  }
+
+  .executiveCard h3 {
+    font-size: 17px;
+  }
+
+  .executiveCard-profit {
+    font-size: 23px;
+  }
+
+  .summaryItem-value {
+    font-size: 16px;
+  }
+
+}
+
+/* =========================================================
+   HIGHEST EXPENSE CARD
+========================================================= */
+
+.topExpenseCard {
+  position: relative;
+  min-height: 280px;
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--bgCard),
+      var(--bgPanel)
+    );
+
+  border: 1px solid var(--border);
+  border-radius: 15px;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease,
+    border-color 300ms ease;
+}
+
+.topExpenseHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 25px;
+}
+
+.topExpenseHeader h3 {
+  margin: 5px 0 0;
+
+  color: var(--text);
+
+  font-family: "Rajdhani", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Icon */
+
+.topExpenseIcon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  color: var(--accent);
+
+  background: var(--accentDim);
+
+  border: 1px solid rgba(245, 158, 11, 0.18);
+
+  font-family: "JetBrains Mono", monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+
+/* Main content */
+
+.topExpenseContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.topExpenseLabel {
+  margin-bottom: 6px;
+
+  color: var(--textSub);
+
+  font-size: 10px;
+  font-weight: 500;
+
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+
+.topExpenseContent h2 {
+  margin: 0 0 10px;
+
+  color: var(--text);
+
+  font-family: "Rajdhani", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+
+/* Amount */
+
+.topExpenseAmount {
+  display: flex;
+  align-items: baseline;
+
+  gap: 5px;
+
+  color: var(--accent);
+
+  font-family: "Rajdhani", sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+
+  letter-spacing: -0.5px;
+}
+
+.topExpenseAmount span {
+  color: var(--accent);
+
+  font-family: "DM Sans", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+
+.topExpenseContent p {
+  max-width: 300px;
+
+  margin: 10px 0 0;
+
+  color: var(--textSub);
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* Light theme */
+
+[data-theme="light"] .topExpenseCard {
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .topExpenseCard:hover {
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.10),
+    0 0 15px var(--accentGlow);
+}
+
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .topExpenseCard {
+    min-height: 260px;
+  }
+
+  .topExpenseAmount {
+    font-size: 30px;
+  }
+
+  .topExpenseContent h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topExpenseCard {
+    padding: 17px;
+  }
+
+  .topExpenseHeader {
+    margin-bottom: 20px;
+  }
+
+  .topExpenseAmount {
+    font-size: 28px;
+  }
+
+  .topExpenseContent h2 {
+    font-size: 20px;
+  }
+}
+
+/* =========================================================
+   EXPENSE RANKING
+========================================================= */
+
+.expenseRankingCard {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 380px;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--bgCard),
+      var(--bgPanel)
+    );
+
+  border: 1px solid var(--border);
+
+  transition:
+    transform 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.expenseRankingHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+}
+
+
+.expenseRankingHeader h3 {
+  margin: 5px 0 0;
+  color: var(--text);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.expenseRankingChart {
+  width: 100%;
+  margin-top: 5px;
+}
+
+
+/* Recharts */
+
+.expenseRankingChart .recharts-wrapper {
+  outline: none;
+}
+
+.expenseRankingChart .recharts-surface {
+  overflow: visible;
+}
+
+
+/* Tooltip */
+
+.expenseRankingChart
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+
+/* Empty */
+
+.expenseRankingEmpty {
+  min-height: 280px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--textSub);
+
+  font-size: 11px;
+}
+
+
+/* Light theme */
+
+[data-theme="light"] .expenseRankingCard {
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .expenseRankingCard:hover {
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.09);
+}
+
+
+/* Responsive */
+
+@media (max-width: 768px) {
+
+  .expenseRankingCard {
+    min-height: 360px;
+  }
+
+  .expenseRankingHeader h3 {
+    font-size: 18px;
+  }
+
+  .expenseRankingCount {
+    font-size: 7px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .expenseRankingCard {
+    padding: 16px;
+  }
+
+  .expenseRankingHeader {
+    align-items: center;
+  }
+
+  .expenseRankingHeader h3 {
+    font-size: 17px;
+  }
+
+  .expenseRankingCount {
+    padding: 5px 7px;
+  }
+
+}
