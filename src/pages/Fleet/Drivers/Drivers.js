@@ -97,6 +97,7 @@ export default function Drivers() {
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const dispatch = useDispatch();
   const { drivers, summary, driverDetails, loading, error } = useSelector(
@@ -125,16 +126,36 @@ export default function Drivers() {
   };
 
   const handleDelete = async () => {
-    if (!selectedDriver?._id) return;
-    const response = await dispatch(deleteDriver(selectedDriver._id));
-    if (response?.payload) {
-      toast.success(response.payload.message);
-      await dispatch(getAllDrivers());
-      await dispatch(getDriversDashboard());
-      setOpenDeleteModal(false);
-      setSelectedDriver(null);
-    } else {
-      toast.error(response?.error?.message);
+    if (!selectedDriver?._id || deleteLoading) return;
+
+    setDeleteLoading(true);
+
+    try {
+      const response = await dispatch(deleteDriver(selectedDriver._id));
+
+      if (response?.meta?.requestStatus === "fulfilled") {
+        toast.success(
+          response.payload?.message || "Driver deleted successfully",
+        );
+
+        await dispatch(getAllDrivers());
+        await dispatch(getDriversDashboard());
+
+        setOpenDeleteModal(false);
+        setSelectedDriver(null);
+      } else {
+        toast.error(
+          response?.payload?.message ||
+            response?.error?.message ||
+            "Failed to delete driver",
+        );
+      }
+    } catch (error) {
+      console.error("Delete driver error:", error);
+
+      toast.error(error?.message || "Something went wrong. Please try again.");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -334,8 +355,22 @@ export default function Drivers() {
               >
                 Cancel
               </button>
-              <button className="vm-delete-btn confirm" onClick={handleDelete}>
-                <MdDelete /> Delete
+              <button
+                className="vm-delete-btn confirm"
+                onClick={handleDelete}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? (
+                  <>
+                    <span className="delete-btn-loader" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <MdDelete />
+                    Delete
+                  </>
+                )}
               </button>
             </div>
           </div>

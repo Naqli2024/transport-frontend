@@ -16,9 +16,9 @@ export const addVendorVehicle = createAsyncThunk(
 
 export const editVendorVehicle = createAsyncThunk(
   "editVendorVehicle",
-  async ({ userId, payload }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue }) => {
     try {
-      const response = await VendorVehicleService.put(`/${userId}`, payload);
+      const response = await VendorVehicleService.put(`/${id}`,data);
       return response.data;
     } catch (error) {
       return rejectWithValue(handleApiError(error));

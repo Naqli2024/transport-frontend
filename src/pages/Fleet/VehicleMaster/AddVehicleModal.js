@@ -37,35 +37,35 @@ const HEALTH = ["Excellent", "Good", "Average", "Critical"];
 
 const TOLLTAG = ["Yes", "No"];
 
-export default function AddVehicleModal({ onClose, vehicle }) {
+export default function AddVehicleModal({ onClose, vehicle, onSuccess }) {
   const dispatch = useDispatch();
-
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    regNo: vehicle?.regNo,
-    fleet: "vehicle",
-    type: vehicle?.type,
-    make: vehicle?.make,
-    model: vehicle?.model,
-    year: vehicle?.year || new Date().getFullYear(),
-    engineNo: vehicle?.engineNo,
-    chassisNo: vehicle?.chassisNo,
-    axle: vehicle?.axle,
-    gvw: vehicle?.gvw,
-    currentKm: vehicle?.currentKm,
-    healthStatus: vehicle?.healthStatus,
-    ownerShip: vehicle?.ownerShip,
-    insuranceExpiryDate: vehicle?.insuranceExpiryDate,
-    rcBookExpiryDate: vehicle?.rcBookExpiryDate,
-    fcExpiryDate: vehicle?.fcExpiryDate,
-    taxExpiryDate: vehicle?.taxExpiryDate,
-    permitExpiryDate: vehicle?.permitExpiryDate,
-    pollutionExpiryDate: vehicle?.pollutionExpiryDate,
-    permitType: vehicle?.permitType,
-    purchaseCost: vehicle?.purchaseCost,
-    tollTagAvailable: vehicle?.tollTagAvailable,
-  });
+const [formData, setFormData] = useState({
+  regNo: vehicle?.regNo ?? "",
+  fleet: "vehicle",
+  type: vehicle?.type ?? "",
+  make: vehicle?.make ?? "",
+  model: vehicle?.model ?? "",
+  year: vehicle?.year || new Date().getFullYear(),
+  engineNo: vehicle?.engineNo ?? "",
+  chassisNo: vehicle?.chassisNo ?? "",
+  axle: vehicle?.axle ?? "",
+  gvw: vehicle?.gvw ?? "",
+  currentKm: vehicle?.currentKm ?? "",
+  healthStatus: vehicle?.healthStatus ?? "",
+  ownerShip: vehicle?.ownerShip ?? "",
+  insuranceExpiryDate: vehicle?.insuranceExpiryDate ?? "",
+  rcBookExpiryDate: vehicle?.rcBookExpiryDate ?? "",
+  fcExpiryDate: vehicle?.fcExpiryDate ?? "",
+  taxExpiryDate: vehicle?.taxExpiryDate ?? "",
+  permitExpiryDate: vehicle?.permitExpiryDate ?? "",
+  pollutionExpiryDate: vehicle?.pollutionExpiryDate ?? "",
+  permitType: vehicle?.permitType ?? "",
+  purchaseCost: vehicle?.purchaseCost ?? "",
+  tollTagAvailable: vehicle?.tollTagAvailable ?? null,
+});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,40 +83,55 @@ export default function AddVehicleModal({ onClose, vehicle }) {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    let response;
+  if (submitting) return;
+
+  setSubmitting(true);
+
+  try {
+    let result;
 
     if (vehicle) {
-      response = await dispatch(
+      result = await dispatch(
         editVehicle({
           userId: vehicle._id,
           payload: formData,
         })
-      );
-
-      if (response?.payload) {
-        toast.success(response.payload.message);
-        onClose();
-      } else {
-        toast.error(response?.error?.message);
-      }
+      ).unwrap();
     } else {
-      response = await dispatch(addVehicle(formData));
-
-      if (response?.payload) {
-        toast.success(response.payload.message);
-        onClose();
-      } else {
-        toast.error(response?.error?.message);
-      }
+      result = await dispatch(
+        addVehicle(formData)
+      ).unwrap();
     }
-  };
+
+    if (onSuccess) {
+      await onSuccess();
+    }
+
+    toast.success(
+      result?.message ||
+        (vehicle
+          ? "Vehicle updated successfully"
+          : "Vehicle added successfully")
+    );
+
+    onClose();
+  } catch (error) {
+    toast.error(
+      error?.message ||
+        error?.error ||
+        "Unable to save vehicle. Please try again."
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
-    <div className="vm-modal-overlay" onClick={onClose}>
-      <div className="vm-modal-box" onClick={(e) => e.stopPropagation()}>
+    <div className="vm-modal-overlay">
+      <div className="vm-modal-box">
         <div className="vm-modal-header">
           <div className="vm-modal-title">
             <span className="vm-modal-emoji">🚛</span>
@@ -133,8 +148,9 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                 <label className="vm-form-label">REG NO</label>
 
                 <input
-                  className={`vm-form-input ${errors.regNo ? "vm-input-error" : ""
-                    }`}
+                  className={`vm-form-input ${
+                    errors.regNo ? "vm-input-error" : ""
+                  }`}
                   placeholder="TN69GH1234"
                   name="regNo"
                   value={formData.regNo}
@@ -152,6 +168,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   value={formData.type}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select</option>
                   {TYPE.map((t) => (
                     <option key={t} value={t}>
                       {t}
@@ -169,6 +186,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   value={formData.make}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select</option>
                   {MAKES.map((m) => (
                     <option key={m} value={m}>
                       {m}
@@ -200,6 +218,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   value={formData.year}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select</option>
                   {YEARS.map((y) => (
                     <option key={y} value={y}>
                       {y}
@@ -241,6 +260,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   value={formData.axle}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select</option>
                   {AXLES.map((a) => (
                     <option key={a} value={a}>
                       {a}
@@ -287,6 +307,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   value={formData.healthStatus}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select</option>
                   {HEALTH.map((h) => (
                     <option key={h} value={h}>
                       {h}
@@ -304,6 +325,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   value={formData.ownerShip}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select</option>
                   {OWNERSHIPS.map((o) => (
                     <option key={o} value={o}>
                       {o}
@@ -402,6 +424,7 @@ export default function AddVehicleModal({ onClose, vehicle }) {
                   value={formData.permitType}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select</option>
                   {PERMITS.map((p) => (
                     <option key={p} value={p}>
                       {p}
@@ -431,14 +454,23 @@ export default function AddVehicleModal({ onClose, vehicle }) {
 
                 <select
                   className="vm-form-select"
-                  value={formData.tollTagAvailable ? "Yes" : "No"}
+                  value={
+                    formData.tollTagAvailable === null
+                      ? ""
+                      : formData.tollTagAvailable
+                        ? "Yes"
+                        : "No"
+                  }
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      tollTagAvailable: e.target.value === "Yes",
+                      tollTagAvailable:
+                        e.target.value === "" ? null : e.target.value === "Yes",
                     }))
                   }
                 >
+                  <option value="" disabled>Select</option>
+
                   {TOLLTAG.map((t) => (
                     <option key={t} value={t}>
                       {t}
@@ -450,21 +482,27 @@ export default function AddVehicleModal({ onClose, vehicle }) {
           </div>
 
           <div className="vm-modal-footer">
-            <button
-              className="vm-btn-ghost"
-              onClick={onClose}
-            >
+            <button className="vm-btn-ghost" onClick={onClose}>
               Cancel
             </button>
 
             <button
-              className="vm-btn-accent"
-              onClick={handleSubmit}
-            >
-              {vehicle
-                ? "✓ Update Vehicle"
-                : "✓ Add Vehicle"}
-            </button>
+  type="button"
+  className="vm-btn-accent"
+  onClick={handleSubmit}
+  disabled={submitting}
+>
+  {submitting ? (
+    <>
+      <span className="vm-btn-loader"></span>
+      {vehicle ? "Updating..." : "Adding..."}
+    </>
+  ) : (
+    <>
+      ✓ {vehicle ? "Update Vehicle" : "Add Vehicle"}
+    </>
+  )}
+</button>
           </div>
         </div>
       </div>

@@ -159,8 +159,11 @@ const TransportMain = () => {
         </aside>
         <main className="main-bar">
           <Outlet />
-          <div className="powered">Powered by TRANZOOP</div>
+          
         </main>
+        <div className="powered-body">
+            <div className="powered">Powered by TRANZOOP</div>
+          </div>
       </div>
       {openSignOutModal && (
         <SignOutModal

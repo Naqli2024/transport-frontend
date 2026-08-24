@@ -16,84 +16,28 @@ import {
 import { toast } from "react-toastify";
 import AddVendorVehicleModal from "./AddVendorVehicleModal";
 import VendorDetailModal from "./VendorDetailModal";
-
-function TripRow({ t }) {
-  return (
-    <tr className={t.isLoss ? "row-loss" : ""}>
-      <td>
-        <span className="td-trip">{t.trip}</span>
-      </td>
-      <td>
-        <span className={`fp-type ${t.typeCls}`}>{t.type}</span>
-      </td>
-      <td>
-        <span className="td-party">{t.party}</span>
-      </td>
-      <td>
-        <span className="td-freight">{t.freight}</span>
-      </td>
-      <td>
-        <span className="td-expenses">{t.expenses}</span>
-      </td>
-      <td>
-        <span className={`td-profit ${t.profitCls}`}>{t.profit}</span>
-      </td>
-      <td>
-        <span className={`td-margin ${t.marginCls}`}>{t.margin}</span>
-      </td>
-    </tr>
-  );
-}
-
-function VendorCard({ vendor }) {
-  return (
-    <div className="vendor-card">
-      <div className="vendor-card-header">
-        <h4>{vendor.companyName}</h4>
-      </div>
-      <div className="vendor-card-body">
-        <div>
-          <strong>Contact:</strong> {vendor.contactPerson}
-        </div>
-        <div>
-          <strong>Mobile:</strong> {vendor.mobile}
-        </div>
-        <div>
-          <strong>Email:</strong> {vendor.email}
-        </div>
-        <div>
-          <strong>GST:</strong> {vendor.gstNo}
-        </div>
-        <div>
-          <strong>City:</strong> {vendor.city}
-        </div>
-
-        <div>
-          <strong>State:</strong> {vendor.state}
-        </div>
-
-        <div>
-          <strong>Address:</strong> {vendor.address}
-        </div>
-      </div>
-    </div>
-  );
-}
+import {
+  deleteVendorVehicle,
+  getAllVendorVehicles,
+} from "../../redux/VendorVehicle/VendorVehicleSlice";
 
 export default function Vendors() {
-  const [theme, setTheme] = useState("dark");
   const [search, setSearch] = useState("");
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedVehicleVendor, setSelectedVehicleVendor] = useState(null);
   const [openViewModal, setOpenViewModal] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
 
+  const [vehicleDeleting, setVehicleDeleting] = useState(false);
   const dispatch = useDispatch();
   const { vendors, vendorDetails, loading, error } = useSelector(
     (state) => state.vendor,
   );
+  const { vendorVehicle } = useSelector((state) => state.vendorVehicle);
 
   const filteredVendors = useMemo(() => {
     return vendors.filter(
@@ -106,11 +50,16 @@ export default function Vendors() {
 
   const handleViewVendor = async (id) => {
     if (!id) return;
-    const response = await dispatch(getVendorById(id));
-    if (response?.payload !== undefined) {
-      setOpenViewModal(true);
-    } else {
-      toast.error(response?.error?.message);
+    setOpenViewModal(true);
+    setViewLoading(true);
+
+    try {
+      const response = await dispatch(getVendorById(id)).unwrap();
+    } catch (error) {
+      toast.error(error);
+      setOpenViewModal(false);
+    } finally {
+      setViewLoading(false);
     }
   };
 
@@ -127,8 +76,31 @@ export default function Vendors() {
     }
   };
 
+  const handleDeleteVendorVehicle = async (vehicle) => {
+    if (!vehicle?._id || vehicleDeleting) return;
+
+    setVehicleDeleting(true);
+
+    try {
+      const response = await dispatch(
+        deleteVendorVehicle(vehicle._id),
+      ).unwrap();
+
+      toast.success(response?.message);
+
+      await dispatch(getAllVendorVehicles()).unwrap();
+    } catch (error) {
+      toast.error(error);
+
+      throw error;
+    } finally {
+      setVehicleDeleting(false);
+    }
+  };
+
   useEffect(() => {
     dispatch(getAllVendor());
+    dispatch(getAllVendorVehicles());
   }, [dispatch]);
 
   useEffect(() => {
@@ -151,7 +123,7 @@ export default function Vendors() {
         <div className="vm-topbar-left">
           <h1 className="heading">Vendors</h1>
           <div className="sub-heading">
-            Trip-level profitability — own fleet vs vendor analysis
+            Monitor vendors and Vendor's vehicles
           </div>
         </div>
         <div className="vm-topbar-right">
@@ -168,7 +140,9 @@ export default function Vendors() {
       </div>
       <div className="vendor-main">
         <div className="he-search-wrap mb-3">
-          <span className="he-search-icon"><IoSearchOutline size={16} /></span>
+          <span className="he-search-icon">
+            <IoSearchOutline size={16} />
+          </span>
           <input
             className="he-search-input"
             placeholder="Search company, contact, mobile..."
@@ -214,14 +188,14 @@ export default function Vendors() {
 
                       <td className="vendor-td-actions p-1">
                         <button
-                          className="vendor-action-btn vendor-action-view"
+                          className="vm-action-btn vm-action-view"
                           onClick={() => handleViewVendor(vendor._id)}
                         >
                           <MdOutlineRemoveRedEye />
                         </button>
 
                         <button
-                          className="vendor-action-btn vendor-action-edit"
+                          className="vm-action-btn vm-action-edit"
                           onClick={() => {
                             setSelectedVendor(vendor);
                             setShowVendorModal(true);
@@ -231,7 +205,7 @@ export default function Vendors() {
                         </button>
 
                         <button
-                          className="vendor-action-btn vendor-action-delete"
+                          className="vm-action-btn vm-action-delete"
                           onClick={() => {
                             setSelectedVendor(vendor);
                             setOpenDeleteModal(true);
@@ -245,7 +219,8 @@ export default function Vendors() {
                         <button
                           className="add-vendor-vehicle-btn"
                           onClick={() => {
-                            setSelectedVehicle(vendor);
+                            setSelectedVehicle(null);
+                            setSelectedVehicleVendor(vendor._id);
                             setShowVehicleModal(true);
                           }}
                         >
@@ -312,16 +287,30 @@ export default function Vendors() {
       />
       <VendorDetailModal
         open={openViewModal}
-        onClose={() => {
-          setOpenViewModal(false);
-        }}
+        loading={viewLoading}
         vendors={vendorDetails}
+        vehicles={vendorVehicle}
+        onClose={() => {
+          if (!viewLoading && !vehicleDeleting) {
+            setOpenViewModal(false);
+          }
+        }}
+        onEditVehicle={(vehicle) => {
+          setSelectedVehicle(vehicle);
+          setSelectedVehicleVendor(null);
+          setShowVehicleModal(true);
+        }}
+        onDeleteVehicle={handleDeleteVendorVehicle}
       />
 
       <AddVendorVehicleModal
         show={showVehicleModal}
+        vehicle={selectedVehicle}
+        vendorId={selectedVehicleVendor}
         onClose={() => {
           setShowVehicleModal(false);
+          setSelectedVehicle(null);
+          setSelectedVehicleVendor(null);
         }}
       />
     </div>

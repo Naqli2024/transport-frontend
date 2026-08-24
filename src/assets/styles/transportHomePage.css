@@ -304,6 +304,7 @@ img {
 .transport-lp-theme-toggle:hover {
   color: var(--transport-lp-color-accent);
   border-color: var(--transport-lp-color-accent);
+  transform: rotate(25deg);
 }
 .transport-lp-theme-toggle svg {
   width: 17px;

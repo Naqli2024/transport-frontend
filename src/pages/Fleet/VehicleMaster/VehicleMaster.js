@@ -201,10 +201,10 @@ const VehicleMaster = () => {
   const [openUploadModal, setOpenUploadModal] = useState(false);
   const [vehicle, setVehicle] = useState(null);
   const [search, setSearch] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const { vehicles, loading, error } = useSelector((state) => state.vehicle);
   const { vehicleDocs } = useSelector((state) => state.vehicle);
   const vehicleOnlyData = vehicles?.filter((v) => v.fleet === "vehicle");
-
 
   useEffect(() => {
     dispatch(getAllVehicles());
@@ -253,17 +253,24 @@ const VehicleMaster = () => {
   ];
 
   const handleDelete = async () => {
-    if (!selectedVehicle?._id) return;
-    const response = await dispatch(deleteVehicle(selectedVehicle._id));
-    if (response?.payload) {
-      toast.success(response.payload.message);
-      await dispatch(getAllVehicles());
-      setOpenDeleteModal(false);
-      setSelectedVehicle(null);
-    } else {
-      toast.error(response?.error?.message);
-    }
-  };
+  if (deleting || !selectedVehicle?._id) return;
+
+  setDeleting(true);
+
+  try {
+    const response = await dispatch(
+      deleteVehicle(selectedVehicle._id)
+    ).unwrap();
+    toast.success(response?.message);
+    setOpenDeleteModal(false);
+    setSelectedVehicle(null);
+    await dispatch(getAllVehicles());
+  } catch (error) {
+    toast.error(error);
+  } finally {
+    setDeleting(false);
+  }
+};
 
   const handleUpload = async (vehicleId, payload) => {
     const response = await dispatch(uploadVehicleDocs({ vehicleId, payload }));
@@ -286,7 +293,10 @@ const VehicleMaster = () => {
         <div className="vm-topbar-right">
           <button
             className="vm-btn-add"
-            onClick={() => setOpenAddVehiclemodal(true)}
+            onClick={() => {
+              setSelectedVehicle(null);
+              setOpenAddVehiclemodal(true);
+            }}
           >
             + Add Vehicle
           </button>
@@ -302,33 +312,32 @@ const VehicleMaster = () => {
             </div>
           ))}
         </div>
+        {dynamicAlerts.length > 0 && (
+          <div className="vm-alert-banner">
+            <div className="vm-alert-header">
+              <span className="vm-alert-icon">⚠️</span>
 
-        <div className="vm-alert-banner">
-          <div className="vm-alert-header">
-            <span className="vm-alert-icon">⚠️</span>
-            <span className="vm-alert-title">
-              Compliance Alerts — {dynamicAlerts.length} Vehicle
-              {dynamicAlerts.length !== 1 ? "s" : ""} Need Attention
-            </span>
-          </div>
-          {dynamicAlerts.length === 0 ? (
-            <div className="vm-alert-clear">
-              ✅ All documents are up to date
+              <span className="vm-alert-title">
+                Compliance Alerts — {dynamicAlerts.length} Vehicle
+                {dynamicAlerts.length !== 1 ? "s" : ""} Need Attention
+              </span>
             </div>
-          ) : (
+
             <div className="vm-alert-cards">
               {dynamicAlerts.map((a, i) => (
                 <div key={i} className={`vm-alert-card ${a.cardCls}`}>
                   <div className="vm-alert-reg">{a.reg}</div>
+
                   <div className="vm-alert-doc">{a.doc}</div>
+
                   <div className={`vm-alert-status ${a.statusCls}`}>
                     {a.statusText}
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="vm-tabs mb-4">
           {TABS.map((t) => (
@@ -343,7 +352,9 @@ const VehicleMaster = () => {
         </div>
 
         <div className="he-search-wrap mb-3">
-          <span className="he-search-icon"><IoSearchOutline size={16} /></span>
+          <span className="he-search-icon">
+            <IoSearchOutline size={16} />
+          </span>
           <input
             className="he-search-input"
             placeholder="Search vehicle no..."
@@ -393,7 +404,7 @@ const VehicleMaster = () => {
                       setOpenDeleteModal(true);
                     }}
                     onUpload={(vehicle) => {
-                      setVehicle(vehicle)
+                      setVehicle(vehicle);
                       setOpenUploadModal(true);
                     }}
                   />
@@ -432,6 +443,9 @@ const VehicleMaster = () => {
             setOpenAddVehiclemodal(false);
             setSelectedVehicle(null);
           }}
+          onSuccess={() => {
+            dispatch(getAllVehicles());
+          }}
         />
       )}
       {openVehicleViewModal && (
@@ -452,16 +466,32 @@ const VehicleMaster = () => {
               Are you sure you want to delete this vehicle?
             </p>
             <div className="vm-delete-actions">
-              <button
-                className="vm-delete-btn cancel"
-                onClick={() => setOpenDeleteModal(false)}
-              >
-                Cancel
-              </button>
-              <button className="vm-delete-btn confirm" onClick={handleDelete}>
-                <MdDelete /> Delete
-              </button>
-            </div>
+  <button
+    className="vm-delete-btn cancel"
+    onClick={() => setOpenDeleteModal(false)}
+    disabled={deleting}
+  >
+    Cancel
+  </button>
+
+  <button
+    className="vm-delete-btn confirm"
+    onClick={handleDelete}
+    disabled={deleting}
+  >
+    {deleting ? (
+      <>
+        <span className="vm-btn-loader"></span>
+        Deleting...
+      </>
+    ) : (
+      <>
+        <MdDelete />
+        Delete
+      </>
+    )}
+  </button>
+</div>
           </div>
         </div>
       )}

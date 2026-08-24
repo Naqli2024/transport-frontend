@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { addDriver, editDriver, getAllDrivers, getDriversDashboard } from "../../../redux/Driver/DriverSlice";
+import {
+  addDriver,
+  editDriver,
+  getAllDrivers,
+  getDriversDashboard,
+} from "../../../redux/Driver/DriverSlice";
 
-const DL_CLASSES = [
-  "LMV",
-  "HMV",
-  "Transport",
-  "Heavy",
-];
-
-
+const DL_CLASSES = ["LMV", "HMV", "Transport", "Heavy"];
 
 const PersonIcon = () => (
   <svg
@@ -40,15 +38,11 @@ const Field = ({ label, required, children, full }) => (
   </div>
 );
 
-const AddDriverModal = ({
-  open,
-  onClose,
-  mode = "add",
-  driver = null,
-}) => {
+const AddDriverModal = ({ open, onClose, mode = "add", driver = null }) => {
   const dispatch = useDispatch();
 
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -58,7 +52,6 @@ const AddDriverModal = ({
     dlNo: "",
     dlClass: "PSV/HMV",
     licenseExpiryDate: "",
-
   });
 
   const handleChange = (e) => {
@@ -70,8 +63,6 @@ const AddDriverModal = ({
     }));
   };
 
-
-
   const handleNext = () => {
     setStep(2);
   };
@@ -82,42 +73,78 @@ const AddDriverModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      name: formData.name,
-      mobile: Number(formData.mobile),
-      aadhaarNo: Number(formData.aadhaarNo),
-      experience: Number(formData.experience) || 0,
-      dlNo: formData.dlNo,
-      dlClass: formData.dlClass,
-      licenseExpiryDate: formData.licenseExpiryDate,
-    };
 
-    if (mode === "edit") {
-      const response = await dispatch(
-        editDriver({
-          id: driver._id,
-          data: payload,
-        })
-      );
+    if (loading) return;
 
-      if (response?.payload) {
-        toast.success(response.payload.message);
-        await dispatch(getAllDrivers());
-        handleClose();
+    setLoading(true);
+
+    try {
+      const payload = {
+        name: formData.name,
+        mobile: Number(formData.mobile),
+        aadhaarNo: Number(formData.aadhaarNo),
+        experience: Number(formData.experience) || 0,
+        dlNo: formData.dlNo,
+        dlClass: formData.dlClass,
+        licenseExpiryDate: formData.licenseExpiryDate,
+      };
+
+      if (mode === "edit") {
+        const response = await dispatch(
+          editDriver({
+            id: driver._id,
+            data: payload,
+          }),
+        );
+        if (response.meta?.requestStatus === "fulfilled") {
+          toast.success(
+            response.payload?.message || "Driver updated successfully",
+          );
+          await dispatch(getAllDrivers());
+          handleClose();
+        } else {
+          toast.error(
+            response.payload?.message ||
+              response.error?.message ||
+              "Failed to update driver",
+          );
+
+          // IMPORTANT:
+          // Do NOT call handleClose() here.
+          // Modal stays open.
+        }
       } else {
-        toast.error(response?.error?.message);
-      }
-    } else {
-      const response = await dispatch(addDriver(payload));
+        const response = await dispatch(addDriver(payload));
 
-      if (response?.payload) {
-        toast.success(response.payload.message);
-        await dispatch(getAllDrivers());
-        await dispatch(getDriversDashboard());
-        handleClose();
-      } else {
-        toast.error(response?.error?.message);
+        if (response.meta?.requestStatus === "fulfilled") {
+          toast.success(
+            response.payload?.message || "Driver added successfully",
+          );
+
+          await dispatch(getAllDrivers());
+          await dispatch(getDriversDashboard());
+
+          handleClose();
+        } else {
+          toast.error(
+            response.payload?.message ||
+              response.error?.message ||
+              "Failed to add driver",
+          );
+
+          // IMPORTANT:
+          // Do NOT call handleClose() here.
+          // Modal stays open.
+        }
       }
+    } catch (error) {
+      console.error("Driver submit error:", error);
+
+      toast.error(error?.message || "Something went wrong. Please try again.");
+
+      // Modal stays open
+    } finally {
+      setLoading(false);
     }
   };
   const handleClose = () => {
@@ -126,6 +153,8 @@ const AddDriverModal = ({
   };
 
   useEffect(() => {
+    if (!open) return;
+
     if (mode === "edit" && driver) {
       setFormData({
         name: driver.name || "",
@@ -150,7 +179,9 @@ const AddDriverModal = ({
       });
     }
 
-  }, [mode, driver]);
+    setStep(1);
+    setLoading(false);
+  }, [open, mode, driver]);
 
   if (!open) return null;
 
@@ -161,10 +192,7 @@ const AddDriverModal = ({
       aria-modal="true"
       onClick={handleClose}
     >
-      <div
-        className="dm-modal-container"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="dm-modal-container" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="dm-modal-header">
           <div className="dm-modal-title">
@@ -240,7 +268,6 @@ const AddDriverModal = ({
                   value={formData.dlNo}
                   onChange={handleChange}
                   placeholder="MH01 2024 0012345"
-
                 />
               </Field>
 
@@ -299,24 +326,34 @@ const AddDriverModal = ({
               </button>
 
               <button
-                className="dm-modal-btn dm-modal-btn--primary"
+                className="dm-modal-btn dm-modal-btn--primary dm-btn-accent"
                 onClick={handleSubmit}
+                disabled={loading}
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                {loading ? (
+                  <>
+                    <span className="dm-btn-loader" />
+                    {mode === "edit" ? "Updating..." : "Adding..."}
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
 
-                {mode === "edit" ? "Update Driver" : "Add Driver"}
+                    {mode === "edit" ? "Update Driver" : "Add Driver"}
+                  </>
+                )}
               </button>
             </>
           )}

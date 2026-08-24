@@ -24,7 +24,7 @@ function AppContent() {
   const token = Cookies.get("token");
 
   const businessId = admin?.user?.businessId;
-
+  
   const googleMapsApiKey = getGoogleMapsKey(businessId);
 
   useEffect(() => {

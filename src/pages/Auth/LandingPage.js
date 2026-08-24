@@ -30,6 +30,10 @@ import {
   LuStore,
   LuFlaskConical,
 } from "react-icons/lu";
+import {
+  FiSun,
+  FiMoon
+} from "react-icons/fi";
 import { ThemeContext } from '../../helpers/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -358,7 +362,9 @@ const LandingPage = () => {
         <div className="transport-lp-wrap transport-lp-header__inner">
           <a
             className="transport-lp-logo"
-            onClick={closeMobileMenu}
+            onClick={()=> {
+              window.location.href="https://tranzoop.com/"
+              closeMobileMenu()}}
           >
             <span className="transport-lp-logo__mark">
               <svg
@@ -401,35 +407,9 @@ const LandingPage = () => {
               onClick={toggleTheme}
             >
               {theme === "light" ? (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="4" />
-                  <path d="M12 2v2" />
-                  <path d="M12 20v2" />
-                  <path d="M4.9 4.9l1.4 1.4" />
-                  <path d="M17.7 17.7l1.4 1.4" />
-                  <path d="M2 12h2" />
-                  <path d="M20 12h2" />
-                  <path d="M4.9 19.1l1.4-1.4" />
-                  <path d="M17.7 6.3l1.4-1.4" />
-                </svg>
+                <FiMoon />
               ) : (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
-                </svg>
+                <FiSun />
               )}
             </button>
             <a
