@@ -196,6 +196,7 @@ onClick={() => set("driver1", d._id)}
             <label className="driver-screw-flabel">Driver Advance (₹)</label>
             <input
               value={form.driverAdvance}
+              type="number"
               onChange={(e) => set("driverAdvance", e.target.value)}
               placeholder="5000"
               className="driver-screw-input"

@@ -67,7 +67,7 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
           <td>
             {" "}
             <button
-              className="logout-btn confirm"
+              className="dm-settle-btn confirm"
               onClick={() => {
                 setDriverId(d?._id);
                 setOpenDriverSettlementModal(true);

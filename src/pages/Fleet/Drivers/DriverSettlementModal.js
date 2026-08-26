@@ -127,7 +127,6 @@ const DriverSettlementModal = ({ open, onClose, driverId }) => {
 
         <div className="expense-modal-actions">
           <button className="expense-modal-btn cancel" onClick={onClose}>
-            <MdOutlineCancel size={25}/>
             Cancel
           </button>
 

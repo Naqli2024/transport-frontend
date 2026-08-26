@@ -4688,8 +4688,7 @@ strong {
   border-color: var(--accentGlow);
 }
 .vehicle-card {
-  border: 1px solid var(--accent);
-  background: var(--accentGlow);
+  border: 1px solid var(--textMuted);
   border-radius: 14px;
   padding: 10px;
   cursor: pointer;
@@ -4700,13 +4699,14 @@ strong {
 }
 
 .vehicle-card:hover {
-  border-color: #4b6bff;
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 3px var(--accentGlow2);
   transform: translateY(-2px);
 }
-
 .vehicle-card.selected {
-  border: 2px solid #2d8cff;
-  box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.15);
+  border: 2px solid var(--accent2);
+  background-color: var(--accentGlow) ;
+  box-shadow: 0 0 0 3px var(--accentGlow2);
 }
 
 .vehicle-card-left {
@@ -4719,8 +4719,7 @@ strong {
   width: 54px;
   height: 54px;
   border-radius: 12px;
-  border: 1px solid var(--accent);
-  background: var(--accentGlow);
+  border: 1px solid var(--accent2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4759,6 +4758,29 @@ strong {
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 10px !important;
+}
+.trip-save-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: tripSaveSpin 0.7s linear infinite;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+@keyframes tripSaveSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.trip-generator-modal-btn-p:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {
@@ -8223,7 +8245,7 @@ strong {
   gap: 8px;
   border: none;
   border-radius: 10px;
-  padding: 11px 22px;
+  padding: 8px 20px;
   cursor: pointer;
   font-weight: 600;
   transition: 0.25s;
@@ -8423,6 +8445,24 @@ table.dm-table {
 .dm-table tbody td:last-child {
   padding-right: 20px;
   text-align: right;
+}
+.dm-settle-btn {
+  flex: 1;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+}
+.dm-settle-btn.confirm {
+  background: #ef4444;
+  color: white;
 }
 /* ════════════════════════════ Agents Commission ══════════════════════════════════ */
 .agents-c-page {

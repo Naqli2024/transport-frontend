@@ -21,6 +21,7 @@ const LoadFreightDetails = ({ form, set, handleChange }) => {
           <label className="load-details-flabel">Weight (Tonnes)</label>
           <input
             value={form.weight}
+            type="number"
             onChange={(e) => set("weight", e.target.value)}
             placeholder="e.g. 18"
             className="load-details-input"
@@ -32,6 +33,7 @@ const LoadFreightDetails = ({ form, set, handleChange }) => {
           <label className="load-details-flabel">Freight Amount (₹)</label>
           <input
             value={form.freightAmount}
+            type="number"
             onChange={(e) => set("freightAmount", e.target.value)}
             placeholder="e.g. 42000"
             className="load-details-input"
@@ -41,6 +43,7 @@ const LoadFreightDetails = ({ form, set, handleChange }) => {
           <label className="load-details-flabel">Advance from Party (₹)</label>
           <input
             value={form.advanceAmount}
+            type="number"
             onChange={(e) => set("advanceAmount", e.target.value)}
             placeholder="e.g. 10000"
             className="load-details-input"
@@ -55,6 +58,7 @@ const LoadFreightDetails = ({ form, set, handleChange }) => {
             value={form.loadType}
             onChange={(e) => set("loadType", e.target.value)}
           >
+            <option value="" disabled>Select</option>
             <option>FTL</option>
             <option>PTL</option>
           </select>
@@ -66,6 +70,7 @@ const LoadFreightDetails = ({ form, set, handleChange }) => {
             value={form.paymentType}
             onChange={(e) => set("paymentType", e.target.value)}
           >
+            <option value="" disabled>Select</option>
             <option>Account</option>
             <option>Cash</option>
           </select>

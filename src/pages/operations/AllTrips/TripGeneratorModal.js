@@ -7,10 +7,8 @@ import LoadFreightDetails from "./LoadFreightDetails";
 import DriverCrewSelector from "./DriverCrewSelector";
 import Review from "./Review";
 import { useDispatch, useSelector } from "react-redux";
-import { addTrip, editTrip } from "../../../redux/Trip/TripSlice";
+import { addTrip, editTrip, getAllTrips } from "../../../redux/Trip/TripSlice";
 import { toast } from "react-toastify";
-import { getAllVendor } from "../../../redux/Vendor/VendorSlice";
-import { getAllVendorVehicles } from "../../../redux/VendorVehicle/VendorVehicleSlice";
 
 const TripGeneratorModal = ({
   open,
@@ -22,6 +20,7 @@ const TripGeneratorModal = ({
   const [step, setStep] = useState(1);
   const [fleetSource, setFleetSource] = useState(vehicleSource);
   const dispatch = useDispatch();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     // Fleet
     fleetSource: "Own Fleet",
@@ -32,20 +31,16 @@ const TripGeneratorModal = ({
     weight: "",
     freightAmount: "",
     advanceAmount: "",
-    loadType: "FTL",
-    paymentType: "Account",
+    loadType: "",
+    paymentType: "",
     miscAmount: "",
     customerId: "",
     brokerId: "",
     origin: {
       location: "",
-      city: "",
-      state: "",
     },
     destination: {
       location: "",
-      city: "",
-      state: "",
     },
     journeyLegs: [
       {
@@ -80,13 +75,6 @@ const TripGeneratorModal = ({
       }));
   };
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
   useEffect(() => {
     if (!trip) return;
     setForm({
@@ -98,30 +86,26 @@ const TripGeneratorModal = ({
       weight: trip.weight || "",
       freightAmount: trip.freightAmount || "",
       advanceAmount: trip.advanceAmount || "",
-      loadType: trip.loadType || "FTL",
-      paymentType: trip.paymentType || "Account",
+      loadType: trip.loadType || "",
+      paymentType: trip.paymentType || "",
       origin: trip.origin || {
         location: "",
-        city: "",
-        state: "",
       },
       destination: trip.destination || {
         location: "",
-        city: "",
-        state: "",
       },
       journeyLegs:
         trip.journeyLegs?.length > 0
           ? trip.journeyLegs
           : [
-            {
-              legNo: 1,
-              from: "",
-              to: "",
-              customerId: "",
-              brokerId: "",
-            },
-          ],
+              {
+                legNo: 1,
+                from: "",
+                to: "",
+                customerId: "",
+                brokerId: "",
+              },
+            ],
       lrNo: trip.lrNo || "",
       driver1: trip.driver1?._id || trip.driver1 || "",
       driver2: trip.driver2?._id || trip.driver2 || "",
@@ -134,6 +118,24 @@ const TripGeneratorModal = ({
   }, [trip]);
 
   const handleCreate = async () => {
+    if (isSubmitting) return;
+
+    if (!form.vehicleId) {
+      toast.error("Please select a vehicle");
+      return;
+    }
+if (fleetSource === "Vendor") {
+  if (!form.vendorId) {
+    toast.error("Please select a vendor");
+    return;
+  }
+
+  if (!form.vendorVehicleId) {
+    toast.error("Please select a vendor vehicle");
+    return;
+  }
+}
+    setIsSubmitting(true);
     const payload = {
       fleetSource: fleetSource === "Own Fleet" ? "Own Fleet" : "Vendor",
       vehicleId: form.vehicleId,
@@ -151,9 +153,11 @@ const TripGeneratorModal = ({
       driver1: form.driver1 || undefined,
       driver2: form.driver2 || undefined,
       driverAdvance: Number(form.driverAdvance),
-      vendorId: form.vendorId || undefined,
-      vendorVehicleId: form.vendorVehicleId,
       journeyLegs: buildJourneyLegs(),
+      ...(fleetSource === "Vendor" && {
+        vendorId: form.vendorId || undefined,
+        vendorVehicleId: form.vendorVehicleId,
+      }),
     };
     console.log(payload);
     try {
@@ -167,18 +171,21 @@ const TripGeneratorModal = ({
           }),
         ).unwrap();
 
-        toast.success(res);
+        toast.success(res?.message);
       } else {
         res = await dispatch(addTrip(payload)).unwrap();
 
-        toast.success(res);
+        toast.success(res?.message);
       }
-
+      await dispatch(getAllTrips()).unwrap();
       onClose();
     } catch (err) {
       toast.error(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const steps = [
     { n: 1, label: "Journey Type" },
@@ -305,15 +312,16 @@ const TripGeneratorModal = ({
                       />
                     )}
                   </div>
-                  <div className={`trip-generator-modal-step-label ${i === 0
-                    ? "step-label-first"
-                    : i === steps.length - 1
-                      ? "step-label-last"
-                      : ""
+                  <div
+                    className={`trip-generator-modal-step-label ${
+                      i === 0
+                        ? "step-label-first"
+                        : i === steps.length - 1
+                          ? "step-label-last"
+                          : ""
                     }`}
                     style={{
-                      color:
-                        step === s.n ? "var(--accent)" : "var(--textSub)",
+                      color: step === s.n ? "var(--accent)" : "var(--textSub)",
                     }}
                   >
                     {s.label}
@@ -361,11 +369,27 @@ const TripGeneratorModal = ({
             </button>
             <button
               className="control-btn trip-generator-modal-btn-p"
-              onClick={() =>
-                step < steps.length ? setStep((s) => s + 1) : handleCreate()
-              }
+              disabled={step === steps.length && isSubmitting}
+              onClick={() => {
+                if (step < steps.length) {
+                  setStep((s) => s + 1);
+                } else {
+                  handleCreate();
+                }
+              }}
             >
-              {step === steps.length ? "🚀 Save Trip" : "Next →"}
+              {step === steps.length ? (
+                isSubmitting ? (
+                  <>
+                    <span className="trip-save-spinner"></span>
+                    Saving...
+                  </>
+                ) : (
+                  "🚀 Save Trip"
+                )
+              ) : (
+                "Next →"
+              )}
             </button>
           </DialogActions>
         </DialogContent>

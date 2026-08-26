@@ -57,6 +57,7 @@ const SignIn = () => {
           name='username'
           value={formData.username}
           onChange={handleChange}
+          autoComplete="off"
           />
         </div>
         <div className="sign-in-field" >
@@ -69,6 +70,7 @@ const SignIn = () => {
           name='password'
           value={formData.password}
           onChange={handleChange}
+          autoComplete="current-password"
         />
         <span
           className="sign-in-eye-icon"

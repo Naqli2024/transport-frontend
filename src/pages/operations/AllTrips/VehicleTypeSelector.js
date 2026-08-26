@@ -74,7 +74,7 @@ useEffect(() => {
                   }));
                 }}
               >
-                <option value="">Choose Vendor</option>
+                <option value="" disabled>Choose Vendor</option>
 
                 {vendors.map((vendor) => (
                   <option key={vendor._id} value={vendor._id}>
@@ -92,7 +92,7 @@ useEffect(() => {
                 value={form.vendorVehicleId}
                 onChange={(e) => set("vendorVehicleId", e.target.value)}
               >
-                <option value="">Choose Vehicle</option>
+                <option value="" disabled>Choose Vehicle</option>
 
                 {filteredVendorVehicles.length > 0 ? (
                   filteredVendorVehicles.map((vehicle) => (

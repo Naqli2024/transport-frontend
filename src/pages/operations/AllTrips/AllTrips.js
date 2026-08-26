@@ -50,11 +50,21 @@ const AllTrips = () => {
   const [filterTab, setFilterTab] = useState("all");
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editingTrip, setEditingTrip] = useState(null);
   const dispatch = useDispatch();
   const [trip, setTrip] = useState(false);
-  const { trips, tripDetail, documents, expenses, fuelEntries, weighBridge, loading, loadingDetail, error } =
-    useSelector((state) => state.trip);
+  const {
+    trips,
+    tripDetail,
+    documents,
+    expenses,
+    fuelEntries,
+    weighBridge,
+    loading,
+    loadingDetail,
+    error,
+  } = useSelector((state) => state.trip);
   const [activeTrip, setActiveTrip] = useState(null);
   const [openUploadModal, setOpenUploadModal] = useState(false);
   const [showOverview, setShowOverview] = useState(false);
@@ -123,14 +133,20 @@ const AllTrips = () => {
   };
 
   const handleDelete = async () => {
-    const response = await dispatch(deleteTrip(selectedTrip._id));
-    if (response?.payload) {
-      toast.success(response.payload.message);
-      await dispatch(getAllTrips());
+    if (isDeleting || !selectedTrip?._id) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await dispatch(deleteTrip(selectedTrip._id)).unwrap();
+      toast.success(response?.message);
+      await dispatch(getAllTrips()).unwrap();
       setOpenDeleteModal(false);
       setSelectedTrip(null);
-    } else {
-      toast.error(response?.error?.message);
+    } catch (err) {
+      toast.error(err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -284,7 +300,10 @@ const AllTrips = () => {
               ))}
             </div>
           </div>
-          <div className="control-card-box" style={{ padding: 0, overflow: "hidden" }}>
+          <div
+            className="control-card-box"
+            style={{ padding: 0, overflow: "hidden" }}
+          >
             <div className="trip-table-scroll">
               <table className="trip-table">
                 <thead>
@@ -325,9 +344,7 @@ const AllTrips = () => {
                             ?.companyName || "-"}
                         </td>
 
-                        <td>
-                          ₹{t.freightAmount?.toLocaleString("en-IN")}
-                        </td>
+                        <td>₹{t.freightAmount?.toLocaleString("en-IN")}</td>
 
                         <td>{t.tripStatus}</td>
 
@@ -417,29 +434,40 @@ const AllTrips = () => {
             </div>
           </div>
           {openDeleteModal && (
-            <div className="trip-delete-backdrop">
-              <div className="trip-delete-modal">
-                <div className="trip-delete-icon-wrap">
-                  <MdDelete className="trip-delete-icon" />
+            <div className="vm-delete-backdrop">
+              <div className="vm-delete-modal">
+                <div className="vm-delete-icon-wrap">
+                  <MdDelete className="vm-delete-icon" />
                 </div>
-                <h3 className="trip-delete-title">Delete Trip?</h3>
+                <h3 className="vm-delete-title">Delete Trip?</h3>
 
-                <p className="trip-delete-text">
-                  Are you sure you want to delete trip{" "}
+                <p className="vm-delete-text">
+                  Are you sure you want to delete trip <br />
                   <b>{selectedTrip?.tripNo}</b>?
                 </p>
-                <div className="trip-delete-actions">
+                <div className="vm-delete-actions">
                   <button
-                    className="trip-delete-btn cancel"
+                    className="vm-delete-btn cancel"
                     onClick={() => setOpenDeleteModal(false)}
                   >
                     Cancel
                   </button>
                   <button
-                    className="trip-delete-btn confirm"
+                    className="vm-delete-btn confirm"
                     onClick={handleDelete}
+                    disabled={isDeleting}
                   >
-                    <MdDelete /> Delete
+                    {isDeleting ? (
+                      <>
+                        <span className="trip-save-spinner"></span>
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <MdDelete />
+                        Delete
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
