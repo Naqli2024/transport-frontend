@@ -23,6 +23,16 @@ const TrackTrip = ({ trip, close }) => {
   const { tripDetail } = useSelector((state) => state.trip);
   const { driverDetails } = useSelector((state) => state.driver);
 
+  // current leg being tracked
+  const activeLeg = useMemo(() => {
+    if (!tripDetail?.journeyLegs?.length) return null;
+    const idx = (tripDetail.currentLeg || 1) - 1;
+    return (
+      tripDetail.journeyLegs[idx] ||
+      tripDetail.journeyLegs[tripDetail.journeyLegs.length - 1]
+    );
+  }, [tripDetail]);
+
   const markers = useMemo(() => {
     if (!driverDetails?.lat || !driverDetails?.lng) {
       return [];
@@ -34,36 +44,27 @@ const TrackTrip = ({ trip, close }) => {
         lat: Number(driverDetails.lat),
         lng: Number(driverDetails.lng),
         tripId: tripDetail?._id,
-        driverName: driverDetails.driverName,
+        driverName: driverDetails.name,
         vehicleNo: driverDetails.vehicleNo,
       },
     ];
   }, [driverDetails, tripDetail]);
 
-  if (driverDetails?.lat && driverDetails?.lng) {
-    markers.push({
-      id: driverDetails._id,
-      lat: Number(driverDetails.lat),
-      lng: Number(driverDetails.lng),
-      tripId: tripDetail._id,
-      driverName: driverDetails.name,
-      vehicleNo: driverDetails.vehicleNo,
-    });
-  }
-
   useEffect(() => {
-    if (!trip._id) return;
+    if (!trip?._id) return;
     dispatch(getTripById(trip._id));
-  }, [trip._id, dispatch]);
+  }, [trip?._id, dispatch]);
 
   useEffect(() => {
-    if (!tripDetail?.driver1._id) {
+    const driverId = activeLeg?.driver1?._id;
+
+    if (!driverId) {
       console.log("No driverId found");
       return;
     }
 
-    dispatch(getDriverById(tripDetail.driver1._id));
-  }, [tripDetail, dispatch]);
+    dispatch(getDriverById(driverId));
+  }, [activeLeg, dispatch]);
 
   const currentIndex = useMemo(() => {
     if (!tripDetail) return -1;
@@ -83,23 +84,23 @@ const TrackTrip = ({ trip, close }) => {
   };
 
   const getStatusTime = (status) => {
-    if (!tripDetail) return "";
+    if (!activeLeg) return "";
 
     switch (status) {
       case "Reached Pickup":
-        return tripDetail.pickupReachedAt;
+        return activeLeg.pickupReachedAt;
 
       case "Ready For Loading":
-        return tripDetail.loading?.loadingEndTime;
+        return activeLeg.loading?.loadingEndTime;
 
       case "Documents Pending":
-        return tripDetail.weighbridge?.measuredAt;
+        return activeLeg.weighbridge?.measuredAt;
 
       case "Ready To Start":
-        return tripDetail.startTime;
+        return activeLeg.startTime;
 
       case "Completed":
-        return tripDetail.arrivalTime;
+        return activeLeg.arrivalTime;
 
       default:
         return "";
@@ -111,10 +112,7 @@ const TrackTrip = ({ trip, close }) => {
       <div className="tracking-container">
         <h1 className="rj tracking-header">Track Trip - {trip.tripNo}</h1>
         <div className="track-cancel">
-          <RxCross2
-          size={25}
-          onClick={close}
-        />
+          <RxCross2 size={25} onClick={close} />
         </div>
       </div>
       <div className="track-trip-container">

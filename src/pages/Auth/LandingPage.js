@@ -384,7 +384,7 @@ const LandingPage = () => {
 
             <span>
               <span className="transport-lp-logo__name">
-                Tranzoop
+                Bizoop
               </span>
 
               <span className="transport-lp-logo__sub">
@@ -530,7 +530,7 @@ const LandingPage = () => {
               <h1 className="transport-lp-heading">Know where every <em>trip, truck and driver</em> is — the moment it moves.</h1>
 
               <p class="transport-lp-hero__sub transport-lp-text">
-                Tranzoop turns trip creation, driver dispatch, live GPS tracking and
+                Bizoop turns trip creation, driver dispatch, live GPS tracking and
                 trip documentation into one connected workflow — so your control room
                 already knows the answer to <i>“Where is my shipment?”</i>
               </p>
@@ -628,7 +628,7 @@ const LandingPage = () => {
           <div>
 
             <span className="transport-lp-eyebrow">
-              About Tranzoop
+              About Bizoop
             </span>
 
             <h2 className="transport-lp-h2 transport-lp-heading">
@@ -636,7 +636,7 @@ const LandingPage = () => {
             </h2>
 
             <p className="transport-lp-lead transport-lp-text">
-              Tranzoop is built around the way your trips actually run.
+              Bizoop is built around the way your trips actually run.
               Admins plan trips and assign drivers, drivers manage the trip
               end-to-end from a simple mobile app, and everyone can see
               exactly where the shipment is, in real time.
@@ -882,7 +882,7 @@ const LandingPage = () => {
               width="1024"
               height="1152"
               loading="lazy"
-              alt="Truck driver checking trip details on the Tranzoop driver app"
+              alt="Truck driver checking trip details on the Bizoop driver app"
             />
           </div>
 
@@ -996,7 +996,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ======================= WHY TRANZOOP ======================= */}
+      {/* ======================= WHY Bizoop ======================= */}
       <section
         className="transport-lp-section"
         id="why"
@@ -1006,7 +1006,7 @@ const LandingPage = () => {
           <div className="transport-lp-head--center">
 
             <span className="transport-lp-eyebrow">
-              Why Tranzoop
+              Why Bizoop
             </span>
 
             <h2 className="transport-lp-h2 transport-lp-heading">
@@ -1109,7 +1109,7 @@ const LandingPage = () => {
 
                 <span>
                   <span className="transport-lp-logo__name">
-                    Tranzoop
+                    Bizoop
                   </span>
 
                   <span className="transport-lp-logo__sub">
@@ -1213,7 +1213,7 @@ const LandingPage = () => {
 
                 <li>
                   <a href="#why">
-                    Why Tranzoop
+                    Why Bizoop
                   </a>
                 </li>
               </ul>
@@ -1227,7 +1227,7 @@ const LandingPage = () => {
           <div className="transport-lp-footer__bottom">
 
             <span>
-              © {new Date().getFullYear()} Tranzoop.
+              © {new Date().getFullYear()} Bizoop.
               All rights reserved.
             </span>
 

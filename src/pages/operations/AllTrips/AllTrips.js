@@ -7,14 +7,6 @@ import {
   MdDelete,
   MdOutlineFileUpload,
 } from "react-icons/md";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
 import { useEffect } from "react";
 import {
   bulkUploadDocuments,
@@ -41,11 +33,10 @@ import { CiDeliveryTruck } from "react-icons/ci";
 import { CgTrack } from "react-icons/cg";
 import TrackTrip from "./TrackTrip";
 import TripCloseModal from "../../../components/TripCloseModal";
+import { IoAdd } from "react-icons/io5";
 
 const AllTrips = () => {
   const [showCreate, setShowCreate] = useState(false);
-  const [showInspect, setShowInspect] = useState(null);
-  const [showTripDetail, setShowTripDetail] = useState(null);
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState("all");
   const [selectedTrip, setSelectedTrip] = useState(null);
@@ -53,7 +44,6 @@ const AllTrips = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingTrip, setEditingTrip] = useState(null);
   const dispatch = useDispatch();
-  const [trip, setTrip] = useState(false);
   const {
     trips,
     tripDetail,
@@ -71,6 +61,24 @@ const AllTrips = () => {
   const [customerMap, setCustomerMap] = useState({});
   const [openTrackTrip, setOpenTrackTrip] = useState(false);
   const [openTripCloseModal, setOpenTripCloseModal] = useState(false);
+
+    // Sum estimatedFreightAmount across all legs of a trip
+  const getTripFreight = (trip) =>
+    (trip.journeyLegs || []).reduce(
+      (sum, leg) => sum + (Number(leg.estimatedFreightAmount) || 0),
+      0,
+    );
+
+  // Unique driver names across all legs (driver1 per leg)
+  const getTripDrivers = (trip) => {
+    const names = (trip.journeyLegs || [])
+      .map((leg) => leg.driver1?.name)
+      .filter(Boolean);
+    return [...new Set(names)];
+  };
+
+  // Number of legs
+  const getLegCount = (trip) => trip.journeyLegs?.length || 0;
 
   const filtered = trips.filter((t) => {
     const matchSearch =
@@ -99,19 +107,20 @@ const AllTrips = () => {
     const fetchCustomers = async () => {
       const ids = [
         ...new Set(
-          trips.map((t) => t.journeyLegs?.[0]?.customerId).filter(Boolean),
+          trips
+            .flatMap((t) => (t.journeyLegs || []).map((leg) => leg.customerId))
+            .filter(Boolean),
         ),
       ];
       const map = {};
       for (const id of ids) {
         try {
           const result = await dispatch(getCustomerById(id)).unwrap();
-
           if (result?.data) {
             map[id] = result.data;
           }
         } catch (e) {
-          // console.error("Failed to fetch customer", id, e);
+          toast.error(e);
         }
       }
       setCustomerMap(map);
@@ -180,8 +189,7 @@ const AllTrips = () => {
     },
     {
       label: "Total Freight",
-      value:
-        "₹" + trips.reduce((sum, t) => sum + (Number(t.freightAmount) || 0), 0),
+      value: "₹" + trips.reduce((sum, t) => sum + getTripFreight(t), 0),
       color: "#F59E0B",
     },
   ];
@@ -238,29 +246,22 @@ const AllTrips = () => {
               <p className="control-sub">
                 {trips.length} trips · ₹
                 {trips
-                  .reduce((s, t) => s + t.freightAmount, 0)
+                  .reduce((s, t) => s + getTripFreight(t), 0)
                   .toLocaleString("en-In")}{" "}
                 freight · Own fleet + vendor vehicles
               </p>
             </div>
-            <div className="d-flex gap-3">
-              <button
-                className="control-btn trips-btn-booking"
-                onClick={() => {
-                  setEditingTrip(null);
-                  setShowCreate(true);
-                }}
-              >
-                <CiDeliveryTruck size={18} />
-                New Trip Booking
-              </button>
-            </div>
+            <button
+              className="control-btn trips-btn-booking"
+              onClick={() => {
+                setEditingTrip(null);
+                setShowCreate(true);
+              }}
+            >
+              <CiDeliveryTruck size={18} />
+              New Trip Booking
+            </button>
           </div>
-          {error && !loading && (
-            <div className="broker-error-banner">
-              {error || "Failed to load trips data."}
-            </div>
-          )}
           <div className="control-row control-col">
             {tripStats.map((k) => (
               <div
@@ -311,10 +312,11 @@ const AllTrips = () => {
                     <th>Trip ID</th>
                     <th>Type</th>
                     <th>Journey</th>
+                    <th>Legs</th>
                     <th>Vehicle/Vendor</th>
                     <th>Driver</th>
                     <th>Customer</th>
-                    <th>Freight</th>
+                    <th>Freight Amount</th>
                     <th>Status</th>
                     <th className="text-center">Actions</th>
                   </tr>
@@ -322,105 +324,134 @@ const AllTrips = () => {
 
                 <tbody>
                   {filtered.length > 0 ? (
-                    filtered.map((t) => (
-                      <tr key={t._id}>
-                        <td>{t.tripNo}</td>
+                    filtered.map((t) => {
+                      const legCount = getLegCount(t);
+                      const driverNames = getTripDrivers(t);
+                      const tripFreight = getTripFreight(t);
+                      const customerNames = [
+                        ...new Set(
+                          (t.journeyLegs || [])
+                            .map(
+                              (leg) => customerMap[leg.customerId]?.companyName,
+                            )
+                            .filter(Boolean),
+                        ),
+                      ];
 
-                        <td>{t.fleetSource}</td>
+                      return (
+                        <tr key={t._id}>
+                          <td>{t.tripNo}</td>
 
-                        <td>{t.journeyType}</td>
+                          <td>{t.fleetSource}</td>
 
-                        <td>
-                          {t.vehicleId?.regNo}
-                          <br />
-                          {t.vendorId?.companyName &&
-                            `/${t.vendorId?.companyName}`}
-                        </td>
+                          <td>{t.journeyType}</td>
 
-                        <td>{t.driver1?.name}</td>
-
-                        <td>
-                          {customerMap[t.journeyLegs?.[0]?.customerId]
-                            ?.companyName || "-"}
-                        </td>
-
-                        <td>₹{t.freightAmount?.toLocaleString("en-IN")}</td>
-
-                        <td>{t.tripStatus}</td>
-
-                        <td>
-                          <div className="vm-td-actions">
-                            <button
-                              title="View Trip Details"
-                              className="vm-action-btn vm-action-view"
-                              onClick={() => handleView(t)}
+                          <td>
+                            <span
+                              className="control-badge"
+                              style={{ fontSize: "10px" }}
                             >
-                              <MdOutlineRemoveRedEye />
-                            </button>
+                              {legCount} {legCount === 1 ? "Leg" : "Legs"}
+                            </span>
+                          </td>
 
-                            <button
-                              title="Edit Trip Details"
-                              className="vm-action-btn vm-action-edit"
-                              onClick={() => {
-                                setEditingTrip(t);
-                                setShowCreate(true);
-                              }}
-                            >
-                              <MdOutlineEdit />
-                            </button>
+                          <td>
+                            {t.vehicleId?.regNo || t.vendorVehicleId?.regNo}
+                            <br />
+                            {t.vendorId?.companyName &&
+                              `/${t.vendorId?.companyName}`}
+                          </td>
 
-                            <button
-                              title="Upload Trip Documents"
-                              className="vm-action-btn vm-action-upload"
-                              onClick={() => {
-                                setActiveTrip(t);
-                                setOpenUploadModal(true);
-                              }}
-                            >
-                              <MdOutlineFileUpload />
-                            </button>
+                          <td>
+                            {driverNames.length > 0
+                              ? driverNames.join(", ")
+                              : "-"}
+                          </td>
 
-                            <button
-                              title="Delete Trip"
-                              className="vm-action-btn vm-action-delete"
-                              onClick={() => {
-                                setSelectedTrip(t);
-                                setOpenDeleteModal(true);
-                              }}
-                            >
-                              <MdDeleteOutline />
-                            </button>
+                          <td>
+                            {customerNames.length > 0
+                              ? customerNames.join(", ")
+                              : "-"}
+                          </td>
 
-                            <button
-                              title="Track Vehicle"
-                              className="vm-action-btn vm-action-track"
-                              onClick={() => {
-                                setActiveTrip(t);
-                                setOpenTrackTrip(true);
-                              }}
-                            >
-                              <CgTrack size={18} />
-                            </button>
+                          <td>₹{tripFreight.toLocaleString("en-IN")}</td>
 
-                            {t.settlement.status === "Pending" && (
+                          <td><span className="trip-status">{t.tripStatus}</span></td>
+
+                          <td>
+                            <div className="vm-td-actions">
                               <button
-                                title="Close Trip"
-                                className="vm-action-closed py-1"
+                                title="View Trip Details"
+                                className="vm-action-btn vm-action-view"
+                                onClick={() => handleView(t)}
+                              >
+                                <MdOutlineRemoveRedEye />
+                              </button>
+
+                              <button
+                                title="Edit Trip Details"
+                                className="vm-action-btn vm-action-edit"
                                 onClick={() => {
-                                  setOpenTripCloseModal(true);
-                                  setSelectedTrip(t._id);
+                                  setEditingTrip(t);
+                                  setShowCreate(true);
                                 }}
                               >
-                                Close Trip
+                                <MdOutlineEdit />
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+
+                              <button
+                                title="Upload Trip Documents"
+                                className="vm-action-btn vm-action-upload"
+                                onClick={() => {
+                                  setActiveTrip(t);
+                                  setOpenUploadModal(true);
+                                }}
+                              >
+                                <MdOutlineFileUpload />
+                              </button>
+
+                              <button
+                                title="Delete Trip"
+                                className="vm-action-btn vm-action-delete"
+                                onClick={() => {
+                                  setSelectedTrip(t);
+                                  setOpenDeleteModal(true);
+                                }}
+                              >
+                                <MdDeleteOutline />
+                              </button>
+
+                              <button
+                                title="Track Vehicle"
+                                className="vm-action-btn vm-action-track"
+                                onClick={() => {
+                                  setActiveTrip(t);
+                                  setOpenTrackTrip(true);
+                                }}
+                              >
+                                <CgTrack size={18} />
+                              </button>
+                              {t.tripStatus === "Completed" &&
+                                t.settlement.status === "Settled" && (
+                                  <button
+                                    title="Close Trip"
+                                    className="vm-action-closed py-1"
+                                    onClick={() => {
+                                      setOpenTripCloseModal(true);
+                                      setSelectedTrip(t._id);
+                                    }}
+                                  >
+                                    Close Trip
+                                  </button>
+                                )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
-                      <td colSpan="9" className="trip-table-empty">
+                      <td colSpan="10" className="trip-table-empty">
                         {filterTab === "vendor"
                           ? "No Vendor Trips Found"
                           : filterTab === "own fleet"

@@ -11,7 +11,7 @@ const SignOutModal = ({ open, onClose }) => {
 
   const handleLogout = () => {
     Cookies.remove("token");
-    navigateTo(`/`, {replace: true,});
+    navigateTo(`/login`, {replace: true,});
   };
 
   if (!open) return null;

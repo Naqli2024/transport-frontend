@@ -79,46 +79,98 @@ export const getBrokerDashboard = createAsyncThunk(
   }
 )
 
+export const getBrokerSettlementSummary = createAsyncThunk(
+  "getBrokerSettlementSummary",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await BrokerService.get(`${id}/trip-summary`)
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+)
+
+export const brokerSettlement = createAsyncThunk(
+  "brokerSettlement",
+  async ({ id, tripIds }, { rejectWithValue }) => {
+    try {
+      const response = await BrokerService.post(`/${id}/settlement`,{tripIds});
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
+
 const BrokerSlice = createSlice({
   name: "broker",
   initialState: {
     brokers: [],
     summary: {},
     brokerDetails: null,
+    settlement: null,
     loading: false,
     error: null,
   },
+
   reducers: {},
+
   extraReducers: (builder) => {
     const handlePending = (state) => {
       state.loading = true;
+      state.error = null;
     };
+
     const handleFulFilled = (state, action) => {
       state.loading = false;
       state.error = null;
+
       switch (action.type) {
         case getAllBrokers.fulfilled.type:
           state.brokers = action.payload?.data || [];
           break;
+
         case getBrokerDashboard.fulfilled.type:
           state.summary = action.payload?.data?.summary || {};
           break;
+
         case getBrokerById.fulfilled.type:
           state.brokerDetails = action.payload?.data;
           break;
+
+        case getBrokerSettlementSummary.fulfilled.type:
+          state.settlement = action.payload;
+          break;
+
+        case brokerSettlement.fulfilled.type:
+          break;
+
         case addBroker.fulfilled.type:
         case editBroker.fulfilled.type:
         case deleteBroker.fulfilled.type:
           break;
+
         default:
           break;
       }
     };
+
     const handleRejected = (state, action) => {
       state.loading = false;
       state.error = action.payload;
     };
-    [addBroker, getAllBrokers, getBrokerDashboard, getBrokerById, editBroker, deleteBroker].forEach((action) => {
+
+    [
+      addBroker,
+      getAllBrokers,
+      getBrokerDashboard,
+      getBrokerById,
+      editBroker,
+      deleteBroker,
+      getBrokerSettlementSummary,
+      brokerSettlement,
+    ].forEach((action) => {
       builder
         .addCase(action.pending, handlePending)
         .addCase(action.fulfilled, handleFulFilled)

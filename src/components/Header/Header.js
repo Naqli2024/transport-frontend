@@ -4,7 +4,6 @@ import { MdOutlineDarkMode } from "react-icons/md";
 import { MdOutlineLightMode } from "react-icons/md";
 import { GoPerson } from "react-icons/go";
 import { toast } from "react-toastify";
-import Logo from "../../assets/images/truck.webp";
 import { HiOutlineMenu } from "react-icons/hi";
 import SignOutModal from "../SignOutModal";
 import { useDispatch } from "react-redux";
@@ -46,9 +45,27 @@ const Header = () => {
   return (
 <div className="header-container">
   <div className="header-left-content">
-    {/* <div className="header-logo">
-      <img src={Logo} alt="Logo" />
-    </div> */}
+<div className="header-logo">
+  {customerData?.logoUrl ? (
+    <img
+      src={customerData.logoUrl}
+      alt="Logo"
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+        e.currentTarget.nextElementSibling.style.display = "flex";
+      }}
+    />
+  ) : null}
+
+  <div
+    className="header-logo-fallback"
+    style={{
+      display: customerData?.logoUrl ? "none" : "flex",
+    }}
+  >
+    <GoPerson size={22} />
+  </div>
+</div>
 
     <div className="header-title">
      {customerData?.business?.transportName}

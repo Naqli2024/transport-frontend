@@ -7,6 +7,8 @@ import {
   getAllDrivers,
   getDriversDashboard,
 } from "../../../redux/Driver/DriverSlice";
+import { IoCheckmark } from "react-icons/io5";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const DL_CLASSES = ["LMV", "HMV", "Transport", "Heavy"];
 
@@ -29,10 +31,12 @@ const PersonIcon = () => (
 );
 
 const Field = ({ label, required, children, full }) => (
-  <div className={`dm-modal-field${full ? " dm-modal-field--full" : ""}`}>
-    <label className="dm-modal-label">
+  <div
+    className={`customer-modal-field${full ? " customer-modal-field--full" : ""}`}
+  >
+    <label className="customer-modal-label">
       {label}
-      {required && <span className="dm-modal-required"> *</span>}
+      {required && <span className="customer-modal-required"> *</span>}
     </label>
     {children}
   </div>
@@ -40,17 +44,17 @@ const Field = ({ label, required, children, full }) => (
 
 const AddDriverModal = ({ open, onClose, mode = "add", driver = null }) => {
   const dispatch = useDispatch();
-
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    userName: "",
+    password: "",
     name: "",
     mobile: "",
     aadhaarNo: "",
     experience: "",
     dlNo: "",
-    dlClass: "PSV/HMV",
+    dlClass: "",
     licenseExpiryDate: "",
   });
 
@@ -63,29 +67,37 @@ const AddDriverModal = ({ open, onClose, mode = "add", driver = null }) => {
     }));
   };
 
-  const handleNext = () => {
-    setStep(2);
-  };
-
-  const handleBack = () => {
-    setStep(1);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (loading) return;
+    if (!formData.name?.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+
+    if (!formData.mobile) {
+      toast.error("Mobile number is required");
+      return;
+    }
+
+    if (!formData.dlNo?.trim()) {
+      toast.error("DL Number is required");
+      return;
+    }
 
     setLoading(true);
 
     try {
       const payload = {
+        userName: formData.userName,
+        password: formData.password,
         name: formData.name,
-        mobile: Number(formData.mobile),
+        mobile: formData.mobile,
         aadhaarNo: Number(formData.aadhaarNo),
         experience: Number(formData.experience) || 0,
         dlNo: formData.dlNo,
-        dlClass: formData.dlClass,
+        ...(formData.dlClass ? { dlClass: formData.dlClass } : {}),
         licenseExpiryDate: formData.licenseExpiryDate,
       };
 
@@ -97,59 +109,45 @@ const AddDriverModal = ({ open, onClose, mode = "add", driver = null }) => {
           }),
         );
         if (response.meta?.requestStatus === "fulfilled") {
-          toast.success(
-            response.payload?.message || "Driver updated successfully",
-          );
+          toast.success(response.payload?.message);
           await dispatch(getAllDrivers());
           handleClose();
         } else {
-          toast.error(
-            response.payload?.message ||
-              response.error?.message ||
-              "Failed to update driver",
-          );
-
-          // IMPORTANT:
-          // Do NOT call handleClose() here.
-          // Modal stays open.
+          toast.error(response.payload?.message);
         }
       } else {
         const response = await dispatch(addDriver(payload));
 
         if (response.meta?.requestStatus === "fulfilled") {
-          toast.success(
-            response.payload?.message || "Driver added successfully",
-          );
+          toast.success(response.payload?.message);
 
           await dispatch(getAllDrivers());
           await dispatch(getDriversDashboard());
-
+          setFormData({
+            userName: "",
+            password: "",
+            name: "",
+            mobile: "",
+            aadhaarNo: "",
+            experience: "",
+            dlNo: "",
+            dlClass: "",
+            licenseExpiryDate: "",
+          });
           handleClose();
         } else {
-          toast.error(
-            response.payload?.message ||
-              response.error?.message ||
-              "Failed to add driver",
-          );
-
-          // IMPORTANT:
-          // Do NOT call handleClose() here.
-          // Modal stays open.
+          toast.error(response.payload?.message);
         }
       }
     } catch (error) {
-      console.error("Driver submit error:", error);
-
-      toast.error(error?.message || "Something went wrong. Please try again.");
-
-      // Modal stays open
+      toast.error(error);
     } finally {
       setLoading(false);
     }
   };
+
   const handleClose = () => {
     onClose?.();
-    setStep(1);
   };
 
   useEffect(() => {
@@ -157,47 +155,44 @@ const AddDriverModal = ({ open, onClose, mode = "add", driver = null }) => {
 
     if (mode === "edit" && driver) {
       setFormData({
+        userName: driver.userName || "",
         name: driver.name || "",
         mobile: driver.mobile || "",
         aadhaarNo: driver.aadhaarNo || "",
         experience: driver.experience || "",
         dlNo: driver.dlNo || "",
-        dlClass: driver.dlClass || "PSV/HMV",
+        dlClass: driver.dlClass || "",
         licenseExpiryDate: driver.licenseExpiryDate
           ? driver.licenseExpiryDate.split("T")[0]
           : "",
       });
     } else {
       setFormData({
+        userName: "",
+        password: "",
         name: "",
         mobile: "",
         aadhaarNo: "",
         experience: "",
         dlNo: "",
-        dlClass: "PSV/HMV",
+        dlClass: "",
         licenseExpiryDate: "",
       });
     }
 
-    setStep(1);
     setLoading(false);
   }, [open, mode, driver]);
 
   if (!open) return null;
 
   return (
-    <div
-      className="dm-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      onClick={handleClose}
-    >
-      <div className="dm-modal-container" onClick={(e) => e.stopPropagation()}>
+    <div className="dm-modal-overlay" role="dialog" aria-modal="true">
+      <div className="dm-modal-container">
         {/* Header */}
         <div className="dm-modal-header">
           <div className="dm-modal-title">
             <PersonIcon />
-            {mode === "edit" ? "Edit Driver" : "Add Driver"} - Step {step}/2
+            {mode === "edit" ? "Edit Driver" : "Add Driver"}
           </div>
 
           <button
@@ -210,153 +205,152 @@ const AddDriverModal = ({ open, onClose, mode = "add", driver = null }) => {
         </div>
 
         <div className="dm-modal-body">
-          {step === 1 ? (
-            <div className="dm-modal-grid">
-              <Field label="Full Name" required>
-                <input
-                  className="dm-modal-input"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Driver full name"
-                  autoFocus
-                />
-              </Field>
+          <div className="dm-modal-grid">
+            <Field label="UserName" required>
+              <input
+                className="dm-modal-input"
+                name="userName"
+                value={formData.userName}
+                onChange={handleChange}
+                placeholder="Username"
+                autoFocus
+                autoComplete="off"
+              />
+            </Field>
 
-              <Field label="Mobile" required>
+            <Field label="Password" required>
+              <div className="dm-password-wrapper">
                 <input
-                  type="number"
-                  className="dm-modal-input"
-                  name="mobile"
-                  value={formData.mobile}
+                  className="dm-modal-input dm-password-input"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
                   onChange={handleChange}
-                  placeholder="+91 98765 43210"
+                  placeholder="Password"
+                  autoComplete="new-password"
                 />
-              </Field>
-
-              <Field label="Aadhaar No">
-                <input
-                  className="dm-modal-input"
-                  name="aadhaarNo"
-                  type="number"
-                  value={formData.aadhaarNo}
-                  onChange={handleChange}
-                  placeholder="XXXX XXXX 1234"
-                  maxLength={14}
-                />
-              </Field>
-
-              <Field label="Experience (Years)">
-                <input
-                  className="dm-modal-input"
-                  name="experience"
-                  value={formData.experience}
-                  onChange={handleChange}
-                  placeholder="5"
-                  type="number"
-                  min="0"
-                  max="50"
-                />
-              </Field>
-            </div>
-          ) : (
-            <div className="dm-modal-grid">
-              <Field label="DL Number">
-                <input
-                  className="dm-modal-input"
-                  name="dlNo"
-                  value={formData.dlNo}
-                  onChange={handleChange}
-                  placeholder="MH01 2024 0012345"
-                />
-              </Field>
-
-              <Field label="DL Class">
-                <select
-                  className="dm-modal-select"
-                  name="dlClass"
-                  value={formData.dlClass}
-                  onChange={handleChange}
+                <button
+                  type="button"
+                  className="dm-password-toggle"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {DL_CLASSES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </button>{" "}
+              </div>
+            </Field>
 
-              <Field label="License Expiry" full>
-                <input
-                  className="dm-modal-input"
-                  name="licenseExpiryDate"
-                  type="date"
-                  value={formData.licenseExpiryDate}
-                  onChange={handleChange}
-                />
-              </Field>
-            </div>
-          )}
+            <Field label="Full Name" required>
+              <input
+                className="dm-modal-input"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Driver full name"
+              />
+            </Field>
+
+            <Field label="Mobile No" required>
+              <input
+                type="number"
+                className="dm-modal-input"
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleChange}
+                placeholder="+91 98765 43210"
+              />
+            </Field>
+
+            <Field label="Aadhaar No">
+              <input
+                className="dm-modal-input"
+                name="aadhaarNo"
+                type="number"
+                value={formData.aadhaarNo}
+                onChange={handleChange}
+                placeholder="XXXX XXXX 1234"
+                maxLength={14}
+              />
+            </Field>
+
+            <Field label="Experience (Years)">
+              <input
+                className="dm-modal-input"
+                name="experience"
+                value={formData.experience}
+                onChange={handleChange}
+                placeholder="5"
+                type="number"
+                min="0"
+                max="50"
+              />
+            </Field>
+            <Field label="DL Number" required>
+              <input
+                className="dm-modal-input"
+                name="dlNo"
+                value={formData.dlNo}
+                onChange={handleChange}
+                placeholder="MH01 2024 0012345"
+              />
+            </Field>
+
+            <Field label="DL Class">
+              <select
+                className="dm-modal-select"
+                name="dlClass"
+                value={formData.dlClass}
+                onChange={handleChange}
+              >
+                <option value={""} disabled>
+                  Select
+                </option>
+                {DL_CLASSES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="License Expiry" full>
+              <input
+                className="dm-modal-input"
+                name="licenseExpiryDate"
+                type="date"
+                value={formData.licenseExpiryDate}
+                onChange={handleChange}
+              />
+            </Field>
+          </div>
         </div>
 
         <div className="dm-modal-footer">
-          {step === 1 ? (
-            <>
-              <button
-                className="dm-modal-btn dm-modal-btn--ghost"
-                onClick={handleClose}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="dm-modal-btn dm-modal-btn--primary"
-                onClick={handleNext}
-              >
-                Next &rarr;
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                className="dm-modal-btn dm-modal-btn--ghost"
-                onClick={handleBack}
-              >
-                &larr; Back
-              </button>
-
-              <button
-                className="dm-modal-btn dm-modal-btn--primary dm-btn-accent"
-                onClick={handleSubmit}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span className="dm-btn-loader" />
-                    {mode === "edit" ? "Updating..." : "Adding..."}
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-
-                    {mode === "edit" ? "Update Driver" : "Add Driver"}
-                  </>
-                )}
-              </button>
-            </>
-          )}
+          <>
+            <button
+              className="dm-modal-btn dm-modal-btn--ghost"
+              onClick={handleClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="dm-modal-btn dm-modal-btn--primary dm-btn-accent"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="dm-btn-loader" />
+                  {mode === "edit" ? "Updating..." : "Adding..."}
+                </>
+              ) : (
+                <>
+                  <IoCheckmark size={16} />
+                  {mode === "edit" ? "Update Driver" : "Add Driver"}
+                </>
+              )}
+            </button>
+          </>
         </div>
       </div>
     </div>

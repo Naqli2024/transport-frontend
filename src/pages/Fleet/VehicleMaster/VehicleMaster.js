@@ -17,6 +17,8 @@ import VehicleViewModal from "./VehicleViewModal";
 import { IoSearchOutline } from "react-icons/io5";
 import { MdOutlineFileUpload } from "react-icons/md";
 import UploadVehicleDocModal from "./UploadVehicleDocModal";
+import { CiCircleChevDown } from "react-icons/ci";
+import { GoAlert } from "react-icons/go";
 
 const TABS = ["All", "Available", "On Trip", "Maintenance"];
 const getStatusStr = (status) =>
@@ -80,20 +82,6 @@ function getDocStatus(dateStr, type = "default") {
   return { text: "Valid", cls: "pill-valid" };
 }
 
-function HealthBar({ pct, fillCls, pctCls }) {
-  return (
-    <div className="vm-health-cell">
-      <div className="vm-health-bar">
-        <div
-          className={`vm-health-fill ${fillCls}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className={`vm-health-pct ${pctCls}`}>{pct}%</span>
-    </div>
-  );
-}
-
 function VehicleRow({ v, vehicleDocs, onView, onEdit, onDelete, onUpload }) {
   const insurance = getDocStatus(v.insuranceExpiryDate);
   const fc = getDocStatus(v.fcExpiryDate);
@@ -131,7 +119,7 @@ function VehicleRow({ v, vehicleDocs, onView, onEdit, onDelete, onUpload }) {
       </td>
       <td>
         <span className={`vm-pill ${tax.cls}`}>{tax.text}</span>
-      </td>
+      </td> 
       <td>
         <span className="vm-status st-available">{statusStr}</span>
       </td>
@@ -202,6 +190,7 @@ const VehicleMaster = () => {
   const [vehicle, setVehicle] = useState(null);
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [alertExpand, setAlertExpand] = useState(false);
   const { vehicles, loading, error } = useSelector((state) => state.vehicle);
   const { vehicleDocs } = useSelector((state) => state.vehicle);
   const vehicleOnlyData = vehicles?.filter((v) => v.fleet === "vehicle");
@@ -253,24 +242,24 @@ const VehicleMaster = () => {
   ];
 
   const handleDelete = async () => {
-  if (deleting || !selectedVehicle?._id) return;
+    if (deleting || !selectedVehicle?._id) return;
 
-  setDeleting(true);
+    setDeleting(true);
 
-  try {
-    const response = await dispatch(
-      deleteVehicle(selectedVehicle._id)
-    ).unwrap();
-    toast.success(response?.message);
-    setOpenDeleteModal(false);
-    setSelectedVehicle(null);
-    await dispatch(getAllVehicles());
-  } catch (error) {
-    toast.error(error);
-  } finally {
-    setDeleting(false);
-  }
-};
+    try {
+      const response = await dispatch(
+        deleteVehicle(selectedVehicle._id),
+      ).unwrap();
+      toast.success(response?.message);
+      setOpenDeleteModal(false);
+      setSelectedVehicle(null);
+      await dispatch(getAllVehicles());
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleUpload = async (vehicleId, payload) => {
     const response = await dispatch(uploadVehicleDocs({ vehicleId, payload }));
@@ -315,27 +304,39 @@ const VehicleMaster = () => {
         {dynamicAlerts.length > 0 && (
           <div className="vm-alert-banner">
             <div className="vm-alert-header">
-              <span className="vm-alert-icon">⚠️</span>
-
-              <span className="vm-alert-title">
-                Compliance Alerts — {dynamicAlerts.length} Vehicle
-                {dynamicAlerts.length !== 1 ? "s" : ""} Need Attention
-              </span>
-            </div>
-
-            <div className="vm-alert-cards">
-              {dynamicAlerts.map((a, i) => (
-                <div key={i} className={`vm-alert-card ${a.cardCls}`}>
-                  <div className="vm-alert-reg">{a.reg}</div>
-
-                  <div className="vm-alert-doc">{a.doc}</div>
-
-                  <div className={`vm-alert-status ${a.statusCls}`}>
-                    {a.statusText}
-                  </div>
+              <div className="d-flex align-items-center gap-2">
+                <div className="vm-alert-icon">
+                  <GoAlert size={20} />
                 </div>
-              ))}
+                <div className="vm-alert-title mt-1">
+                  Compliance Alerts — {filtered.length} Vehicle
+                  {filtered.length !== 1 ? "s" : ""} Need Attention
+                </div>
+              </div>
+              <div onClick={() => setAlertExpand(!alertExpand)}>
+                <CiCircleChevDown
+                  className={`vm-alert-expand-icon ${
+                    alertExpand ? "vm-alert-expand-icon-open" : ""
+                  }`}
+                  size={23}
+                />
+              </div>
             </div>
+            {alertExpand && (
+              <div className="vm-alert-cards">
+                {dynamicAlerts.map((a, i) => (
+                  <div key={i} className={`vm-alert-card ${a.cardCls}`}>
+                    <div className="vm-alert-reg">{a.reg}</div>
+
+                    <div className="vm-alert-doc">{a.doc}</div>
+
+                    <div className={`vm-alert-status ${a.statusCls}`}>
+                      {a.statusText}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -466,32 +467,32 @@ const VehicleMaster = () => {
               Are you sure you want to delete this vehicle?
             </p>
             <div className="vm-delete-actions">
-  <button
-    className="vm-delete-btn cancel"
-    onClick={() => setOpenDeleteModal(false)}
-    disabled={deleting}
-  >
-    Cancel
-  </button>
+              <button
+                className="vm-delete-btn cancel"
+                onClick={() => setOpenDeleteModal(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
 
-  <button
-    className="vm-delete-btn confirm"
-    onClick={handleDelete}
-    disabled={deleting}
-  >
-    {deleting ? (
-      <>
-        <span className="vm-btn-loader"></span>
-        Deleting...
-      </>
-    ) : (
-      <>
-        <MdDelete />
-        Delete
-      </>
-    )}
-  </button>
-</div>
+              <button
+                className="vm-delete-btn confirm"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <span className="vm-btn-loader"></span>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <MdDelete />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

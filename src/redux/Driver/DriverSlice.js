@@ -92,11 +92,9 @@ export const getDriverSettlementSummary = createAsyncThunk(
 
 export const driverSettlement = createAsyncThunk(
   "driverSettlement",
-  async (id, { rejectWithValue }) => {
+  async ({ id, tripIds }, { rejectWithValue }) => {
     try {
-      const response = await DriverService.put(
-        `/${id}/settle`
-      );
+      const response = await DriverService.post(`/${id}/settlement`,{tripIds});
       return response.data;
     } catch (error) {
       return rejectWithValue(handleApiError(error));

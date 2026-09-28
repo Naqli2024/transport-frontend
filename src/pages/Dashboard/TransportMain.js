@@ -13,6 +13,7 @@ import { transportItems } from "../../helpers/SidebarData";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import { RxCross2 } from "react-icons/rx";
 import SignOutModal from "../../components/SignOutModal";
+import { IoSettingsOutline } from "react-icons/io5";
 
 const TransportMain = () => {
   const location = useLocation();
@@ -61,7 +62,11 @@ const TransportMain = () => {
         onClick={() => setIsSidebarOpen((v) => !v)}
         aria-label="Toggle menu"
       >
-        {isSidebarOpen ? <RxCross2 size={18} /> : <MdOutlineKeyboardDoubleArrowRight size={18} />}
+        {isSidebarOpen ? (
+          <RxCross2 size={18} />
+        ) : (
+          <MdOutlineKeyboardDoubleArrowRight size={18} />
+        )}
       </button>
       {isSidebarOpen && (
         <div
@@ -139,11 +144,25 @@ const TransportMain = () => {
           {visibleExpandCloseBtn && (
             <div className="sidebar-footer">
               {!isCollapsed && (
-                <div className="sidebar-link danger" onClick={() => setOpenSignOutModal(true)}>
+                <div
+                  className="sidebar-link danger"
+                  onClick={() => setOpenSignOutModal(true)}
+                >
                   <RiLogoutBoxRLine size={18} />
                   Sign Out
                 </div>
-              )}              <button
+              )}
+              {!isCollapsed && (
+                <button
+                  className={`sidebar-collapse-btn ${
+                    location.pathname === "/settings" ? "active" : ""
+                  }`}
+                  onClick={() => navigateTo("/settings")}
+                >
+                  <IoSettingsOutline size={16} />
+                </button>
+              )}
+              <button
                 className="sidebar-collapse-btn"
                 onClick={() => setIsCollapsed((v) => !v)}
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -151,7 +170,7 @@ const TransportMain = () => {
                 {isCollapsed ? (
                   <MdKeyboardDoubleArrowRight size={18} />
                 ) : (
-                  <MdKeyboardDoubleArrowLeft size={18}/>
+                  <MdKeyboardDoubleArrowLeft size={18} />
                 )}
               </button>
             </div>
@@ -159,11 +178,10 @@ const TransportMain = () => {
         </aside>
         <main className="main-bar">
           <Outlet />
-          
         </main>
         <div className="powered-body">
-            <div className="powered">Powered by TRANZOOP</div>
-          </div>
+          <div className="powered">Powered by BIZOOP</div>
+        </div>
       </div>
       {openSignOutModal && (
         <SignOutModal

@@ -5,15 +5,43 @@ import JourneyTypeSelector from "./JourneyTypeSelector";
 import VehicleTypeSelector from "./VehicleTypeSelector";
 import LoadFreightDetails from "./LoadFreightDetails";
 import DriverCrewSelector from "./DriverCrewSelector";
-import Review from "./Review";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addTrip, editTrip, getAllTrips } from "../../../redux/Trip/TripSlice";
 import { toast } from "react-toastify";
+
+const emptyLeg = (legNo = 1) => ({
+  legNo,
+  from: "",
+  to: "",
+  customerId: "",
+  brokerId: "",
+  brokerAmount: "",
+  commodity: "",
+  uom: "",
+  weight: "",
+  amountPerTon: "",
+  estimatedFreightAmount: "",
+  loadType: "",
+  paymentType: "",
+  driver1: "",
+  driver2: "",
+  driverSalary: "",
+  driverAdvance: [{ date: "", amount: "" }],
+});
+
+const idOf = (value) =>
+  (value && typeof value === "object" ? value._id : value) || "";
+
+const toDateInputValue = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+};
 
 const TripGeneratorModal = ({
   open,
   onClose,
-  onCreated,
   trip,
   vehicleSource = "Own Fleet",
 }) => {
@@ -21,162 +49,229 @@ const TripGeneratorModal = ({
   const [fleetSource, setFleetSource] = useState(vehicleSource);
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [originalLegCount, setOriginalLegCount] = useState(0);
+
   const [form, setForm] = useState({
-    // Fleet
     fleetSource: "Own Fleet",
     vehicleId: "",
     vehicleCategory: "",
-    journeyType: "oneway",
-    commodity: "",
-    weight: "",
-    freightAmount: "",
-    advanceAmount: "",
-    loadType: "",
-    paymentType: "",
-    miscAmount: "",
-    customerId: "",
-    brokerId: "",
-    origin: {
-      location: "",
-    },
-    destination: {
-      location: "",
-    },
-    journeyLegs: [
-      {
-        legNo: 1,
-        from: "",
-        to: "",
-        customerId: "",
-        brokerId: "",
-      },
-    ],
-    lrNo: "",
-    driver1: "",
-    driver2: "",
-    driverAdvance: "",
-    dieselAmount: "",
-    tollAmount: "",
-    loadingAmount: "",
-    unloadingAmount: "",
-    commissionAmount: "",
+    journeyType: "Multi Leg",
+    journeyLegs: [emptyLeg(1)],
     vendorId: "",
     vendorVehicleId: "",
   });
-  const buildJourneyLegs = () => {
-    return form.journeyLegs
-      .filter(
-        (leg) =>
-          leg.from?.trim() !== "" || leg.to?.trim() !== "" || leg.customerId,
-      )
-      .map((leg) => ({
-        ...leg,
-        brokerId: form.brokerId || undefined,
-      }));
-  };
 
   useEffect(() => {
-    if (!trip) return;
+    if (!trip) {
+      setOriginalLegCount(0);
+      return;
+    }
+
+    setOriginalLegCount(trip.journeyLegs?.length || 0);
+
     setForm({
       fleetSource: trip.fleetSource || "Own Fleet",
-      vehicleId: trip.vehicleId?._id || trip.vehicleId || "",
+      vehicleId: idOf(trip.vehicleId),
       vehicleCategory: trip.vehicleCategory || "",
       journeyType: trip.journeyType || "oneway",
-      commodity: trip.commodity || "",
-      weight: trip.weight || "",
-      freightAmount: trip.freightAmount || "",
-      advanceAmount: trip.advanceAmount || "",
-      loadType: trip.loadType || "",
-      paymentType: trip.paymentType || "",
-      origin: trip.origin || {
-        location: "",
-      },
-      destination: trip.destination || {
-        location: "",
-      },
       journeyLegs:
         trip.journeyLegs?.length > 0
-          ? trip.journeyLegs
-          : [
-              {
-                legNo: 1,
-                from: "",
-                to: "",
-                customerId: "",
-                brokerId: "",
-              },
-            ],
-      lrNo: trip.lrNo || "",
-      driver1: trip.driver1?._id || trip.driver1 || "",
-      driver2: trip.driver2?._id || trip.driver2 || "",
-      driverAdvance: trip.driverAdvance || "",
-      vendorId: trip.vendorId?._id || trip.vendorId || "",
-      vendorVehicleId: trip.vendorVehicleId || "",
+          ? trip.journeyLegs.map((leg, i) => ({
+              ...emptyLeg(i + 1),
+              ...leg,
+              customerId: idOf(leg.customerId),
+              brokerId: idOf(leg.brokerId),
+              driver1: idOf(leg.driver1),
+              driver2: idOf(leg.driver2),
+              driverAdvance:
+                leg.driverAdvance?.length > 0
+                  ? leg.driverAdvance.map((a) => ({
+                      _id: a._id,
+                      date: toDateInputValue(a.date),
+                      amount: a.amount ?? "",
+                    }))
+                  : [{ date: "", amount: "" }],
+            }))
+          : [emptyLeg(1)],
+      vendorId: idOf(trip.vendorId),
+      vendorVehicleId: idOf(trip.vendorVehicleId),
     });
 
     setFleetSource(trip.fleetSource === "Vendor" ? "Vendor" : "Own Fleet");
   }, [trip]);
 
+  const buildJourneyLegsForCreate = () => {
+    return form.journeyLegs
+      .filter(
+        (leg) =>
+          leg.from?.trim() !== "" || leg.to?.trim() !== "" || leg.customerId,
+      )
+      .map((leg) => {
+        const weight = Number(leg.weight) || 0;
+        const amountPerTon = Number(leg.amountPerTon) || 0;
+        return {
+          ...leg,
+          weight,
+          amountPerTon,
+          estimatedFreightAmount: weight * amountPerTon,
+          driverSalary: Number(leg.driverSalary) || 0,
+          driver1: leg.driver1 || undefined,
+          driver2: leg.driver2 || undefined,
+          customerId: leg.customerId || undefined,
+          brokerId: leg.brokerId || undefined,
+          brokerAmount: leg.brokerId ? Number(leg.brokerAmount) || 0 : undefined,
+          driverAdvance: (leg.driverAdvance || [])
+            .filter((a) => a.date || a.amount)
+            .map((a) => ({ date: a.date, amount: Number(a.amount) || 0 })),
+        };
+      });
+  };
+
+  const buildNewLegsForEdit = () => {
+    return form.journeyLegs
+      .slice(originalLegCount)
+      .filter(
+        (leg) =>
+          leg.from?.trim() !== "" || leg.to?.trim() !== "" || leg.customerId,
+      )
+      .map((leg) => {
+        const weight = Number(leg.weight) || 0;
+        const amountPerTon = Number(leg.amountPerTon) || 0;
+        return {
+          from: leg.from,
+          to: leg.to,
+          customerId: leg.customerId || undefined,
+          brokerId: leg.brokerId || undefined,
+          brokerAmount: leg.brokerId ? Number(leg.brokerAmount) || 0 : undefined,
+          commodity: leg.commodity,
+          uom: leg.uom,
+          weight,
+          amountPerTon,
+          estimatedFreightAmount: weight * amountPerTon,
+          loadType: leg.loadType,
+          paymentType: leg.paymentType,
+          driver1: leg.driver1 || undefined,
+          driver2: leg.driver2 || undefined,
+          driverSalary: Number(leg.driverSalary) || 0,
+          driverAdvance: (leg.driverAdvance || [])
+            .filter((a) => a.date || a.amount)
+            .map((a) => ({ date: a.date, amount: Number(a.amount) || 0 })),
+        };
+      });
+  };
+
+  const buildDriverAdvanceUpdates = () => {
+    const updates = [];
+
+    form.journeyLegs.slice(0, originalLegCount).forEach((leg, idx) => {
+      const originalLeg = trip.journeyLegs[idx];
+      const originalAdvances = originalLeg?.driverAdvance || [];
+
+      (leg.driverAdvance || []).forEach((adv) => {
+        if (!adv.date || adv.amount === "" || adv.amount === undefined) return;
+
+        if (adv._id) {
+          const original = originalAdvances.find(
+            (o) => String(o._id) === String(adv._id),
+          );
+          const originalDate = original ? toDateInputValue(original.date) : "";
+          const originalAmount = original ? String(original.amount) : "";
+
+          if (
+            originalDate !== adv.date ||
+            originalAmount !== String(adv.amount)
+          ) {
+            updates.push({
+              legNo: leg.legNo,
+              driverAdvance: {
+                advanceId: adv._id,
+                date: adv.date,
+                amount: Number(adv.amount),
+              },
+            });
+          }
+        } else {
+          updates.push({
+            legNo: leg.legNo,
+            driverAdvance: {
+              date: adv.date,
+              amount: Number(adv.amount),
+            },
+          });
+        }
+      });
+    });
+
+    return updates;
+  };
+
   const handleCreate = async () => {
     if (isSubmitting) return;
+    if (!trip) {
+      if (fleetSource === "Own Fleet" && !form.vehicleId) {
+        toast.error("Please select a vehicle");
+        return;
+      }
+      if (fleetSource === "Vendor") {
+        if (!form.vendorId) {
+          toast.error("Please select a vendor");
+          return;
+        }
+        if (!form.vendorVehicleId) {
+          toast.error("Please select a vendor vehicle");
+          return;
+        }
+      }
 
-    if (!form.vehicleId) {
-      toast.error("Please select a vehicle");
+      setIsSubmitting(true);
+      const payload = {
+        fleetSource: fleetSource === "Own Fleet" ? "Own Fleet" : "Vendor",
+        vehicleId: form.vehicleId,
+        vehicleCategory: form.vehicleCategory,
+        journeyType: form.journeyType,
+        journeyLegs: buildJourneyLegsForCreate(),
+        ...(fleetSource === "Vendor" && {
+          vendorId: form.vendorId || "",
+          vendorVehicleId: form.vendorVehicleId,
+        }),
+      };
+      console.log(payload);
+      try {
+        const res = await dispatch(addTrip(payload)).unwrap();
+        toast.success(res?.message);
+        await dispatch(getAllTrips()).unwrap();
+        onClose();
+      } catch (err) {
+        toast.error(err);
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
-if (fleetSource === "Vendor") {
-  if (!form.vendorId) {
-    toast.error("Please select a vendor");
-    return;
-  }
 
-  if (!form.vendorVehicleId) {
-    toast.error("Please select a vendor vehicle");
-    return;
-  }
-}
     setIsSubmitting(true);
-    const payload = {
-      fleetSource: fleetSource === "Own Fleet" ? "Own Fleet" : "Vendor",
-      vehicleId: form.vehicleId,
-      vehicleCategory: form.vehicleCategory,
-      journeyType: form.journeyType,
-      commodity: form.commodity,
-      weight: Number(form.weight),
-      freightAmount: Number(form.freightAmount),
-      advanceAmount: Number(form.advanceAmount),
-      loadType: form.loadType,
-      paymentType: form.paymentType,
-      origin: form.origin,
-      destination: form.destination,
-      lrNo: form.lrNo,
-      driver1: form.driver1 || undefined,
-      driver2: form.driver2 || undefined,
-      driverAdvance: Number(form.driverAdvance),
-      journeyLegs: buildJourneyLegs(),
-      ...(fleetSource === "Vendor" && {
-        vendorId: form.vendorId || undefined,
-        vendorVehicleId: form.vendorVehicleId,
-      }),
-    };
-    console.log(payload);
+
     try {
-      let res;
+      const newLegs = buildNewLegsForEdit();
+      const advanceUpdates = buildDriverAdvanceUpdates();
 
-      if (trip) {
-        res = await dispatch(
-          editTrip({
-            id: trip._id,
-            data: payload,
-          }),
-        ).unwrap();
-
-        toast.success(res?.message);
-      } else {
-        res = await dispatch(addTrip(payload)).unwrap();
-
-        toast.success(res?.message);
+      if (newLegs.length === 0 && advanceUpdates.length === 0) {
+        toast.error("Nothing to update — add a new leg or a driver advance.");
+        setIsSubmitting(false);
+        return;
       }
+
+      if (newLegs.length > 0) {
+        await dispatch(
+          editTrip({ id: trip._id, data: { journeyLegs: newLegs } }),
+        ).unwrap();
+      }
+
+      for (const update of advanceUpdates) {
+        await dispatch(editTrip({ id: trip._id, data: update })).unwrap();
+      }
+
+      toast.success("Trip updated successfully");
       await dispatch(getAllTrips()).unwrap();
       onClose();
     } catch (err) {
@@ -198,7 +293,6 @@ if (fleetSource === "Vendor") {
     <div>
       <Dialog
         open={open}
-        onClose={onClose}
         sx={{
           "& .MuiBackdrop-root": {
             background: "rgba(0,0,0,.85)",
@@ -212,7 +306,7 @@ if (fleetSource === "Vendor") {
           },
           "& .MuiPaper-root": {
             background: "var(--bgCard)",
-            border: `1px solid var(--borderHi)`,
+            border: `1px solid var(--border)`,
             borderRadius: "16px",
             width: "100%",
             maxWidth: "1000px",
@@ -238,7 +332,7 @@ if (fleetSource === "Vendor") {
           >
             <div>
               <div className="rj trip-generator-modal-title">
-                🚛 New Trip Booking
+                {trip ? "🚛 Edit" : "🚛 New"} Trip Booking ({form.journeyType})
               </div>
               <div className="trip-generator-modal-steps">
                 Step {step} of {steps.length} — {steps[step - 1]?.label}
@@ -248,13 +342,19 @@ if (fleetSource === "Vendor") {
               <div className="trip-generator-modal-toggle-pill trip-generator-modal-toggle-pill-header">
                 <div
                   className={`trip-generator-modal-toggle-opt trip-generator-modal-toggle-opt-small ${fleetSource === "Own Fleet" ? "on" : ""}`}
-                  onClick={() => setFleetSource("Own Fleet")}
+                  onClick={() => !trip && setFleetSource("Own Fleet")}
+                  style={
+                    trip ? { opacity: 0.5, cursor: "not-allowed" } : undefined
+                  }
                 >
                   🚚 Own Fleet
                 </div>
                 <div
                   className={`trip-generator-modal-toggle-opt trip-generator-modal-toggle-opt-small ${fleetSource === "Vendor" ? "on" : ""}`}
-                  onClick={() => setFleetSource("Vendor")}
+                  onClick={() => !trip && setFleetSource("Vendor")}
+                  style={
+                    trip ? { opacity: 0.5, cursor: "not-allowed" } : undefined
+                  }
                 >
                   🤝 Vendor
                 </div>
@@ -332,7 +432,13 @@ if (fleetSource === "Vendor") {
           </div>
           <div className="trip-generator-modal-body">
             {step === 1 && (
-              <JourneyTypeSelector form={form} set={set} setForm={setForm} />
+              <JourneyTypeSelector
+                form={form}
+                set={set}
+                setForm={setForm}
+                isEdit={!!trip}
+                originalLegCount={originalLegCount}
+              />
             )}
             {step === 2 && (
               <VehicleTypeSelector
@@ -340,24 +446,36 @@ if (fleetSource === "Vendor") {
                 set={set}
                 setForm={setForm}
                 fleetSource={fleetSource}
+                isEdit={!!trip}
               />
             )}
-            {step === 3 && <LoadFreightDetails form={form} set={set} />}
-            {step === 4 && <DriverCrewSelector form={form} set={set} />}
+            {step === 3 && (
+              <LoadFreightDetails
+                form={form}
+                setForm={setForm}
+                isEdit={!!trip}
+                originalLegCount={originalLegCount}
+              />
+            )}
+            {step === 4 && (
+              <DriverCrewSelector
+                form={form}
+                setForm={setForm}
+                isEdit={!!trip}
+                originalLegCount={originalLegCount}
+              />
+            )}
           </div>
           <DialogActions
             sx={{
               position: "sticky",
               bottom: 0,
               zIndex: 1000,
-
               display: "flex",
               justifyContent: "space-between",
-
               background: "var(--bgCard)",
               borderTop: "1px solid var(--border)",
               padding: "16px 22px",
-
               flexShrink: 0,
             }}
           >
@@ -382,10 +500,12 @@ if (fleetSource === "Vendor") {
                 isSubmitting ? (
                   <>
                     <span className="trip-save-spinner"></span>
-                    Saving...
+                    {trip ? "Updating..." : "Creating..."}
                   </>
+                ) : trip ? (
+                  "🚀 Save Changes"
                 ) : (
-                  "🚀 Save Trip"
+                  "🚀 Create Trip"
                 )
               ) : (
                 "Next →"

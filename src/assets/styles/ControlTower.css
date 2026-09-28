@@ -329,3 +329,163 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.controlTower-password-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  padding: 20px;
+}
+
+.controlTower-password-modal {
+  width: 100%;
+  max-width: 400px;
+
+  padding: 32px;
+
+  background: var(--bgCard);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+  animation: controlTowerPasswordIn 0.25s ease;
+}
+
+.controlTower-password-icon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: var(--orangeGlow);
+  width: fit-content;
+  padding: 10px;
+  color: var(--orange);
+}
+
+.controlTower-password-modal h2 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.controlTower-password-modal p {
+  margin: 0 0 24px;
+
+  color: var(--text2, #94a3b8);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.controlTower-password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.controlTower-password-field label {
+  color: var(--text, #f8fafc);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.controlTower-password-field input {
+  width: 100%;
+  height: 44px;
+
+  padding: 0 13px;
+
+  border: 1px solid var(--border, #263449);
+  border-radius: 8px;
+
+  outline: none;
+
+  background: var(--bgCard, #172235);
+  color: var(--text, #f8fafc);
+
+  font-size: 14px;
+
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.controlTower-password-field input:focus {
+  border-color: var(--accent, #f9a825);
+}
+
+.controlTower-password-error {
+  display: block;
+
+  margin-top: 8px;
+
+  color: #ef4444;
+  font-size: 12px;
+}
+
+.controlTower-password-btn {
+  width: 100%;
+  height: 44px;
+
+  margin-top: 20px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: var(--accent, #f9a825);
+  color: #111827;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.controlTower-cancel-btn {
+  width: 100%;
+  height: 44px;
+
+  margin-top: 20px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: var(--red);
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.controlTower-password-btn:hover {
+  filter: brightness(1.05);
+}
+
+@keyframes controlTowerPasswordIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

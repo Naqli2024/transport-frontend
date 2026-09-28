@@ -117,7 +117,25 @@ const AddBrokerModal = ({ open, onClose, mode = "add", broker = null }) => {
     e.preventDefault();
 
     if (loading) return;
+        if (!formData.companyName?.trim()) {
+          toast.error("Company name is required");
+          return;
+        }
+    
+        if (!formData.contactPerson?.trim()) {
+          toast.error("Contact person is required");
+          return;
+        }
+    
+        if (!formData.mobile?.trim()) {
+          toast.error("Mobile number is required");
+          return;
+        }
 
+        if (!formData.commissionType) {
+          toast.error("Commission type is required");
+          return;
+        }
     setLoading(true);
 
     try {
@@ -273,12 +291,13 @@ const AddBrokerModal = ({ open, onClose, mode = "add", broker = null }) => {
                   <input
                     className="broker-modal-input"
                     name="mobile"
+                    type="number"
                     value={formData.mobile}
                     onChange={handleChange}
                     placeholder="9876543210"
                   />
                 </Field>
-                <Field label="Email" required>
+                <Field label="Email">
                   <input
                     className="broker-modal-input"
                     name="email"
@@ -312,7 +331,7 @@ const AddBrokerModal = ({ open, onClose, mode = "add", broker = null }) => {
                   </select>
                 </Field>
 
-                <Field label="Commission Value" required>
+                <Field label="Commission Value">
                   <input
                     className="broker-modal-input"
                     type="number"
@@ -323,7 +342,7 @@ const AddBrokerModal = ({ open, onClose, mode = "add", broker = null }) => {
                   />
                 </Field>
 
-                <Field label="Payment Terms" required>
+                <Field label="Payment Terms">
                   <select
                     className="broker-modal-select"
                     name="paymentTerms"
@@ -351,19 +370,14 @@ const AddBrokerModal = ({ open, onClose, mode = "add", broker = null }) => {
                     placeholder="Address"
                   />
                 </Field>
-                <Field label="State" required>
-                  <select
-                    className="broker-modal-select"
+                <Field label="State">
+                  <input
+                    className="broker-modal-input"
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
-                  >
-                    {STATES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="State"
+                  />
                 </Field>
                 <Field label="City">
                   <input

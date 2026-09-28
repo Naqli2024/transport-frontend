@@ -17,6 +17,10 @@ const documentTypes = [
 
 const TripUploadModal = ({ open, trip, onClose, onUpload }) => {
     const [documents, setDocuments] = useState([{ type: "", file: null }]);
+    const legs = trip?.journeyLegs || [];
+    const [selectedLegNo, setSelectedLegNo] = useState(
+        legs[0]?.legNo || 1
+    );
     const { uploading } = useSelector((state) => state.trip)
 
     if (!open) return null;
@@ -60,6 +64,11 @@ const TripUploadModal = ({ open, trip, onClose, onUpload }) => {
             return;
         }
 
+        if (!selectedLegNo) {
+            toast.error("Please select a leg.");
+            return;
+        }
+
         const payload = new FormData();
 
         const documentKeys = {
@@ -73,14 +82,16 @@ const TripUploadModal = ({ open, trip, onClose, onUpload }) => {
             payload.append(documentKeys[doc.type], doc.file);
         });
 
+        payload.append("legNo", selectedLegNo);
+
         await onUpload(trip._id, payload);
 
         onClose();
     };
 
-
-    const originLabel = trip?.origin?.location || "";
-    const destinationLabel = trip?.destination?.location || "";
+    const activeLeg = legs.find((l) => l.legNo === Number(selectedLegNo));
+    const originLabel = activeLeg?.from || "";
+    const destinationLabel = activeLeg?.to || "";
 
     return (
         <div className="trip-upload-overlay" onClick={onClose}>
@@ -108,10 +119,25 @@ const TripUploadModal = ({ open, trip, onClose, onUpload }) => {
                     </button>
                 </div>
 
-
                 <p className="trip-upload-subtitle">
                     {originLabel} → {destinationLabel}
                 </p>
+
+                {legs.length > 1 && (
+                    <div className="trip-upload-row">
+                        <select
+                            className="trip-upload-select-leg"
+                            value={selectedLegNo}
+                            onChange={(e) => setSelectedLegNo(e.target.value)}
+                        >
+                            {legs.map((leg) => (
+                                <option key={leg.legNo} value={leg.legNo}>
+                                    Leg {leg.legNo}: {leg.from} → {leg.to}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 {documents.map((doc, index) => (
                     <div key={index} className="trip-upload-row">

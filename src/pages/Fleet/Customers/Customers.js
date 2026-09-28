@@ -8,15 +8,14 @@ import {
   getCustomerById,
   getCustomerDashboard,
 } from "../../../redux/Customer/CustomerSlice";
-import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
+import { MdOutlineEdit, MdDeleteOutline, MdDelete, MdOutlineRemoveRedEye} from "react-icons/md";
 import CustomerDetailModal from "./CustomerDetailModal";
 import { IoSearchOutline } from "react-icons/io5";
 
-function CustomerCard({ c, onClick, onEdit, onDelete }) {
+function CustomerCard({ c, onView, onEdit, onDelete }) {
   return (
     <div
       className={`customer-card ${c.sc}`}
-      onClick={onClick}
       style={{ cursor: "pointer" }}
     >
       <div className="customer-card-head">
@@ -51,6 +50,15 @@ function CustomerCard({ c, onClick, onEdit, onDelete }) {
         <span></span>
 
         <div className="d-flex gap-2">
+          <span
+            className="customer-view-btn d-flex align-items-center justify-content-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+          >
+            <MdOutlineRemoveRedEye />
+          </span>
           <span
             className="customer-edit-btn d-flex align-items-center justify-content-center gap-2"
             onClick={(e) => {
@@ -153,37 +161,37 @@ const Customers = () => {
 
   const stats = [
     {
-      val: summary.totalCustomers,
+      val: summary.totalCustomers || 0,
       label: "TOTAL CUSTOMERS",
       cls: "sc-blue",
       id: "totalCustomers",
     },
     {
-      val: summary.activeCustomers,
+      val: summary.activeCustomers || 0,
       label: "ACTIVE",
       cls: "sc-green",
       id: "activeCustomers",
     },
     {
-      val: summary.inactiveCustomers,
+      val: summary.inactiveCustomers || 0,
       label: "INACTIVE",
       cls: "sc-red",
       id: "inactiveCustomers",
     },
     {
-      val: summary.totalTrips,
+      val: summary.totalTrips || 0,
       label: "TOTAL TRIPS",
       cls: "sc-orange",
       id: "totalTrips",
     },
     {
-      val: fmt(summary.totalRevenue),
+      val: fmt(summary.totalRevenue || 0),
       label: "TOTAL REVENUE",
       cls: "sc-purple",
       id: "totalRevenue",
     },
     {
-      val: fmt(summary.outstandingAmount),
+      val: fmt(summary.outstandingAmount || 0),
       label: "OUTSTANDING",
       cls: "sc-accent",
       id: "outstandingAmount",
@@ -225,16 +233,15 @@ const Customers = () => {
             setSelectedCustomer(null);
             setMode("add");
           }}
-          style={{ cursor: "pointer" }}
         >
-          <span>+ Add Customer</span>
+          + Add Customer
         </div>
       </div>
       <div className="customer-main">
         <div className="customer-stat-row">
           {stats.map((s) => (
             <div key={s.id} className={`customer-stat-card ${s.cls}`}>
-              <div className="customer-stat-val">{s.val}</div>
+              <div className="customer-stat-val">{s.val || 0}</div>
               <div className="customer-stat-label">{s.label}</div>
             </div>
           ))}
@@ -252,11 +259,6 @@ const Customers = () => {
             />
           </div>
         </div>
-        {error && !loading && (
-          <div className="broker-error-banner">
-            {error || "Failed to load customer data."}
-          </div>
-        )}
         <div className="customer-grid">
           {filtered.length > 0 ? (
             filtered.map((c) => (
@@ -281,8 +283,10 @@ const Customers = () => {
                   totalRevenue: `₹${c.totalRevenue?.toLocaleString()}`,
                   outstandingAmount: `₹${c.outstandingAmount?.toLocaleString()}`,
                 }}
-                onClick={() => {
-                  handleViewCustomer(c._id);
+                onView={() => {
+                  setMode("view");
+                  setOpenCustomerModal(true);
+                  setSelectedCustomer(c);
                 }}
                 onEdit={() => {
                   setMode("edit");

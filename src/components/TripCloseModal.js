@@ -7,8 +7,6 @@ import { FiLogOut } from "react-icons/fi";
 import { MdOutlineCancel } from "react-icons/md";
 
 const TripCloseModal = ({ open, onClose, selectedTrip }) => {
-  const navigateTo = useNavigate();
-  const [userData, setUserData] = useState([]);
   const dispatch = useDispatch();
 
  // trip close
@@ -16,6 +14,7 @@ const TripCloseModal = ({ open, onClose, selectedTrip }) => {
     const response = await dispatch(closeTrip(selectedTrip));
     if (response?.payload) {
       toast.success(response.payload.message);
+      onClose();
       await dispatch(getAllTrips());
     } else {
       toast.error(response?.error?.message);

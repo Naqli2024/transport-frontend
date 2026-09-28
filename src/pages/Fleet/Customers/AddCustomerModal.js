@@ -8,37 +8,6 @@ import {
 } from "../../../redux/Customer/CustomerSlice";
 import { toast } from "react-toastify";
 
-const STATES = [
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chhattisgarh",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
-];
-
 const PersonIcon = () => (
   <svg
     className="dm-modal-title-icon"
@@ -81,7 +50,7 @@ const AddCustomerModal = ({ open, onClose, mode = "add", customer = null }) => {
     gstNo: "",
     billingAddress: "",
     city: "",
-    state: "Tamil Nadu",
+    state: "",
     country: "",
     pincode: "",
   });
@@ -103,6 +72,20 @@ const AddCustomerModal = ({ open, onClose, mode = "add", customer = null }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
+    if (!formData.companyName?.trim()) {
+      toast.error("Company name is required");
+      return;
+    }
+
+    if (!formData.contactPerson?.trim()) {
+      toast.error("Contact person is required");
+      return;
+    }
+
+    if (!formData.mobile?.trim()) {
+      toast.error("Mobile number is required");
+      return;
+    }
     setLoading(true);
     try {
       const payload = {
@@ -207,7 +190,7 @@ const AddCustomerModal = ({ open, onClose, mode = "add", customer = null }) => {
         gstNo: "",
         billingAddress: "",
         city: "",
-        state: "Tamil Nadu",
+        state: "",
         country: "",
         pincode: "",
       });
@@ -271,12 +254,13 @@ const AddCustomerModal = ({ open, onClose, mode = "add", customer = null }) => {
                   <input
                     className="customer-modal-input"
                     name="mobile"
+                    type="number"
                     value={formData.mobile}
                     onChange={handleChange}
                     placeholder="9876543210"
                   />
                 </Field>
-                <Field label="Email" required>
+                <Field label="Email">
                   <input
                     className="customer-modal-input"
                     name="email"
@@ -307,19 +291,14 @@ const AddCustomerModal = ({ open, onClose, mode = "add", customer = null }) => {
                     placeholder="Billing Address"
                   />
                 </Field>
-                <Field label="State" required>
-                  <select
-                    className="customer-modal-select"
+                <Field label="State">
+                  <input
+                    className="customer-modal-input"
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
-                  >
-                    {STATES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="State"
+                  />
                 </Field>
                 <Field label="City">
                   <input

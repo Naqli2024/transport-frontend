@@ -7,27 +7,73 @@ import {
   getAllDrivers,
   getDriverById,
   getDriversDashboard,
+  getDriverSettlementSummary,
 } from "../../../redux/Driver/DriverSlice";
 import { MdOutlineEdit, MdDeleteOutline, MdDelete } from "react-icons/md";
 import { toast } from "react-toastify";
 import { IoSearchOutline } from "react-icons/io5";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import DriverSettlementModal from "./DriverSettlementModal";
+import { getTripById } from "../../../redux/Trip/TripSlice";
 
 function DriverRow({ d, onView, onEdit, onDelete }) {
+  const dispatch = useDispatch();
+
   const [driverId, setDriverId] = useState(null);
   const [openDriverSettlementModal, setOpenDriverSettlementModal] =
     useState(false);
+
+  const [settlement, setSettlement] = useState(null);
+  const [settlementLoading, setSettlementLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchSettlement = async () => {
+      if (!d?._id) return;
+
+      try {
+        setSettlementLoading(true);
+
+        const response = await dispatch(
+          getDriverSettlementSummary(d._id)
+        );
+
+        if (response?.meta?.requestStatus === "fulfilled") {
+          setSettlement(response.payload);
+        } else {
+          setSettlement(null);
+        }
+      } catch (error) {
+        console.error("Settlement fetch error:", error);
+        setSettlement(null);
+      } finally {
+        setSettlementLoading(false);
+      }
+    };
+
+    fetchSettlement();
+  }, [dispatch, d?._id]);
+
+  const trips = settlement?.data?.trips || [];
+
+  const hasTrips = trips.length > 0;
 
   return (
     <>
       <tr>
         <td>{d.driverId}</td>
+
         <td>{d.name}</td>
+
         <td>{d.mobile}</td>
+
         <td>{d.dlNo || "-"}</td>
-        <td>{d.experience ? `${d.experience} Years` : "-"}</td>
+
+        <td>
+          {d.experience ? `${d.experience} Years` : "-"}
+        </td>
+
         <td>{d.vehicle?.regNo || "Unassigned"}</td>
+
         <td>
           <span
             className={`broker-status ${
@@ -38,9 +84,10 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
                   : "st-inactive"
             }`}
           >
-            {d.availableStatus || "Available"}
+            {d.availableStatus}
           </span>
         </td>
+
         <td className="broker-td-actions">
           <button
             className="broker-action-btn broker-action-view"
@@ -63,24 +110,30 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
             <MdDeleteOutline />
           </button>
         </td>
-        {d?.currentTripId && (
-          <td>
-            {" "}
+
+        <td>
+          {settlementLoading ? (
+            <span style={{ fontSize: "12px", color: "#888" }}>
+              Checking...
+            </span>
+          ) : hasTrips ? (
             <button
               className="dm-settle-btn confirm"
               onClick={() => {
-                setDriverId(d?._id);
+                setDriverId(d._id);
                 setOpenDriverSettlementModal(true);
               }}
             >
               Settle
             </button>
-          </td>
-        )}
+          ) : (
+            "-"
+          )}
+        </td>
       </tr>
+
       {openDriverSettlementModal && (
         <DriverSettlementModal
-          open={() => setOpenDriverSettlementModal(true)}
           onClose={() => setOpenDriverSettlementModal(false)}
           driverId={driverId}
         />
@@ -90,7 +143,6 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
 }
 
 export default function Drivers() {
-  const [theme, setTheme] = useState("dark");
   const [search, setSearch] = useState("");
   const [openAddDriver, setOpenAddDriver] = useState(false);
   const [openDriverModal, setOpenDriverModal] = useState(false);
@@ -100,9 +152,8 @@ export default function Drivers() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const dispatch = useDispatch();
-  const { drivers, summary, driverDetails, loading, error } = useSelector(
-    (state) => state.driver,
-  );
+  const { drivers, summary, settlement, driverDetails, loading, error } =
+    useSelector((state) => state.driver);
 
   useEffect(() => {
     dispatch(getDriversDashboard());
@@ -241,9 +292,8 @@ export default function Drivers() {
             setSelectedDriver(null);
             setOpenAddDriver(true);
           }}
-          style={{ cursor: "pointer" }}
         >
-          <span>+ Add Driver</span>
+          + Add Driver
         </div>
       </div>
       <div className="dm-main">
@@ -269,11 +319,6 @@ export default function Drivers() {
             />
           </div>
         </div>
-        {error && !loading && (
-          <div className="broker-error-banner">
-            {error || "Failed to load driver data."}
-          </div>
-        )}
         <div className="dm-table-wrap">
           <table className="dm-table">
             <thead>
@@ -296,6 +341,7 @@ export default function Drivers() {
                   <DriverRow
                     key={d._id}
                     d={d}
+                    settlement={settlement}
                     onView={() => handleViewDriver(d._id)}
                     onEdit={() => {
                       setModalMode("edit");

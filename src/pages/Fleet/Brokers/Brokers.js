@@ -4,6 +4,7 @@ import {
   getBrokerDashboard,
   getBrokerById,
   deleteBroker,
+  getBrokerSettlementSummary,
 } from "../../../redux/Broker/BrokerSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -16,70 +17,127 @@ import {
 import AddBrokerModal from "./AddBrokerModal";
 import BrokerDetailModal from "./BrokerDetailModal";
 import { IoSearchOutline } from "react-icons/io5";
+import BrokerSettlementModal from "./BrokerSettlementModal";
 
 function BrokerRow({ b, onView, onEdit, onDelete }) {
+  const dispatch = useDispatch();
+
+  const [openSettlementModal, setOpenSettlementModal] = useState(false);
+  const [settlementLoading, setSettlementLoading] = useState(false);
+  const [settlement, setSettlement] = useState(null);
+
+  useEffect(() => {
+    const fetchSettlement = async () => {
+      if (!b?._id) return;
+
+      try {
+        setSettlementLoading(true);
+
+        const response = await dispatch(getBrokerSettlementSummary(b._id));
+
+        if (response?.meta?.requestStatus === "fulfilled") {
+          setSettlement(response.payload);
+        } else {
+          setSettlement(null);
+        }
+      } catch (error) {
+        console.error("Broker settlement error:", error);
+        setSettlement(null);
+      } finally {
+        setSettlementLoading(false);
+      }
+    };
+
+    fetchSettlement();
+  }, [dispatch, b?._id]);
+
+  const trips = settlement?.data?.trips || [];
+
+  const hasTrips = trips.length > 0;
   return (
-    <tr>
-      <td>
-        <span className="broker-id">{b.brokerId}</span>
-      </td>
-      <td>
-        <span className="broker-company">{b.companyName}</span>
-      </td>
-      <td>
-        <span className="broker-contact">{b.contactPerson}</span>
-      </td>
-      <td>
-        <span className="broker-mobile">{b.mobile}</span>
-      </td>
-      <td>
-        <span className="broker-commission">
-          {b.commissionType === "Percentage"
-            ? `${b.commissionValue}%`
-            : `${b.commissionValue?.toLocaleString()}`}
-        </span>
-      </td>
-      <td>
-        <span className="broker-totaltrips">{b.totalTrips}</span>
-      </td>
-      <td>
-        <span className="broker-totcommission">
-          ₹{b.totalCommission?.toLocaleString()}
-        </span>
-      </td>
-      <td>
-        <span className="broker-outstanding">
-          ₹{b.outstandingAmount?.toLocaleString()}
-        </span>
-      </td>
-      <td>
-        <span
-          className={`broker-status ${b.status === "Active" ? "st-active" : "st-inactive"}`}
-        >
-          {b.status}
-        </span>
-      </td>
-      <td className="broker-td-actions">
-        <button
-          className="broker-action-btn broker-action-view"
-          onClick={() => onView(b)}
-        >
-          <MdOutlineRemoveRedEye />
-        </button>
-        <button
-          className="broker-action-btn broker-action-edit"
-          onClick={() => onEdit(b)}
-        >
-          <MdOutlineEdit />
-        </button>
-        <button
-          className="broker-action-btn broker-action-delete"
-          onClick={() => onDelete(b)}
-        >
-          <MdDeleteOutline />
-        </button>
-      </td>
-    </tr>
+    <>
+      <tr>
+        <td>
+          <span className="broker-id">{b.brokerId}</span>
+        </td>
+        <td>
+          <span className="broker-company">{b.companyName}</span>
+        </td>
+        <td>
+          <span className="broker-contact">{b.contactPerson}</span>
+        </td>
+        <td>
+          <span className="broker-mobile">{b.mobile}</span>
+        </td>
+        <td>
+          <span className="broker-commission">
+            {b.commissionType === "Percentage"
+              ? `${b.commissionValue}%`
+              : `${b.commissionValue?.toLocaleString()}`}
+          </span>
+        </td>
+        <td>
+          <span className="broker-totaltrips">{b.totalTrips}</span>
+        </td>
+        <td>
+          <span className="broker-totcommission">
+            ₹{b.totalCommission?.toLocaleString()}
+          </span>
+        </td>
+        <td>
+          <span className="broker-outstanding">
+            ₹{b.outstandingAmount?.toLocaleString()}
+          </span>
+        </td>
+        <td>
+          <span
+            className={`broker-status ${b.status === "Active" ? "st-active" : "st-inactive"}`}
+          >
+            {b.status}
+          </span>
+        </td>
+        <td className="broker-td-actions">
+          <button
+            className="broker-action-btn broker-action-view"
+            onClick={() => onView(b)}
+          >
+            <MdOutlineRemoveRedEye />
+          </button>
+          <button
+            className="broker-action-btn broker-action-edit"
+            onClick={() => onEdit(b)}
+          >
+            <MdOutlineEdit />
+          </button>
+          <button
+            className="broker-action-btn broker-action-delete"
+            onClick={() => onDelete(b)}
+          >
+            <MdDeleteOutline />
+          </button>
+        </td>
+        <td>
+          {settlementLoading ? (
+            <span style={{ fontSize: "12px", color: "#888" }}>Checking...</span>
+          ) : hasTrips ? (
+            <button
+              className="dm-settle-btn confirm"
+              onClick={() => setOpenSettlementModal(true)}
+            >
+              Settle
+            </button>
+          ) : (
+            "-"
+          )}
+        </td>
+      </tr>
+      {openSettlementModal && (
+        <BrokerSettlementModal
+          onClose={() => setOpenSettlementModal(false)}
+          brokerId={b._id}
+        />
+      )}
+    </>
   );
 }
 
@@ -172,37 +230,37 @@ const Brokers = () => {
 
   const stats = [
     {
-      val: summary.totalBrokers,
+      val: summary.totalBrokers || 0,
       label: "TOTAL BROKERS",
       cls: "sc-blue",
       id: "totalBrokers",
     },
     {
-      val: summary.activeBrokers,
+      val: summary.activeBrokers || 0,
       label: "ACTIVE",
       cls: "sc-green",
       id: "activeBrokers",
     },
     {
-      val: summary.inactiveBrokers,
+      val: summary.inactiveBrokers || 0,
       label: "INACTIVE",
       cls: "sc-red",
       id: "inactiveBrokers",
     },
     {
-      val: summary.totalTrips,
+      val: summary.totalTrips || 0,
       label: "TOTAL TRIPS",
       cls: "sc-orange",
       id: "totalTrips",
     },
     {
-      val: fmt(summary.totalCommission),
+      val: fmt(summary.totalCommission || 0),
       label: "TOTAL COMMISSION",
       cls: "sc-purple",
       id: "totalCommission",
     },
     {
-      val: fmt(summary.outstandingCommission),
+      val: fmt(summary.outstandingCommission || 0),
       label: "OUTSTANDING",
       cls: "sc-accent",
       id: "outstandingCommission",
@@ -234,9 +292,8 @@ const Brokers = () => {
             setSelectedBroker(null);
             setMode("add");
           }}
-          style={{ cursor: "pointer" }}
         >
-          <span>+ Add Broker</span>
+          + Add Broker
         </div>
       </div>
       <div className="broker-main">
@@ -261,11 +318,6 @@ const Brokers = () => {
             />
           </div>
         </div>
-        {error && !loading && (
-          <div className="broker-error-banner">
-            {error || "Failed to load broker data."}
-          </div>
-        )}
         <div className="broker-table-wrap">
           <table className="broker-table">
             <thead>
@@ -280,6 +332,7 @@ const Brokers = () => {
                 <th>Outstanding</th>
                 <th>Status</th>
                 <th>Actions</th>
+                <th>Amount</th>
               </tr>
             </thead>
             <tbody>

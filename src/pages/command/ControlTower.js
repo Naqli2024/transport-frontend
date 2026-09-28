@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "../../assets/styles/ControlTower.css";
-
 import DashboardCard from "../../components/Dashboard/DashboardCard";
 import IncomeExpenseChart from "../../components/Dashboard/IncomeExpenseChart";
 import ExpensePieChart from "../../components/Dashboard/ExpensePieChart";
@@ -8,12 +7,10 @@ import TripStatusChart from "../../components/Dashboard/TripStatusChart";
 import ExpenseTable from "../../components/Dashboard/ExpenseTable";
 import SettlementCard from "../../components/Dashboard/SettlementCard";
 import ExpenseProgress from "../../components/Dashboard/ExpenseProgress";
-
 import ProfitGauge from "../../components/Executive/profitGauge";
 import FinancialSummary from "../../components/Executive/FinancialSummary";
 import TopExpenseCard from "../../components/Executive/TopExpenseCard";
 import ExpenseRanking from "../../components/Executive/ExpenseRanking";
-
 import {
   FaTruck,
   FaWallet,
@@ -24,32 +21,157 @@ import {
   FaUndo,
   FaBuilding,
 } from "react-icons/fa";
-
-import Loader from "../../components/Loader";
 import { MdOutlineRefresh } from "react-icons/md";
+import { CiLock } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getAllLedgers } from "../../redux/Ledger/LedgerSlice";
+import { useLocation, useNavigate } from "react-router-dom";
+import { authenticateAdmin, getUserById } from "../../redux/Auth/AuthSlice";
 
 const ControlTower = () => {
   const { income, expenses, summary, driverSettlement, loading, error } =
     useSelector((state) => state.ledger);
-
+  const authAdmin = useSelector((state) => state.authAdmin);
   const dispatch = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const isDashboardPath = location.pathname.includes("/dashboard");
+  const [authLoading, setAuthLoading] = useState(false);
 
   const fetchDashboard = () => {
     dispatch(getAllLedgers());
   };
 
   useEffect(() => {
-    dispatch(getAllLedgers());
+    dispatch(getUserById());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (isDashboardPath && isAuthenticated) {
+      dispatch(getAllLedgers());
+    }
+  }, [isDashboardPath, isAuthenticated, dispatch]);
 
   useEffect(() => {
     if (error) {
       toast.error(error);
     }
   }, [error]);
+
+  const handleCancelPassword = () => {
+    setPassword("");
+    setPasswordError("");
+    navigate("/all-trips");
+  };
+
+const handlePasswordSubmit = async () => {
+
+  if (authLoading) return;
+
+  if (!password.trim()) {
+    setPasswordError("Please enter password");
+    return;
+  }
+
+  const username = authAdmin.admin?.user?.username;
+
+  if (!username) {
+    setPasswordError("Admin username not available");
+    return;
+  }
+
+  setAuthLoading(true);
+  setPasswordError("");
+
+  try {
+    const response = await dispatch(
+      authenticateAdmin({
+        username,
+        password,
+      })
+    ).unwrap();
+
+    if (response?.success === true) {
+      setPassword("");
+      setPasswordError("");
+      setIsAuthenticated(true);
+      await dispatch(getAllLedgers()).unwrap();
+    } else {
+      setPasswordError(response?.message);
+    }
+  } catch (error) {
+    setPasswordError(error);
+  } finally {
+    setAuthLoading(false);
+  }
+};
+
+  if (isDashboardPath && !isAuthenticated) {
+    return (
+      <div className="controlTower-password-overlay">
+        <div className="controlTower-password-modal">
+          <div className="controlTower-password-icon">
+            <CiLock size={30} />
+          </div>
+
+          <h2>Dashboard Access</h2>
+
+          <p>Enter the password to access the Dashboard.</p>
+
+          <div>
+            <div className="controlTower-password-field">
+              <label>Password</label>
+
+              <input
+                type="password"
+                name="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError("");
+                }}
+                placeholder="Enter password"
+                autoFocus
+                autoComplete="new-password"
+              />
+            </div>
+
+            {passwordError && (
+              <span className="controlTower-password-error">
+                {passwordError}
+              </span>
+            )}
+            <div className="d-flex gap-2">
+              <button
+                className="controlTower-cancel-btn"
+                onClick={handleCancelPassword}
+              >
+                Cancel
+              </button>
+              <button
+  className="controlTower-password-btn"
+  onClick={handlePasswordSubmit}
+  disabled={authLoading}
+>
+  {authLoading ? (
+    <>
+      <span className="controlTower-btn-loader" />
+      Authenticating...
+    </>
+  ) : (
+    "Continue"
+  )}
+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

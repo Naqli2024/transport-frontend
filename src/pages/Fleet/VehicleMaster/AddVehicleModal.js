@@ -88,6 +88,17 @@ const handleSubmit = async (e) => {
 
   if (submitting) return;
 
+   if (!formData.regNo?.trim()) {
+    toast.error("Registration number is required");
+    return;
+  }
+
+  if (!formData.type?.trim()) {
+    toast.error("Vehicle type is required");
+    return;
+  }
+
+
   setSubmitting(true);
 
   try {
@@ -145,7 +156,7 @@ const handleSubmit = async (e) => {
           <div className="vm-modal-body">
             <div className="vm-form-row vm-cols-4">
               <div className="vm-form-group">
-                <label className="vm-form-label">REG NO</label>
+                <label className="vm-form-label">REG NO *</label>
 
                 <input
                   className={`vm-form-input ${
@@ -160,7 +171,7 @@ const handleSubmit = async (e) => {
               </div>
 
               <div className="vm-form-group">
-                <label className="vm-form-label">TYPE</label>
+                <label className="vm-form-label">TYPE *</label>
 
                 <select
                   className="vm-form-select"
