@@ -55,6 +55,7 @@ const TripGeneratorModal = ({
     fleetSource: "Own Fleet",
     vehicleId: "",
     vehicleCategory: "",
+    vendorAmount: "",
     journeyType: "Multi Leg",
     journeyLegs: [emptyLeg(1)],
     vendorId: "",
@@ -95,6 +96,7 @@ const TripGeneratorModal = ({
           : [emptyLeg(1)],
       vendorId: idOf(trip.vendorId),
       vendorVehicleId: idOf(trip.vendorVehicleId),
+      vendorAmount: trip.vendorAmount ?? "",
     });
 
     setFleetSource(trip.fleetSource === "Vendor" ? "Vendor" : "Own Fleet");
@@ -221,6 +223,19 @@ const TripGeneratorModal = ({
           toast.error("Please select a vendor vehicle");
           return;
         }
+        if (
+        form.vendorAmount === "" ||
+        form.vendorAmount === null ||
+        form.vendorAmount === undefined
+      ) {
+        toast.error("Please enter vendor amount");
+        return;
+      }
+
+      if (Number(form.vendorAmount) < 0) {
+        toast.error("Vendor amount cannot be negative");
+        return;
+      }
       }
 
       setIsSubmitting(true);
@@ -232,10 +247,11 @@ const TripGeneratorModal = ({
         journeyLegs: buildJourneyLegsForCreate(),
         ...(fleetSource === "Vendor" && {
           vendorId: form.vendorId || "",
-          vendorVehicleId: form.vendorVehicleId,
+          vendorVehicleId: form.vendorVehicleId || "",
+          vendorAmount: Number(form.vendorAmount),
         }),
       };
-      console.log(payload);
+      console.log("CREATE TRIP PAYLOAD:",payload);
       try {
         const res = await dispatch(addTrip(payload)).unwrap();
         toast.success(res?.message);

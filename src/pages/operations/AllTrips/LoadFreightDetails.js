@@ -67,23 +67,23 @@ const LoadFreightDetails = ({ form, setForm, isEdit, originalLegCount = 0 }) => 
 
             <div className="row g-3" style={{ marginBottom: "14px" }}>
               <div className="col-md-3">
-                <label className="load-details-flabel">Amount per {uomLabel} (₹)</label>
-                <input
-                  value={leg.amountPerTon || ""}
-                  type="number"
-                  onChange={(e) => updateLeg(idx, "amountPerTon", e.target.value)}
-                  placeholder="e.g. 2500"
-                  className="load-details-input"
-                  disabled={locked}
-                />
-              </div>
-              <div className="col-md-3">
                 <label className="load-details-flabel">Weight per {uomLabel}</label>
                 <input
                   value={leg.weight || ""}
                   type="number"
                   onChange={(e) => updateLeg(idx, "weight", e.target.value)}
                   placeholder="e.g. 10"
+                  className="load-details-input"
+                  disabled={locked}
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="load-details-flabel">Amount per {uomLabel} (₹)</label>
+                <input
+                  value={leg.amountPerTon || ""}
+                  type="number"
+                  onChange={(e) => updateLeg(idx, "amountPerTon", e.target.value)}
+                  placeholder="e.g. 2500"
                   className="load-details-input"
                   disabled={locked}
                 />

@@ -44,20 +44,20 @@ const VehicleTypeSelector = ({ form, set, fleetSource, setForm, isEdit }) => {
   return (
     <div>
       {isEdit && (
-  <div
-    style={{
-      padding: "10px 14px",
-      marginBottom: "14px",
-      borderRadius: "8px",
-      background: "var(--accentDim, var(--bgPanel))",
-      border: "1px solid var(--border)",
-      fontSize: "12px",
-      color: "var(--textSub)",
-    }}
-  >
-    🔒 Vehicle assignment can't be changed after a trip is created.
-  </div>
-)}
+        <div
+          style={{
+            padding: "10px 14px",
+            marginBottom: "14px",
+            borderRadius: "8px",
+            background: "var(--accentDim, var(--bgPanel))",
+            border: "1px solid var(--border)",
+            fontSize: "12px",
+            color: "var(--textSub)",
+          }}
+        >
+          🔒 Vehicle assignment can't be changed after a trip is created.
+        </div>
+      )}
       {fleetSource === "Vendor" && (
         <div>
           <div className="row g-3 mb-3">
@@ -75,6 +75,7 @@ const VehicleTypeSelector = ({ form, set, fleetSource, setForm, isEdit }) => {
                     vendorVehicleId: "",
                   }));
                 }}
+                disabled={isEdit}
               >
                 <option value="" disabled>
                   Choose Vendor
@@ -95,6 +96,7 @@ const VehicleTypeSelector = ({ form, set, fleetSource, setForm, isEdit }) => {
                 className="trip-generator-modal-input"
                 value={form.vendorVehicleId}
                 onChange={(e) => set("vendorVehicleId", e.target.value)}
+                disabled={isEdit || !form.vendorId}
               >
                 <option value="" disabled>
                   Choose Vehicle
@@ -113,95 +115,115 @@ const VehicleTypeSelector = ({ form, set, fleetSource, setForm, isEdit }) => {
                     )}
               </select>
             </div>
+
+            {/* Vendor Amount */}
+            <div className="col-md-6">
+              <label className="trip-generator-modal-flabel">
+                Vendor Amount
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className="trip-generator-modal-input"
+                placeholder="Enter vendor amount"
+                value={form.vendorAmount}
+                onChange={(e) => set("vendorAmount", e.target.value)}
+                disabled={isEdit}
+              />
+            </div>
           </div>
         </div>
       )}
       {fleetSource !== "Vendor" && (
-  <>
-    <div className="vehicle-type-category-title">
-      🚛 Select Vehicle Category
-    </div>
-    {loadingVehicle ? (
-      <div
-        className="d-flex justify-content-start mb-3"
-        style={{ color: "var(--text)" }}
-      >
-        Loading...
-      </div>
-    ) : (
-      <div className="row g-3 mb-4">
-        {vehicleTypes.map((type) => (
-          <div className="col-md-4" key={type.type}>
-            <div
-              className={`vehicle-type-schema-btn ${
-                form.vehicleCategory === type.type ? "sel" : ""
-              }`}
-              onClick={() => {
-                if (isEdit) return;
-                set("vehicleCategory", type.type);
-                set("vehicleId", "");
-              }}
-            >
-              <div>
-                <div className="vehicle-type-schema-label">{type.type}</div>
-
-                <div className="vehicle-type-capacity">
-                  {type.make} {type.model}
-                </div>
-              </div>
-            </div>
+        <>
+          <div className="vehicle-type-category-title">
+            🚛 Select Vehicle Category
           </div>
-        ))}
-      </div>
-    )}
+          {loadingVehicle ? (
+            <div
+              className="d-flex justify-content-start mb-3"
+              style={{ color: "var(--text)" }}
+            >
+              Loading...
+            </div>
+          ) : (
+            <div className="row g-3 mb-4">
+              {vehicleTypes.map((type) => (
+                <div className="col-md-4" key={type.type}>
+                  <div
+                    className={`vehicle-type-schema-btn ${
+                      form.vehicleCategory === type.type ? "sel" : ""
+                    }`}
+                    onClick={() => {
+                      if (isEdit) return;
+                      set("vehicleCategory", type.type);
+                      set("vehicleId", "");
+                    }}
+                  >
+                    <div>
+                      <div className="vehicle-type-schema-label">
+                        {type.type}
+                      </div>
 
-    {form.vehicleCategory && (
-      <>
-        <h5 className="available-vehicle">
-          Available {form.vehicleCategory} Vehicles
-        </h5>
-
-        <div className="row g-3">
-          {availableVehicles.length > 0 ? (
-            availableVehicles.map((vehicle) => (
-              <div className="col-md-6 p-3" key={vehicle._id}>
-                <div
-                  className={`vehicle-card ${
-                    form.vehicleId === vehicle._id ? "selected" : ""
-                  }`}
-                  onClick={() => {
-                    if (isEdit) return;
-                    set("vehicleId", vehicle._id);
-                  }}
-                >
-                  <div className="vehicle-card-left">
-                    <div className="truck-icon">🚛</div>
-
-                    <div className="vehicle-info">
-                      <h2>{vehicle.regNo}</h2>
-
-                      <p>
-                        {vehicle.make} • {vehicle.model}
-                      </p>
-
-                      <small>Year : {vehicle.year}</small>
+                      <div className="vehicle-type-capacity">
+                        {type.make} {type.model}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="vehicle-card-right">
-                    <div className="status-text">{vehicle.status}</div>
-                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <div>No Vehicles Available</div>
+              ))}
+            </div>
           )}
-        </div>
-      </>
-    )}
-  </>
-)}
+
+          {form.vehicleCategory && (
+            <>
+              <h5 className="available-vehicle">
+                Available {form.vehicleCategory} Vehicles
+              </h5>
+
+              <div className="row g-3">
+                {availableVehicles.length > 0 ? (
+                  availableVehicles.map((vehicle) => (
+                    <div className="col-md-6 p-3" key={vehicle._id}>
+                      <div
+                        className={`vehicle-card ${
+                          form.vehicleId === vehicle._id ? "selected" : ""
+                        }`}
+                        onClick={() => {
+                          if (isEdit) return;
+                          set("vehicleId", vehicle._id);
+                        }}
+                      >
+                        <div className="vehicle-card-left">
+                          <div className="truck-icon">🚛</div>
+
+                          <div className="vehicle-info">
+                            <h2>{vehicle.regNo}</h2>
+
+                            <p>
+                              {vehicle.make} • {vehicle.model}
+                            </p>
+
+                            <small>Year : {vehicle.year}</small>
+                          </div>
+                        </div>
+
+                        <div className="vehicle-card-right">
+                          <div className="status-text">{vehicle.status}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div>No Vehicles Available</div>
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };

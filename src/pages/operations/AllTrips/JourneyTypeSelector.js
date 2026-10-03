@@ -4,11 +4,22 @@ import { getAllBrokers } from "../../../redux/Broker/BrokerSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { MdOutlineAddLocationAlt } from "react-icons/md";
 import { FiMinusCircle } from "react-icons/fi";
+import { addLocation, getLocation } from "../../../redux/LocationSlice";
+import { toast } from "react-toastify";
 
 const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
   const { customers } = useSelector((state) => state.customer);
   const { brokers } = useSelector((state) => state.broker);
   const dispatch = useDispatch();
+  const {
+    location: locations,
+    loading,
+    error,
+  } = useSelector((state) => state.location);
+  const [showAddLocation, setShowAddLocation] = useState(false);
+  const [newLocation, setNewLocation] = useState("");
+  const [locationField, setLocationField] = useState(null);
+
   const JOURNEY_TYPES = [
     {
       id: "One Way",
@@ -202,23 +213,92 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
     }));
   };
 
-  const LOCATIONS = [
-    "Thoothukudi",
-    "Tirupur",
-    "Sathyamangalam",
-    "Theni",
-    "Madathukulam",
-    "Perundurai",
-    "Anoor",
-    "Kangayam",
-    "Uthukuli",
-    "Avinashipalayam",
-    "Gangaikondan",
-    "Madurai",
-  ];
+  useEffect(() => {
+    dispatch(getLocation());
+  }, [dispatch]);
 
-  const getFromOptions = (leg) => LOCATIONS.filter((loc) => loc !== leg?.to);
-  const getToOptions = (leg) => LOCATIONS.filter((loc) => loc !== leg?.from);
+  // add location handler
+  const handleAddLocation = async () => {
+    const name = newLocation.trim();
+
+    if (!name || !locationField) {
+      return;
+    }
+
+    try {
+      const result = await dispatch(addLocation({ name })).unwrap();
+
+      // Show API success message
+      toast.success(result?.message || "Location added");
+
+      const addedLocation = result?.data;
+
+      if (addedLocation) {
+        updateJourneyLeg(
+          locationField.index,
+          locationField.field,
+          addedLocation.name,
+        );
+      }
+
+      setNewLocation("");
+      setShowAddLocation(false);
+      setLocationField(null);
+    } catch (error) {
+      toast.error(error?.message || error || "Failed to add location");
+    }
+  };
+
+  const getFromOptions = (leg) =>
+    locations.filter((loc) => loc.name !== leg?.to);
+
+  const getToOptions = (leg) =>
+    locations.filter((loc) => loc.name !== leg?.from);
+
+  // Reusable select dropdown
+  const renderLocationSelect = (index, field, label) => {
+    const leg = form.journeyLegs[index];
+
+    const options = field === "from" ? getFromOptions(leg) : getToOptions(leg);
+
+    return (
+      <div className="col-md-3">
+        <label className="journey-type-flabel">{label}</label>
+
+        <select
+          className="journey-type-input"
+          value={leg?.[field] || ""}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            if (value === "__ADD_NEW_LOCATION__") {
+              setLocationField({
+                index,
+                field,
+              });
+
+              setShowAddLocation(true);
+              return;
+            }
+
+            updateJourneyLeg(index, field, value);
+          }}
+        >
+          <option value="" disabled>
+            Select Location
+          </option>
+
+          {options.map((loc) => (
+            <option key={loc._id} value={loc.name}>
+              {loc.name}
+            </option>
+          ))}
+
+          <option value="__ADD_NEW_LOCATION__">+ Add New Location</option>
+        </select>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -290,6 +370,44 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
         })}
       </div>
 
+      {showAddLocation && (
+        <div className="add-location-box mt-3">
+          <label className="journey-type-flabel">Add New Location</label>
+
+          <div className="d-flex gap-2">
+            <input
+              type="text"
+              className="journey-type-input"
+              placeholder="Enter location name"
+              value={newLocation}
+              onChange={(e) => setNewLocation(e.target.value)}
+              autoFocus
+            />
+
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleAddLocation}
+              disabled={!newLocation.trim() || loading}
+            >
+              {loading ? "Adding..." : "OK"}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                setNewLocation("");
+                setShowAddLocation(false);
+                setLocationField(null);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {selected && (
         <div
           className="journey-type-selected-card"
@@ -307,45 +425,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
               <div className="journey-type-leg-block">
                 <div className="journey-type-leg-title">LEG 1 — Loaded Run</div>
                 <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="journey-type-flabel">From</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "from", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getFromOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="journey-type-flabel">To</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "to", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getToOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {renderLocationSelect(0, "from", "From")}
+                  {renderLocationSelect(0, "to", "To")}
                   <div className="col-md-6">
                     <label className="journey-type-flabel">Customer</label>
                     <select
@@ -399,44 +480,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
                   LEG 1 — Forward Loaded Run
                 </div>
                 <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="journey-type-flabel">From</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "from", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getFromOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="journey-type-flabel">To</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "to", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getToOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {renderLocationSelect(0, "from", "From")}
+                  {renderLocationSelect(0, "to", "To")}
                   <div className="col-md-6">
                     <label className="journey-type-flabel">Customer</label>
                     <select
@@ -485,45 +530,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
                   LEG 2 — Return Loaded Run
                 </div>
                 <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="journey-type-flabel">From</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[1]?.from || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(1, "from", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getFromOptions(form.journeyLegs[1]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="journey-type-flabel">To</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[1]?.to || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(1, "to", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getToOptions(form.journeyLegs[1]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {renderLocationSelect(0, "from", "From")}
+                  {renderLocationSelect(0, "to", "To")}
                   <div className="col-md-6">
                     <label className="journey-type-flabel">Customer</label>
                     <select
@@ -596,44 +604,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
                       </div>
                     </div>
                     <div className="row g-3" style={{ marginTop: 2 }}>
-                      <div className="col-md-3">
-                        <label className="journey-type-flabel">From</label>
-                        <select
-                          className="journey-type-input"
-                          value={leg.from || ""}
-                          onChange={(e) =>
-                            updateJourneyLeg(idx, "from", e.target.value)
-                          }
-                        >
-                          <option value="" disabled>
-                            Select Location
-                          </option>
-                          {getFromOptions(leg).map((loc) => (
-                            <option key={loc} value={loc}>
-                              {loc}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-md-3">
-                        <label className="journey-type-flabel">To</label>
-                        <select
-                          className="journey-type-input"
-                          value={leg.to || ""}
-                          onChange={(e) =>
-                            updateJourneyLeg(idx, "to", e.target.value)
-                          }
-                        >
-                          <option value="" disabled>
-                            Select Location
-                          </option>
-                          {getToOptions(leg).map((loc) => (
-                            <option key={loc} value={loc}>
-                              {loc}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      {renderLocationSelect(0, "from", "From")}
+                      {renderLocationSelect(0, "to", "To")}
                       <div className="col-md-3">
                         <label className="journey-type-flabel">Customer</label>
                         <select
@@ -718,44 +690,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
                   LEG 1 — Origin to Relay Point (Driver 1)
                 </div>
                 <div className="row g-3">
-                  <div className="col-md-3">
-                    <label className="journey-type-flabel">From</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "from", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getFromOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-3">
-                    <label className="journey-type-flabel">To</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "to", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getToOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {renderLocationSelect(0, "from", "From")}
+                  {renderLocationSelect(0, "to", "To")}
                   <div className="col-md-3">
                     <label className="journey-type-flabel">Customer</label>
                     <select
@@ -804,45 +740,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
                   LEG 2 — Relay to Destination (Driver 2)
                 </div>
                 <div className="row g-3">
-                  <div className="col-md-3">
-                    <label className="journey-type-flabel">From</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[1]?.from || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(1, "from", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getFromOptions(form.journeyLegs[1]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="col-md-3">
-                    <label className="journey-type-flabel">To</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[1]?.to || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(1, "to", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getToOptions(form.journeyLegs[1]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {renderLocationSelect(0, "from", "From")}
+                  {renderLocationSelect(0, "to", "To")}
                   <div className="col-md-3">
                     <label className="journey-type-flabel">Customer</label>
                     <select
@@ -896,44 +795,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
                   Fixed Route Configuration
                 </div>
                 <div className="row g-3">
-                  <div className="col-md-3">
-                    <label className="journey-type-flabel">From</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.from || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "from", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getFromOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-3">
-                    <label className="journey-type-flabel">To</label>
-                    <select
-                      className="journey-type-input"
-                      value={form.journeyLegs[0]?.to || ""}
-                      onChange={(e) =>
-                        updateJourneyLeg(0, "to", e.target.value)
-                      }
-                    >
-                      <option value="" disabled>
-                        Select Location
-                      </option>
-                      {getToOptions(form.journeyLegs[0]).map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {renderLocationSelect(0, "from", "From")}
+                  {renderLocationSelect(0, "to", "To")}
                   <div className="col-md-3">
                     <label className="journey-type-flabel">Customer</label>
                     <select
