@@ -8,6 +8,6 @@ export const TripsApiUrl = "/transport/api/trips";
 export const CustomerApiUrl = "/transport/api/customer";
 export const BrokerApiUrl = "/transport/api/broker";
 export const FuelApiUrl = "/transport/api/fuel";
-export const locationApiUrl = "/transport/api/location";
+export const LocationApiUrl = "/transport/api/location";
 
 
