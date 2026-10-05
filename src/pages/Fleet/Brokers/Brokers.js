@@ -326,10 +326,10 @@ const Brokers = () => {
                 <th>Company</th>
                 <th>Contact</th>
                 <th>Mobile</th>
-                <th>Commission</th>
+                {/* <th>Commission</th>
                 <th>Trips</th>
                 <th>Total Commission</th>
-                <th>Outstanding</th>
+                <th>Outstanding</th> */}
                 <th>Status</th>
                 <th>Actions</th>
                 <th>Amount</th>

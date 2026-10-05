@@ -62,7 +62,7 @@ const AllTrips = () => {
   const [openTrackTrip, setOpenTrackTrip] = useState(false);
   const [openTripCloseModal, setOpenTripCloseModal] = useState(false);
 
-    // Sum estimatedFreightAmount across all legs of a trip
+  // Sum estimatedFreightAmount across all legs of a trip
   const getTripFreight = (trip) =>
     (trip.journeyLegs || []).reduce(
       (sum, leg) => sum + (Number(leg.estimatedFreightAmount) || 0),
@@ -376,7 +376,9 @@ const AllTrips = () => {
 
                           <td>₹{tripFreight.toLocaleString("en-IN")}</td>
 
-                          <td><span className="trip-status">{t.tripStatus}</span></td>
+                          <td>
+                            <span className="trip-status">{t.tripStatus}</span>
+                          </td>
 
                           <td>
                             <div className="vm-td-actions">
@@ -431,19 +433,18 @@ const AllTrips = () => {
                               >
                                 <CgTrack size={18} />
                               </button>
-                              {t.tripStatus === "Completed" &&
-                                t.settlement.status === "Settled" && (
-                                  <button
-                                    title="Close Trip"
-                                    className="vm-action-closed py-1"
-                                    onClick={() => {
-                                      setOpenTripCloseModal(true);
-                                      setSelectedTrip(t._id);
-                                    }}
-                                  >
-                                    Close Trip
-                                  </button>
-                                )}
+                              {t.tripStatus === "Completed" && (
+                                <button
+                                  title="Close Trip"
+                                  className="vm-action-closed py-1"
+                                  onClick={() => {
+                                    setOpenTripCloseModal(true);
+                                    setSelectedTrip(t._id);
+                                  }}
+                                >
+                                  Close Trip
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
