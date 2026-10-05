@@ -69,7 +69,7 @@ function BrokerRow({ b, onView, onEdit, onDelete }) {
         <td>
           <span className="broker-mobile">{b.mobile}</span>
         </td>
-        <td>
+        {/* <td>
           <span className="broker-commission">
             {b.commissionType === "Percentage"
               ? `${b.commissionValue}%`
@@ -88,7 +88,7 @@ function BrokerRow({ b, onView, onEdit, onDelete }) {
           <span className="broker-outstanding">
             ₹{b.outstandingAmount?.toLocaleString()}
           </span>
-        </td>
+        </td> */}
         <td>
           <span
             className={`broker-status ${b.status === "Active" ? "st-active" : "st-inactive"}`}

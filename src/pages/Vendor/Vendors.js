@@ -23,21 +23,47 @@ import {
 
 export default function Vendors() {
   const [search, setSearch] = useState("");
+
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
+
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedVehicleVendor, setSelectedVehicleVendor] = useState(null);
+
   const [openViewModal, setOpenViewModal] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
 
   const [vehicleDeleting, setVehicleDeleting] = useState(false);
+
+  // ============================================
+  // VENDOR SETTLEMENT
+  // ============================================
+
+  const [openSettlementModal, setOpenSettlementModal] = useState(false);
+
+  const [selectedSettlementVendor, setSelectedSettlementVendor] =
+    useState(null);
+
   const dispatch = useDispatch();
+
   const { vendors, vendorDetails, loading, error } = useSelector(
     (state) => state.vendor,
   );
+
   const { vendorVehicle } = useSelector((state) => state.vendorVehicle);
+
+  // ============================================
+  // TRIPS
+  // ============================================
+
+  const { trips = [] } = useSelector((state) => state.trip || {});
+
+  // ============================================
+  // FILTER VENDORS
+  // ============================================
 
   const filteredVendors = useMemo(() => {
     return vendors.filter(
@@ -48,13 +74,36 @@ export default function Vendors() {
     );
   }, [vendors, search]);
 
+  // ============================================
+  // CHECK WHETHER VENDOR HAS VENDOR TRIPS
+  // ============================================
+
+  const hasVendorTrips = (vendorId) => {
+    if (!vendorId || !trips?.length) {
+      return false;
+    }
+
+    return trips.some(
+      (trip) =>
+        trip.status === "Completed" &&
+        trip.fleetSource === "Vendor" &&
+        String(trip.vendorId) === String(vendorId) &&
+        trip.vendorVehicleId,
+    );
+  };
+
+  // ============================================
+  // VIEW VENDOR
+  // ============================================
+
   const handleViewVendor = async (id) => {
     if (!id) return;
+
     setOpenViewModal(true);
     setViewLoading(true);
 
     try {
-      const response = await dispatch(getVendorById(id)).unwrap();
+      await dispatch(getVendorById(id)).unwrap();
     } catch (error) {
       toast.error(error);
       setOpenViewModal(false);
@@ -63,18 +112,30 @@ export default function Vendors() {
     }
   };
 
+  // ============================================
+  // DELETE VENDOR
+  // ============================================
+
   const handleDelete = async () => {
     if (!selectedVendor?._id) return;
+
     const response = await dispatch(deleteVendor(selectedVendor._id));
+
     if (response?.payload) {
       toast.success(response.payload.message);
+
       await dispatch(getAllVendor());
+
       setOpenDeleteModal(false);
       setSelectedVendor(null);
     } else {
       toast.error(response?.error?.message);
     }
   };
+
+  // ============================================
+  // DELETE VENDOR VEHICLE
+  // ============================================
 
   const handleDeleteVendorVehicle = async (vehicle) => {
     if (!vehicle?._id || vehicleDeleting) return;
@@ -98,16 +159,52 @@ export default function Vendors() {
     }
   };
 
+  // ============================================
+  // OPEN VENDOR SETTLEMENT
+  // ============================================
+
+  const handleOpenSettlement = (vendor) => {
+    if (!vendor?._id) return;
+
+    setSelectedSettlementVendor(vendor);
+    setOpenSettlementModal(true);
+  };
+
+  // ============================================
+  // CLOSE VENDOR SETTLEMENT
+  // ============================================
+
+  const handleCloseSettlement = () => {
+    setOpenSettlementModal(false);
+    setSelectedSettlementVendor(null);
+  };
+
+  // ============================================
+  // LOAD DATA
+  // ============================================
+
   useEffect(() => {
     dispatch(getAllVendor());
     dispatch(getAllVendorVehicles());
+
+    // Load trips because the table needs to know
+    // whether each vendor has completed vendor trips.
+    dispatch(getAllTrips());
   }, [dispatch]);
+
+  // ============================================
+  // ERROR
+  // ============================================
 
   useEffect(() => {
     if (error) {
       toast.error(error);
     }
   }, [error]);
+
+  // ============================================
+  // LOADING
+  // ============================================
 
   if (loading && !vendors?.length) {
     return (
@@ -117,15 +214,22 @@ export default function Vendors() {
       </div>
     );
   }
+
   return (
     <div>
+      {/* ==========================================
+          TOP BAR
+      ========================================== */}
+
       <div className="vm-topbar">
         <div className="vm-topbar-left">
           <h1 className="heading">Vendors</h1>
+
           <div className="sub-heading">
             Monitor vendors and Vendor's vehicles
           </div>
         </div>
+
         <div className="vm-topbar-right">
           <button
             className="add-vendor-btn"
@@ -138,11 +242,19 @@ export default function Vendors() {
           </button>
         </div>
       </div>
+
+      {/* ==========================================
+          MAIN
+      ========================================== */}
+
       <div className="vendor-main">
+        {/* SEARCH */}
+
         <div className="he-search-wrap mb-3">
           <span className="he-search-icon">
             <IoSearchOutline size={16} />
           </span>
+
           <input
             className="he-search-input"
             placeholder="Search company, contact, mobile..."
@@ -150,11 +262,19 @@ export default function Vendors() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+
+        {/* ERROR */}
+
         {error && !loading && (
           <div className="broker-error-banner">
             {error || "Failed to load vendor data."}
           </div>
         )}
+
+        {/* ==========================================
+            VENDOR TABLE
+        ========================================== */}
+
         <div className="vendor-table-section">
           <div className="vendor-table-scroll">
             <table className="vendor-table">
@@ -168,6 +288,7 @@ export default function Vendors() {
                   <th>City</th>
                   <th>State</th>
                   <th>Address</th>
+                  <th>Amount</th>
                   <th>Actions</th>
                   <th>Add Vehicle</th>
                 </tr>
@@ -175,64 +296,111 @@ export default function Vendors() {
 
               <tbody>
                 {filteredVendors.length > 0 ? (
-                  filteredVendors.map((vendor) => (
-                    <tr key={vendor._id}>
-                      <td>{vendor.companyName}</td>
-                      <td>{vendor.contactPerson}</td>
-                      <td>{vendor.mobile}</td>
-                      <td>{vendor.email}</td>
-                      <td>{vendor.gstNo}</td>
-                      <td>{vendor.city}</td>
-                      <td>{vendor.state}</td>
-                      <td>{vendor.address}</td>
+                  filteredVendors.map((vendor) => {
+                    const vendorHasTrips = hasVendorTrips(vendor._id);
 
-                      <td className="vendor-td-actions p-1">
-                        <button
-                          className="vm-action-btn vm-action-view"
-                          onClick={() => handleViewVendor(vendor._id)}
-                        >
-                          <MdOutlineRemoveRedEye />
-                        </button>
+                    return (
+                      <tr key={vendor._id}>
+                        <td>{vendor.companyName}</td>
 
-                        <button
-                          className="vm-action-btn vm-action-edit"
-                          onClick={() => {
-                            setSelectedVendor(vendor);
-                            setShowVendorModal(true);
-                          }}
-                        >
-                          <MdOutlineEdit />
-                        </button>
+                        <td>{vendor.contactPerson}</td>
 
-                        <button
-                          className="vm-action-btn vm-action-delete"
-                          onClick={() => {
-                            setSelectedVendor(vendor);
-                            setOpenDeleteModal(true);
-                          }}
-                        >
-                          <MdDeleteOutline />
-                        </button>
-                      </td>
+                        <td>{vendor.mobile}</td>
 
-                      <td>
-                        <button
-                          className="add-vendor-vehicle-btn"
-                          onClick={() => {
-                            setSelectedVehicle(null);
-                            setSelectedVehicleVendor(vendor._id);
-                            setShowVehicleModal(true);
-                          }}
-                        >
-                          + Add
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                        <td>{vendor.email}</td>
+
+                        <td>{vendor.gstNo}</td>
+
+                        <td>{vendor.city}</td>
+
+                        <td>{vendor.state}</td>
+
+                        <td>{vendor.address}</td>
+
+                        {/* ==================================
+                            SETTLEMENT
+                        ================================== */}
+
+                        <td className="p-1">
+                          {vendorHasTrips ? (
+                            <button
+                              className="add-vendor-vehicle-btn"
+                              onClick={() => handleOpenSettlement(vendor)}
+                            >
+                              Settle
+                            </button>
+                          ) : (
+                            <span
+                              style={{
+                                color: "#888",
+                                fontSize: "13px",
+                              }}
+                            >
+                              -
+                            </span>
+                          )}
+                        </td>
+
+                        {/* ==================================
+                            ACTIONS
+                        ================================== */}
+
+                        <td className="vendor-td-actions p-1">
+                          <button
+                            className="vm-action-btn vm-action-view"
+                            onClick={() => handleViewVendor(vendor._id)}
+                          >
+                            <MdOutlineRemoveRedEye />
+                          </button>
+
+                          <button
+                            className="vm-action-btn vm-action-edit"
+                            onClick={() => {
+                              setSelectedVendor(vendor);
+
+                              setShowVendorModal(true);
+                            }}
+                          >
+                            <MdOutlineEdit />
+                          </button>
+
+                          <button
+                            className="vm-action-btn vm-action-delete"
+                            onClick={() => {
+                              setSelectedVendor(vendor);
+
+                              setOpenDeleteModal(true);
+                            }}
+                          >
+                            <MdDeleteOutline />
+                          </button>
+                        </td>
+
+                        {/* ==================================
+                            ADD VEHICLE
+                        ================================== */}
+
+                        <td>
+                          <button
+                            className="add-vendor-vehicle-btn"
+                            onClick={() => {
+                              setSelectedVehicle(null);
+
+                              setSelectedVehicleVendor(vendor._id);
+
+                              setShowVehicleModal(true);
+                            }}
+                          >
+                            + Add
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       style={{
                         textAlign: "center",
                         padding: "30px",
@@ -249,16 +417,24 @@ export default function Vendors() {
           </div>
         </div>
       </div>
+
+      {/* ==========================================
+          DELETE VENDOR MODAL
+      ========================================== */}
+
       {openDeleteModal && (
         <div className="vendor-delete-backdrop">
           <div className="vendor-delete-modal">
             <div className="vendor-delete-icon-wrap">
               <MdDelete className="vendor-delete-icon" />
             </div>
+
             <h3 className="vendor-delete-title">Delete Vendor?</h3>
+
             <p className="vendor-delete-text">
               Are you sure you want to delete this vendor?
             </p>
+
             <div className="vendor-delete-actions">
               <button
                 className="vendor-delete-btn cancel"
@@ -266,6 +442,7 @@ export default function Vendors() {
               >
                 Cancel
               </button>
+
               <button
                 className="vendor-delete-btn confirm"
                 onClick={handleDelete}
@@ -277,6 +454,10 @@ export default function Vendors() {
         </div>
       )}
 
+      {/* ==========================================
+          ADD / EDIT VENDOR
+      ========================================== */}
+
       <AddVendorModal
         show={showVendorModal}
         onClose={() => {
@@ -285,6 +466,11 @@ export default function Vendors() {
         }}
         vendor={selectedVendor}
       />
+
+      {/* ==========================================
+          VENDOR DETAIL
+      ========================================== */}
+
       <VendorDetailModal
         open={openViewModal}
         loading={viewLoading}
@@ -303,6 +489,10 @@ export default function Vendors() {
         onDeleteVehicle={handleDeleteVendorVehicle}
       />
 
+      {/* ==========================================
+          ADD VENDOR VEHICLE
+      ========================================== */}
+
       <AddVendorVehicleModal
         show={showVehicleModal}
         vehicle={selectedVehicle}
@@ -313,6 +503,17 @@ export default function Vendors() {
           setSelectedVehicleVendor(null);
         }}
       />
+
+      {/* ==========================================
+          VENDOR SETTLEMENT
+      ========================================== */}
+
+      {openSettlementModal && (
+        <VendorSettlementModal
+          vendorId={selectedSettlementVendor?._id}
+          onClose={handleCloseSettlement}
+        />
+      )}
     </div>
   );
 }

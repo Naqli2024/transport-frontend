@@ -91,13 +91,23 @@ export const getDriverSettlementSummary = createAsyncThunk(
 )
 
 export const driverSettlement = createAsyncThunk(
-  "driverSettlement",
-  async ({ id, tripIds }, { rejectWithValue }) => {
+  "driver/settlement",
+  async ({ id, amount, remarks }, { rejectWithValue }) => {
     try {
-      const response = await DriverService.post(`/${id}/settlement`,{tripIds});
+      const response = await api.post(
+        `/drivers/${id}/settlement`,
+        {
+          amount,
+          remarks,
+        }
+      );
+
       return response.data;
     } catch (error) {
-      return rejectWithValue(handleApiError(error));
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to settle driver"
+      );
     }
   }
 );
