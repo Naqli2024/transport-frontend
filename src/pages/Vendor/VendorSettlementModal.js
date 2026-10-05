@@ -6,11 +6,9 @@ import { TiInputChecked } from "react-icons/ti";
 import {
   getVendorSettlementSummary,
   vendorSettlement,
-} from "../../redux/actions/vendorActions";
+} from "../../redux/Vendor/VendorSlice";
 
-import { getAllVendor } from "../../redux/actions/vendorActions";
-
-import Loader from "../Loader/Loader";
+import { getAllVendor } from "../../redux/Vendor/VendorSlice";
 
 // ============================================
 // STATUS CLASS
@@ -154,7 +152,7 @@ const VendorSettlementModal = ({ onClose, vendorId }) => {
           LOADER
       ========================================== */}
 
-      {loading && <Loader isLoading={loading} />}
+      {/* {loading && <Loader isLoading={loading} />} */}
 
       {/* ==========================================
           ERROR
