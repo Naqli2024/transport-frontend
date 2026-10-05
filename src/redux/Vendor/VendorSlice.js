@@ -67,7 +67,7 @@ export const getVendorSettlementSummary = createAsyncThunk(
   "vendor/getSettlement",
   async (vendorId, { rejectWithValue }) => {
     try {
-      const response = await api.get(
+      const response = await VendorService.get(
         `/vendors/${vendorId}/settlement`
       );
 
@@ -88,7 +88,7 @@ export const vendorSettlement = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await api.post(
+      const response = await VendorService.post(
         `/vendors/${id}/settlement`,
         {
           amount,

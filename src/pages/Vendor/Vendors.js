@@ -20,6 +20,8 @@ import {
   deleteVendorVehicle,
   getAllVendorVehicles,
 } from "../../redux/VendorVehicle/VendorVehicleSlice";
+import VendorSettlementModal from "./VendorSettlementModal";
+import { getAllTrips } from "../../redux/Trip/TripSlice";
 
 export default function Vendors() {
   const [search, setSearch] = useState("");
