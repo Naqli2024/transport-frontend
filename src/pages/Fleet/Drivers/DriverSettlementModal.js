@@ -267,50 +267,39 @@ const DriverSettlementModal = ({ onClose, driverId }) => {
             DRIVER SETTLEMENT STATUS
         ========================================== */}
 
-        <div className="expense-modal-settlement-summary">
+      <div className="expense-modal-settlement-summary">
+  <div>
+    <span>Total Payable</span>
+    <strong>₹{formatAmount(totalPayable)}</strong>
+  </div>
 
-          <div>
-            <span>Total Payable</span>
+  <div>
+    <span>Already Settled</span>
+    <strong>₹{formatAmount(settledAmount)}</strong>
+  </div>
 
-            <strong>
-              ₹{formatAmount(totalPayable)}
-            </strong>
-          </div>
+  <div>
+    <span>Outstanding Balance</span>
+    <strong>₹{formatAmount(balanceAmount)}</strong>
+  </div>
 
-          <div>
-            <span>Already Settled</span>
-
-            <strong>
-              ₹{formatAmount(settledAmount)}
-            </strong>
-          </div>
-
-          <div>
-            <span>Outstanding Balance</span>
-
-            <strong>
-              ₹{formatAmount(balanceAmount)}
-            </strong>
-          </div>
-
-          <div>
-            <span>Status</span>
-
-            <span
-              className={`expense-modal-badge ${statusClass(
-                settlementStatus
-              )}`}
-            >
-              {settlementStatus}
-            </span>
-          </div>
-        </div>
+  <div>
+    <span>Status</span>
+    <span
+      className={`expense-modal-badge ${statusClass(
+        settlementStatus
+      )}`}
+    >
+      {settlementStatus}
+    </span>
+  </div>
+</div>
 
         {/* ==========================================
             EXPENSE DETAILS
         ========================================== */}
 
-        <div className="text-white fs-5 mb-2 fw-bold">
+        <div className="text-white fs-5 mb-2 fw-bold mt-2">
           Expense Details
         </div>
 
@@ -656,33 +645,36 @@ const DriverSettlementModal = ({ onClose, driverId }) => {
         <div className="expense-modal-settlement-form">
 
           <div className="expense-modal-input-group">
+            <div className="settlement-amount-field">
+  <label>
+    Settlement Amount
+  </label>
+  <div className="settlement-input-wrapper">
+  
 
-            <label>
-              Settlement Amount
-            </label>
+    <input
+    className="settlement-input-wrapper"
+      id="settlementAmount"
+      type="number"
+      min="1"
+      max={balanceAmount}
+      value={settlementAmount}
+      onChange={(e) => setSettlementAmount(e.target.value)}
+      placeholder="Enter settlement amount"
+      disabled={loading || balanceAmount <= 0}
+    />
+  </div>
 
-            <input
-              type="number"
-              min="1"
-              max={balanceAmount}
-              value={settlementAmount}
-              onChange={(e) =>
-                setSettlementAmount(e.target.value)
-              }
-              placeholder="Enter settlement amount"
-              disabled={
-                loading ||
-                balanceAmount <= 0
-              }
-            />
 
-            <small>
-              Outstanding balance: ₹
-              {formatAmount(balanceAmount)}
-            </small>
+</div>
+
+         <small className="outstanding-balance">
+  <span>Outstanding balance :  <strong>₹{formatAmount(balanceAmount)}</strong></span>
+ 
+</small>
           </div>
 
-          <div className="expense-modal-input-group">
+          {/* <div className="expense-modal-input-group">
 
             <label>
               Remarks
@@ -697,7 +689,7 @@ const DriverSettlementModal = ({ onClose, driverId }) => {
               placeholder="Enter settlement remarks"
               disabled={loading}
             />
-          </div>
+          </div> */}
         </div>
 
         {/* ==========================================

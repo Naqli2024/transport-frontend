@@ -8647,7 +8647,90 @@ strong {
   background: var(--green);
   color: #fff;
 }
+.expense-modal-settlement-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 16px 18px;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel);
+}
 
+.expense-modal-settlement-summary > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.expense-modal-settlement-summary > div:not(:last-child) {
+  border-right: 1px solid var(--border);
+  padding-right: 16px;
+}
+
+.expense-modal-settlement-summary span:first-child {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--textSub);
+}
+
+.expense-modal-settlement-summary strong {
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--accent);
+}
+
+.expense-modal-settlement-summary .expense-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .expense-modal-settlement-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .expense-modal-settlement-summary > div:not(:last-child) {
+    border-right: none;
+    padding-right: 0;
+  }
+
+  .expense-modal-settlement-summary > div:nth-child(odd) {
+    border-right: 1px solid #e5e7eb;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .expense-modal-settlement-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .expense-modal-settlement-summary > div {
+    padding: 8px 0 !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .expense-modal-settlement-summary > div:last-child {
+    border-bottom: none;
+  }
+}
 @keyframes scaleIn {
   from {
     opacity: 0;
@@ -24789,6 +24872,107 @@ table.broker-table {
 .settle-btn:hover {
   background: #dc2626;
   transform: translateY(-1px);
+}
+.settlement-amount-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.settlement-amount-field label {
+  flex: 0 0 150px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--textSub);
+}
+
+.settlement-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 46px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.settlement-input-wrapper:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.settlement-input-wrapper input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  padding: 0 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+  background: transparent;
+}
+
+.settlement-input-wrapper input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* Remove number input arrows */
+.settlement-input-wrapper input::-webkit-outer-spin-button,
+.settlement-input-wrapper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.settlement-input-wrapper input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Disabled */
+.settlement-input-wrapper:has(input:disabled) {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.settlement-input-wrapper input:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Outstanding balance */
+.settlement-amount-field small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+.outstanding-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 10px;
+  padding: 0;
+}
+
+.outstanding-balance span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--textSub);
+}
+
+.outstanding-balance strong {
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--textSub);
 }
 .broker-action-view {
   color: var(--accent);
