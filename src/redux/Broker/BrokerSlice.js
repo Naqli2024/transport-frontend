@@ -93,11 +93,33 @@ export const getBrokerSettlementSummary = createAsyncThunk(
 
 export const brokerSettlement = createAsyncThunk(
   "brokerSettlement",
-  async ({ id, tripIds }, { rejectWithValue }) => {
+  async (
+    { id, settlements, remarks },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await BrokerService.post(`/${id}/settlement`,{tripIds});
+      const payload = {
+        settlements,
+        remarks: remarks || "",
+      };
+
+      console.log(
+        "Broker settlement API payload:",
+        JSON.stringify(payload, null, 2)
+      );
+
+      const response = await BrokerService.post(
+        `/${id}/settlement`,
+        payload
+      );
+
       return response.data;
     } catch (error) {
+      console.error(
+        "Broker settlement API error:",
+        error.response?.data || error
+      );
+
       return rejectWithValue(handleApiError(error));
     }
   }

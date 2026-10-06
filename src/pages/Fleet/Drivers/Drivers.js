@@ -33,9 +33,7 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
       try {
         setSettlementLoading(true);
 
-        const response = await dispatch(
-          getDriverSettlementSummary(d._id)
-        );
+        const response = await dispatch(getDriverSettlementSummary(d._id));
 
         if (response?.meta?.requestStatus === "fulfilled") {
           setSettlement(response.payload);
@@ -53,9 +51,11 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
     fetchSettlement();
   }, [dispatch, d?._id]);
 
-  const trips = settlement?.data?.trips || [];
+  const balanceAmount = Number(
+    settlement?.data?.settlement?.balanceAmount || 0,
+  );
 
-  const hasTrips = trips.length > 0;
+  const canSettle = balanceAmount > 0;
 
   return (
     <>
@@ -68,9 +68,7 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
 
         <td>{d.dlNo || "-"}</td>
 
-        <td>
-          {d.experience ? `${d.experience} Years` : "-"}
-        </td>
+        <td>{d.experience ? `${d.experience} Years` : "-"}</td>
 
         <td>{d.vehicle?.regNo || "Unassigned"}</td>
 
@@ -113,10 +111,8 @@ function DriverRow({ d, onView, onEdit, onDelete }) {
 
         <td>
           {settlementLoading ? (
-            <span style={{ fontSize: "12px", color: "#888" }}>
-              Checking...
-            </span>
-          ) : hasTrips ? (
+            <span style={{ fontSize: "12px", color: "#888" }}>Checking...</span>
+          ) : canSettle ? (
             <button
               className="dm-settle-btn confirm"
               onClick={() => {
