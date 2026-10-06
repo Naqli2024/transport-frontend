@@ -95,7 +95,7 @@ export const driverSettlement = createAsyncThunk(
   async ({ id, amount, remarks }, { rejectWithValue }) => {
     try {
       const response = await DriverService.post(
-        `/drivers/${id}/settlement`,
+        `/${id}/settlement`,
         {
           amount,
           remarks,
