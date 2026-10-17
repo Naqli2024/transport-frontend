@@ -76,17 +76,20 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
   }, [dispatch]);
 
   const updateJourneyLeg = (index, field, value) => {
-    const updated = [...form.journeyLegs];
+  setForm((prev) => {
+    const updated = [...prev.journeyLegs];
+
     updated[index] = {
       ...updated[index],
       [field]: value,
     };
 
-    setForm((prev) => ({
+    return {
       ...prev,
       journeyLegs: updated,
-    }));
-  };
+    };
+  });
+};
 
   const handleBrokerChange = (index, brokerId) => {
     const updated = [...form.journeyLegs];
@@ -262,7 +265,7 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
     const options = field === "from" ? getFromOptions(leg) : getToOptions(leg);
 
     return (
-      <div className="col-md-3">
+      <div className="col-md-3" key={`${index}-${field}`}>
         <label className="journey-type-flabel">{label}</label>
 
         <select
@@ -604,8 +607,8 @@ const JourneyTypeSelector = ({ form, setForm, isEdit, originalLegCount }) => {
                       </div>
                     </div>
                     <div className="row g-3" style={{ marginTop: 2 }}>
-                      {renderLocationSelect(0, "from", "From")}
-                      {renderLocationSelect(0, "to", "To")}
+                      {renderLocationSelect(idx, "from", "From")}
+                      {renderLocationSelect(idx, "to", "To")}
                       <div className="col-md-3">
                         <label className="journey-type-flabel">Customer</label>
                         <select
