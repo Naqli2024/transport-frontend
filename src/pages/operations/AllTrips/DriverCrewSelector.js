@@ -73,29 +73,45 @@ const DriverCrewSelector = ({ form, setForm, isEdit }) => {
     form.journeyLegs.some(
       (leg, i) =>
         i !== currentLegIdx &&
-        (leg.driver1 === driverId || leg.driver2 === driverId)
+        (leg.driver1 === driverId || leg.driver2 === driverId),
     );
 
   return (
     <div>
       <div className="driver-crew-title">👤 Driver Assignment</div>
       <div className="driver-crew-desc">
-        Assign a primary driver and optional second driver for each leg of
-        the journey.
+        Assign a primary driver and optional second driver for each leg of the
+        journey.
       </div>
 
       {form.journeyLegs.map((leg, legIdx) => {
         const driver1Options = drivers.filter((driver) => {
-          if (driver._id === leg.driver2) return false;
-          if (isDriverTakenElsewhere(driver._id, legIdx)) return false;
-          if (driver._id === leg.driver1) return true;
+          // Do not allow the same driver in both slots of the current leg
+          if (String(driver._id) === String(leg.driver2 || "")) {
+            return false;
+          }
+
+          // Keep the currently selected driver visible while editing
+          if (String(driver._id) === String(leg.driver1 || "")) {
+            return true;
+          }
+
+          // Availability status is the deciding condition
           return driver.availableStatus === "Available";
         });
 
         const driver2Options = drivers.filter((driver) => {
-          if (driver._id === leg.driver1) return false;
-          if (isDriverTakenElsewhere(driver._id, legIdx)) return false;
-          if (driver._id === leg.driver2) return true;
+          // Do not allow the same driver in both slots of the current leg
+          if (String(driver._id) === String(leg.driver1 || "")) {
+            return false;
+          }
+
+          // Keep the currently selected driver visible while editing
+          if (String(driver._id) === String(leg.driver2 || "")) {
+            return true;
+          }
+
+          // Availability status is the deciding condition
           return driver.availableStatus === "Available";
         });
 
@@ -117,7 +133,8 @@ const DriverCrewSelector = ({ form, setForm, isEdit }) => {
                 className="journey-type-leg-header"
                 style={{ color: "var(--accent)", marginBottom: "10px" }}
               >
-                LEG {legIdx + 1} — {leg.from || "From Location"} → {leg.to || "To Location"}
+                LEG {legIdx + 1} — {leg.from || "From Location"} →{" "}
+                {leg.to || "To Location"}
               </div>
             )}
 
@@ -324,15 +341,16 @@ const DriverCrewSelector = ({ form, setForm, isEdit }) => {
                 </div>
               </div>
             ))}
-            {isEdit &&
-            <button
-              type="button"
-              className="control-btn add-more-leg-btn"
-              onClick={() => addLegAdvance(legIdx)}
-            >
-              <FiPlusCircle size={16} />
-              Add Amount
-            </button>}
+            {isEdit && (
+              <button
+                type="button"
+                className="control-btn add-more-leg-btn"
+                onClick={() => addLegAdvance(legIdx)}
+              >
+                <FiPlusCircle size={16} />
+                Add Amount
+              </button>
+            )}
           </div>
         );
       })}
