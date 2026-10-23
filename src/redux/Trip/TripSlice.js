@@ -201,10 +201,23 @@ const TripSlice = createSlice({
           state.loadingDetail = false;
           state.fuelEntries = action.payload?.data || [];
           break;
-        case getWeighBridge.fulfilled.type:
+        case getWeighBridge.fulfilled.type: {
           state.loadingDetail = false;
-          state.weighBridge = action.payload?.data || [];
+
+          const data = action.payload?.data;
+
+          state.weighBridge = data?.weighbridge
+            ? [
+                {
+                  ...data.weighbridge,
+                  tripId: data.tripId,
+                  legNo: data.legNo,
+                },
+              ]
+            : [];
+
           break;
+        }
         case addTrip.fulfilled.type:
         case editTrip.fulfilled.type:
         case deleteTrip.fulfilled.type:

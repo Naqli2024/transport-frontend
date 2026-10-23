@@ -287,38 +287,40 @@ const TripOverViewPage = ({
           </div>
 
           <div className="trip-overview-card-title" style={{ marginTop: 16 }}>
-  Drivers ({uniqueDrivers.length})
-</div>
-{uniqueDrivers.length > 0 ? (
-  uniqueDrivers.map((d) => (
-    <div key={d._id} className="trip-overview-driver-block">
-      <div className="trip-overview-row">
-        <span className="k">Name</span>
-        <span className="v">{d.name || "—"}</span>
-      </div>
-      <div className="trip-overview-row">
-        <span className="k">Driver ID</span>
-        <span className="v">{d.driverId || "—"}</span>
-      </div>
-      <div className="trip-overview-row">
-        <span className="k">Mobile</span>
-        <span className="v">{d.mobile || "—"}</span>
-      </div>
-      <div className="trip-overview-row">
-        <span className="k">DL no. / class</span>
-        <span className="v">
-          {d.dlNo} · {d.dlClass}
-        </span>
-      </div>
-      <div className="trip-overview-row">
-        <span className="k">Availability</span>
-        <span className="v">{d.availableStatus}</span>
-      </div>
-    </div>
-  ))
-) : (
-  <div className="trip-overview-doc-empty">No driver assigned yet.</div>
-)}
+            Drivers ({uniqueDrivers.length})
+          </div>
+          {uniqueDrivers.length > 0 ? (
+            uniqueDrivers.map((d) => (
+              <div key={d._id} className="trip-overview-driver-block">
+                <div className="trip-overview-row">
+                  <span className="k">Name</span>
+                  <span className="v">{d.name || "—"}</span>
+                </div>
+                <div className="trip-overview-row">
+                  <span className="k">Driver ID</span>
+                  <span className="v">{d.driverId || "—"}</span>
+                </div>
+                <div className="trip-overview-row">
+                  <span className="k">Mobile</span>
+                  <span className="v">{d.mobile || "—"}</span>
+                </div>
+                <div className="trip-overview-row">
+                  <span className="k">DL no. / class</span>
+                  <span className="v">
+                    {d.dlNo} · {d.dlClass}
+                  </span>
+                </div>
+                <div className="trip-overview-row">
+                  <span className="k">Availability</span>
+                  <span className="v">{d.availableStatus}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="trip-overview-doc-empty">
+              No driver assigned yet.
+            </div>
+          )}
         </div>
 
         <div className="trip-overview-card">
@@ -337,59 +339,61 @@ const TripOverViewPage = ({
       </div>
 
       <div className="trip-overview-card mt-3">
-  <div className="trip-overview-card-title">Journey Legs</div>
-  {legs.length > 0 ? (
-    legs.map((leg) => (
-      <div key={leg._id} className="trip-overview-leg-block">
-        <div className="trip-overview-leg-head">
-          <span className="trip-overview-leg-route">
-            Leg {leg.legNo}: {titleCase(leg.from)} → {titleCase(leg.to)}
-          </span>
-          <span className="trip-overview-leg-status">{leg.legStatus}</span>
-        </div>
-        <div className="trip-overview-row">
-          <span className="k">Commodity</span>
-          <span className="v">
-            {leg.commodity || "—"} ({leg.weight} {leg.uom})
-          </span>
-        </div>
-        <div className="trip-overview-row">
-          <span className="k">Load / Payment</span>
-          <span className="v">
-            {leg.loadType} · {leg.paymentType}
-          </span>
-        </div>
-        <div className="trip-overview-row">
-          <span className="k">Rate / Est. Amount</span>
-          <span className="v">
-            ₹{leg.amountPerTon}/{leg.uom} ·{" "}
-            {fmtCurrency(leg.estimatedFreightAmount)}
-          </span>
-        </div>
-        <div className="trip-overview-row">
-          <span className="k">Driver</span>
-          <span className="v">{leg.driver1?.name || "—"}</span>
-        </div>
-        <div className="trip-overview-row">
-          <span className="k">Driver salary / advance</span>
-          <span className="v">
-            {fmtCurrency(leg.driverSalary)} ·{" "}
-            {fmtCurrency(
-              (leg.driverAdvance || []).reduce(
-                (a, adv) => a + (Number(adv.amount) || 0),
-                0,
-              ),
-            )}
-          </span>
-        </div>
+        <div className="trip-overview-card-title">Journey Legs</div>
+        {legs.length > 0 ? (
+          legs.map((leg) => (
+            <div key={leg._id} className="trip-overview-leg-block">
+              <div className="trip-overview-leg-head">
+                <span className="trip-overview-leg-route">
+                  Leg {leg.legNo}: {titleCase(leg.from)} → {titleCase(leg.to)}
+                </span>
+                <span className="trip-overview-leg-status">
+                  {leg.legStatus}
+                </span>
+              </div>
+              <div className="trip-overview-row">
+                <span className="k">Commodity</span>
+                <span className="v">
+                  {leg.commodity || "—"} ({leg.weight} {leg.uom})
+                </span>
+              </div>
+              <div className="trip-overview-row">
+                <span className="k">Load / Payment</span>
+                <span className="v">
+                  {leg.loadType} · {leg.paymentType}
+                </span>
+              </div>
+              <div className="trip-overview-row">
+                <span className="k">Rate / Est. Amount</span>
+                <span className="v">
+                  ₹{leg.amountPerTon}/{leg.uom} ·{" "}
+                  {fmtCurrency(leg.estimatedFreightAmount)}
+                </span>
+              </div>
+              <div className="trip-overview-row">
+                <span className="k">Driver</span>
+                <span className="v">{leg.driver1?.name || "—"}</span>
+              </div>
+              <div className="trip-overview-row">
+                <span className="k">Driver salary / advance</span>
+                <span className="v">
+                  {fmtCurrency(leg.driverSalary)} ·{" "}
+                  {fmtCurrency(
+                    (leg.driverAdvance || []).reduce(
+                      (a, adv) => a + (Number(adv.amount) || 0),
+                      0,
+                    ),
+                  )}
+                </span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="trip-overview-doc-empty">
+            No journey legs on this trip.
+          </div>
+        )}
       </div>
-    ))
-  ) : (
-    <div className="trip-overview-doc-empty">
-      No journey legs on this trip.
-    </div>
-  )}
-</div>
 
       <div className="trip-overview-card mt-3">
         <div className="trip-overview-card-title">Trip documents</div>
@@ -469,34 +473,48 @@ const TripOverViewPage = ({
           </div>
         )}
       </div>
-<div className="trip-overview-card mt-3">
-  <div className="trip-overview-card-title">Weigh Bridge Bills</div>
-  {weighBridge?.length > 0 ? (
-    <div className="trip-overview-docs">
-      {weighBridge.map((wb) => (
-        <div className="trip-overview-doc" key={wb._id}>
-          <span className="trip-overview-doc-type">
-            {wb.legNo ? `Leg ${wb.legNo} · ` : ""}
-            Weight {wb.grossWeight} Kg
-            {wb.ticketNumber ? ` · Ticket ${wb.ticketNumber}` : ""}
-          </span>
-          <a
-            className="trip-overview-doc-link"
-            href={wb.receiptUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View
-          </a>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div className="trip-overview-doc-empty">
-      No Weigh Bridge uploaded for this trip yet.
-    </div>
-  )}
-</div>
+      <div className="trip-overview-card mt-3">
+        <div className="trip-overview-card-title">Weigh Bridge Bills</div>
+
+        {weighBridge?.length > 0 ? (
+          <div className="trip-overview-docs">
+            {weighBridge.map((wb, index) => (
+              <div
+                className="trip-overview-doc"
+                key={`${wb.tripId || "trip"}-${wb.legNo || index}`}
+              >
+                <span className="trip-overview-doc-type">
+                  {wb.legNo ? `Leg ${wb.legNo} · ` : ""}
+                  Weight {wb.grossWeight ?? "—"} {wb.uom || "Kg"}
+                  {wb.ticketNumber ? ` · Ticket ${wb.ticketNumber}` : ""}
+                  {wb.weighbridgeFee != null
+                    ? ` · Fee ₹${wb.weighbridgeFee}`
+                    : ""}
+                </span>
+
+                {wb.receiptUrl ? (
+                  <a
+                    className="trip-overview-doc-link"
+                    href={wb.receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View
+                  </a>
+                ) : (
+                  <span className="trip-overview-doc-empty">
+                    No receipt available
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="trip-overview-doc-empty">
+            No Weigh Bridge uploaded for this trip yet.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

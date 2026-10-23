@@ -89,16 +89,16 @@ const AddCustomerModal = ({ open, onClose, mode = "add", customer = null }) => {
     setLoading(true);
     try {
       const payload = {
-        companyName: formData.companyName,
-        contactPerson: formData.contactPerson,
-        mobile: Number(formData.mobile),
-        email: formData.email,
-        gstNo: formData.gstNo,
-        billingAddress: formData.billingAddress,
-        city: formData.city,
-        state: formData.state,
-        country: formData.country,
-        pincode: Number(formData.pincode),
+        companyName: formData.companyName.trim(),
+        contactPerson: formData.contactPerson.trim(),
+        mobile: String(formData.mobile ?? "").trim(),
+        email: String(formData.email ?? "").trim(),
+        gstNo: String(formData.gstNo ?? "").trim(),
+        billingAddress: String(formData.billingAddress ?? "").trim(),
+        city: String(formData.city ?? "").trim(),
+        state: String(formData.state ?? "").trim(),
+        country: String(formData.country ?? "").trim(),
+        pincode: String(formData.pincode ?? "").trim(),
       };
       if (mode === "edit") {
         const response = await dispatch(
@@ -169,19 +169,18 @@ const AddCustomerModal = ({ open, onClose, mode = "add", customer = null }) => {
 
     if (mode === "edit" && customer) {
       setFormData({
-        companyName: customer.companyName || "",
-        contactPerson: customer.contactPerson || "",
-        mobile: customer.mobile || "",
-        email: customer.email || "",
-        gstNo: customer.gstNo || "",
-        billingAddress: customer.billingAddress || "",
-        city: customer.city || "",
-        state: customer.state || "Tamil Nadu",
-        country: customer.country || "",
-        pincode: customer.pincode || "",
+        companyName: String(customer.companyName ?? ""),
+        contactPerson: String(customer.contactPerson ?? ""),
+        mobile: String(customer.mobile ?? ""),
+        email: String(customer.email ?? ""),
+        gstNo: String(customer.gstNo ?? ""),
+        billingAddress: String(customer.billingAddress ?? ""),
+        city: String(customer.city ?? ""),
+        state: String(customer.state ?? "Tamil Nadu"),
+        country: String(customer.country ?? ""),
+        pincode: String(customer.pincode ?? ""),
       });
     } else {
-      // ADD CUSTOMER → always start with empty form
       setFormData({
         companyName: "",
         contactPerson: "",
